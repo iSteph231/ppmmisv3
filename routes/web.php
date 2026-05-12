@@ -69,8 +69,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');  // ADD THIS LINE
 });
     
-    // Report Routes
-Route::prefix('reports')->name('reports.')->middleware('auth')->group(function () {
+    // Report Routes - Only accessible by admin role
+Route::prefix('reports')->name('reports.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
     Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
