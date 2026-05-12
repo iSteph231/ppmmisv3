@@ -118,16 +118,6 @@
             </div>
         </div>
 
-        {{-- Create Button for Personnel --}}
-        <div class="create-request-wrapper" style="margin-bottom: 1.5rem; display: flex; justify-content: flex-end;">
-            <button @click="openCreateModal = true" class="btn-create">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Create Work Request
-            </button>
-        </div>
-
     @else
         {{-- Regular User Cards --}}
         <div class="stats-grid user-stats" style="grid-template-columns: repeat(3, 1fr);">
@@ -172,16 +162,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- Create Button for Regular Users --}}
-        <div class="create-request-wrapper" style="margin-bottom: 1.5rem; display: flex; justify-content: flex-end;">
-            <button @click="openCreateModal = true" class="btn-create">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Create Work Request
-            </button>
         </div>
     @endif
 
@@ -311,40 +291,6 @@
         </div>
         @endif
     </div>
-
-    {{-- CREATE REQUEST MODAL --}}
-    <div x-show="openCreateModal" x-cloak class="modal" style="display: none;" x-bind:style="openCreateModal ? 'display: flex;' : 'display: none;'">
-        <div class="modal-overlay" @click="openCreateModal = false"></div>
-        <div class="modal-content">
-            <form @submit.prevent="submitWorkRequest">
-                <div class="modal-body">
-                    <h3 class="modal-title">Create New Work Request</h3>
-                    
-                    <div class="modal-form-group">
-                        <label class="modal-label">Title *</label>
-                        <input type="text" x-model="newRequest.title" required class="modal-input" placeholder="Enter request title">
-                    </div>
-                    
-                    <div class="modal-form-group">
-                        <label class="modal-label">Description *</label>
-                        <textarea rows="4" x-model="newRequest.description" required class="modal-textarea" placeholder="Describe the issue in detail"></textarea>
-                    </div>
-                    
-                    <div class="modal-form-group">
-                        <label class="modal-label">Location (Optional)</label>
-                        <input type="text" x-model="newRequest.location" class="modal-input" placeholder="Building, Floor, Room #">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" @click="openCreateModal = false" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-submit" :disabled="submitting">
-                        <span x-show="!submitting">Submit Request</span>
-                        <span x-show="submitting">Submitting...</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
 
 @push('scripts')
@@ -352,15 +298,8 @@
 <script>
     function dashboardApp() {
         return {
-            openCreateModal: false,
-            submitting: false,
             unreadCount: 0,
             notifications: @json($notifications ?? []),
-            newRequest: {
-                title: '',
-                description: '',
-                location: ''
-            },
             
             init() {
                 this.initChart();
@@ -375,7 +314,7 @@
                 const chartCanvas = document.getElementById('requestsChart');
                 if (chartCanvas && typeof Chart !== 'undefined') {
                     const ctx = chartCanvas.getContext('2d');
-                    const chartData = {{ json_encode($monthlyData ?? array_fill(0, 12, 0)) }};
+                    const chartData = @json($monthlyData ?? array_fill(0, 12, 0));
                     
                     new Chart(ctx, {
                         type: 'bar',
@@ -451,43 +390,6 @@
                     }
                 })
                 .catch(err => console.error(err));
-            },
-            
-            submitWorkRequest() {
-                if (!this.newRequest.title || !this.newRequest.description) {
-                    alert('Please fill in all required fields (Title and Description).');
-                    return;
-                }
-                
-                this.submitting = true;
-                
-                fetch('/work-requests', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify(this.newRequest)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    this.submitting = false;
-                    if (data.success) {
-                        this.openCreateModal = false;
-                        this.newRequest = { title: '', description: '', location: '' };
-                        alert('Work request created successfully!');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        alert(data.message || 'Error creating request');
-                    }
-                })
-                .catch(err => {
-                    this.submitting = false;
-                    console.error('Submit error:', err);
-                    alert('Error creating request. Please try again.');
-                });
             }
         }
     }

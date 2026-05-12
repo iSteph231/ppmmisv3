@@ -71,13 +71,13 @@ Route::middleware(['auth'])->group(function () {
     
 });
     
-    // Reports
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/work-requests', [ReportController::class, 'workRequests'])->name('reports.work-requests');
-    Route::get('/reports/maintenance', [ReportController::class, 'maintenance'])->name('reports.maintenance');
-    Route::get('/reports/performance', [ReportController::class, 'performance'])->name('reports.performance');
-    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-    Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+    // Report Routes
+Route::prefix('reports')->name('reports.')->middleware('auth')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
+    Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
+    Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
+});
     
     // Users (Admin only)
     Route::middleware(['role:admin'])->group(function () {
