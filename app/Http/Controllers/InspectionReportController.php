@@ -58,8 +58,18 @@ class InspectionReportController extends Controller
             });
         }
         
-        // Get paginated results
-        $inspections = $query->orderBy('scheduled_date', 'desc')->paginate(10);
+        // FIXED: Order by status (pending first) then by scheduled_date ascending
+        $inspections = $query->orderByRaw("
+            CASE 
+                WHEN status = 'pending' THEN 1
+                WHEN status = 'in_progress' THEN 2
+                WHEN status = 'approved' THEN 3
+                WHEN status = 'completed' THEN 4
+                ELSE 5
+            END
+        ")
+        ->orderBy('scheduled_date', 'asc')
+        ->paginate(10);
         
         // Calculate statistics
         $totalInspections = InspectionReport::when(!$user->isAdmin(), function($q) use ($user) {
@@ -146,7 +156,7 @@ class InspectionReportController extends Controller
         $validated = $request->validate([
             'findings' => 'required|string',
             'recommendations' => 'required|string',
-            'status' => 'required|in:approved,cancelled', // Changed from 'completed' to 'approved'
+            'status' => 'required|in:approved,cancelled',
         ]);
         
         try {
@@ -154,7 +164,7 @@ class InspectionReportController extends Controller
             $inspectionReport->update([
                 'findings' => $validated['findings'],
                 'recommendations' => $validated['recommendations'],
-                'status' => $validated['status'], // This will be 'approved'
+                'status' => $validated['status'],
                 'actual_inspection_date' => now(),
                 'inspected_by' => Auth::id(),
             ]);

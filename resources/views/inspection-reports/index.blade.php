@@ -55,25 +55,43 @@
     </div>
 
     {{-- Filters --}}
-    <div style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-        <form method="GET" action="{{ route('inspections.index') }}" id="filterForm" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-            <select name="status" class="search-input" style="width: auto;" onchange="this.form.submit()">
-                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
-                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-            </select>
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <form method="GET" action="{{ route('inspections.index') }}" id="filterForm" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
             
-            <input type="date" name="date_from" class="search-input" style="width: auto;" value="{{ request('date_from') }}" onchange="this.form.submit()">
-            <input type="date" name="date_to" class="search-input" style="width: auto;" value="{{ request('date_to') }}" onchange="this.form.submit()">
+            {{-- Status Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">All Status</label>
+                <select name="status" class="search-input" style="width: auto;" onchange="this.form.submit()">
+                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                </select>
+            </div>
             
+            {{-- Start Date Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Start Date</label>
+                <input type="date" name="date_from" class="search-input" style="width: auto;" value="{{ request('date_from') }}" onchange="this.form.submit()">
+            </div>
+            
+            {{-- End Date Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">End Date</label>
+                <input type="date" name="date_to" class="search-input" style="width: auto;" value="{{ request('date_to') }}" onchange="this.form.submit()">
+            </div>
+            
+            {{-- Clear Filters Button --}}
             @if(request()->anyFilled(['status', 'date_from', 'date_to', 'search']))
-                <a href="{{ route('inspections.index') }}" class="btn-cancel" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">Clear Filters</a>
+                <div>
+                    <a href="{{ route('inspections.index') }}" class="btn-cancel" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">Clear Filters</a>
+                </div>
             @endif
         </form>
         
-        <div style="margin-left: auto;">
+        {{-- Search Box --}}
+        <div>
             <form method="GET" action="{{ route('inspections.index') }}" style="display: inline;">
                 @foreach(request()->except('search') as $key => $value)
                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">

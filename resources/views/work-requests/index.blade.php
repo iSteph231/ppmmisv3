@@ -9,27 +9,45 @@
         <p class="greeting-subtitle">View all maintenance work requests</p>
     </div>
 
-    {{-- Create Button --}}
-    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    {{-- Create Button and Filters --}}
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        
         {{-- Filter Section --}}
-        <form method="GET" action="{{ route('work-requests.index') }}" id="filterForm" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-            <select name="status" class="search-input" style="width: auto;" onchange="this.form.submit()">
-                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
-                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-            </select>
+        <form method="GET" action="{{ route('work-requests.index') }}" id="filterForm" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
             
-            <input type="date" name="date_from" class="search-input" style="width: auto;" placeholder="Date From" value="{{ request('date_from') }}" onchange="this.form.submit()">
-            <input type="date" name="date_to" class="search-input" style="width: auto;" placeholder="Date To" value="{{ request('date_to') }}" onchange="this.form.submit()">
+            {{-- Status Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">All Status</label>
+                <select name="status" class="search-input" style="width: auto;" onchange="this.form.submit()">
+                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                </select>
+            </div>
             
+            {{-- Start Date Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Start Date</label>
+                <input type="date" name="date_from" class="search-input" style="width: auto;" value="{{ request('date_from') }}" onchange="this.form.submit()">
+            </div>
+            
+            {{-- End Date Filter --}}
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">End Date</label>
+                <input type="date" name="date_to" class="search-input" style="width: auto;" value="{{ request('date_to') }}" onchange="this.form.submit()">
+            </div>
+            
+            {{-- Clear Filters Button --}}
             @if(request()->anyFilled(['status', 'date_from', 'date_to', 'search']))
-                <a href="{{ route('work-requests.index') }}" class="btn-create" style="background: #6b7280; text-decoration: none;">Clear Filters</a>
+                <div>
+                    <a href="{{ route('work-requests.index') }}" class="btn-create" style="background: #6b7280; text-decoration: none;">Clear Filters</a>
+                </div>
             @endif
         </form>
         
-        <div style="display: flex; gap: 0.75rem;">
-            {{-- Create Button --}}
+        {{-- Create Button --}}
+        <div>
             <a href="{{ route('work-requests.create') }}" class="btn-create">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
