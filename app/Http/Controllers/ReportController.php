@@ -162,13 +162,19 @@ class ReportController extends Controller
      */
     public function performanceReport()
     {
-        $user = Auth::user();
-        
         // Get monthly completion data
         $months = collect(range(1, 12))->map(function($month) {
             return Carbon::create(null, $month, 1)->format('M');
         });
         
+        // Monthly work requests count
+        $monthlyWorkRequests = collect(range(1, 12))->map(function($month) {
+            return WorkRequest::whereYear('created_at', now()->year)
+                ->whereMonth('created_at', $month)
+                ->count();
+        });
+        
+        // Monthly completed requests count
         $completedMonthly = collect(range(1, 12))->map(function($month) {
             return WorkRequest::where('status', 'completed')
                 ->whereYear('completed_at', now()->year)
@@ -182,12 +188,34 @@ class ReportController extends Controller
                 ->count();
         });
         
+        // Work Types Data
+        $requestTypesLabels = ['Ocular Inspection', 'Installation', 'Repair', 'Replacement', 'Others'];
+        $requestTypesData = [
+            WorkRequest::where('work_type', 'ocular_inspection')->count(),
+            WorkRequest::where('work_type', 'installation')->count(),
+            WorkRequest::where('work_type', 'repair')->count(),
+            WorkRequest::where('work_type', 'replacement')->count(),
+            WorkRequest::where('work_type', 'others')->count(),
+        ];
+        
+        // Status counts
+        $totalWorkRequests = WorkRequest::count();
+        $completedRequests = WorkRequest::where('status', 'completed')->count();
+        $pendingRequests = WorkRequest::where('status', 'pending')->count();
+        $approvedRequests = WorkRequest::where('status', 'approved')->count();
+        
+        // Completion rate
+        $completionRate = $totalWorkRequests > 0 ? round(($completedRequests / $totalWorkRequests) * 100) : 0;
+        
         // Average completion time (in days)
         $avgCompletionTime = WorkRequest::whereNotNull('completed_at')
             ->get()
             ->avg(function($request) {
                 return $request->created_at->diffInDays($request->completed_at);
             }) ?? 0;
+        
+        // Active personnel
+        $activePersonnel = User::where('role', 'personnel')->where('is_active', true)->count();
         
         // Get top requesters
         $topRequesters = WorkRequest::with('user')
@@ -197,6 +225,21 @@ class ReportController extends Controller
             ->limit(5)
             ->get();
         
-        return view('reports.performance', compact('months', 'completedMonthly', 'createdMonthly', 'avgCompletionTime', 'topRequesters'));
+        return view('reports.performance', compact(
+            'months',
+            'monthlyWorkRequests',
+            'completedMonthly',
+            'createdMonthly',
+            'requestTypesLabels',
+            'requestTypesData',
+            'totalWorkRequests',
+            'completedRequests',
+            'pendingRequests',
+            'approvedRequests',
+            'completionRate',
+            'avgCompletionTime',
+            'activePersonnel',
+            'topRequesters'
+        ));
     }
 }
