@@ -53,16 +53,6 @@
                     </div>
                 </div>
                 
-                {{-- Status Update --}}
-                <div class="modal-form-group">
-                    <label class="modal-label">Status</label>
-                    <select name="status" class="modal-select" required>
-                        <option value="pending" {{ $workRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ $workRequest->status == 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="completed" {{ $workRequest->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                    </select>
-                </div>
-                
                 {{-- Admin Notes --}}
                 <div class="modal-form-group">
                     <label class="modal-label">Admin Notes</label>

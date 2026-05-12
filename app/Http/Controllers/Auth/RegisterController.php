@@ -40,10 +40,24 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'required', 
+                'string', 
+                'email', 
+                'max:255', 
+                'unique:users',
+                'regex:/^[a-zA-Z0-9._%+-]+@psu\.edu\.ph$/'
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'phone_number' => ['nullable', 'string', 'max:20'],
+        ], [
+            'email.regex' => 'Only @psu.edu.ph email addresses are allowed.',
+            'email.unique' => 'This email address is already registered.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'name.required' => 'Full name is required.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ]);
     }
 
@@ -58,8 +72,6 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role' => 'user',
             'is_active' => true,
-            'department' => $data['department'] ?? null,
-            'phone_number' => $data['phone_number'] ?? null,
         ]);
     }
 }

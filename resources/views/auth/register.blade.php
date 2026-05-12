@@ -26,7 +26,7 @@ justify-content:center;
 /* CONTAINER */
 .container{
 width:900px;
-height:520px;
+height:580px;
 display:flex;
 border-radius:18px;
 overflow:hidden;
@@ -70,11 +70,13 @@ background:#ffffff;
 display:flex;
 align-items:center;
 justify-content:center;
+overflow-y:auto;
 }
 
 /* REGISTER BOX */
 .register-box{
 width:360px;
+padding:20px 0;
 }
 
 .register-box h2{
@@ -90,7 +92,7 @@ margin-bottom:20px;
 }
 
 /* INPUT */
-.input-group input{
+.input-group input, .input-group select{
 width:100%;
 padding:18px 16px 10px 16px;
 border-radius:12px;
@@ -117,36 +119,23 @@ pointer-events:none;
 
 /* FLOAT EFFECT */
 .input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label{
+.input-group input:not(:placeholder-shown) + label,
+.input-group select:focus + label,
+.input-group select:not(:placeholder-shown) + label{
 top:-8px;
 font-size:12px;
 color:#2c7be5;
 }
 
 /* INPUT FOCUS */
-.input-group input:focus{
+.input-group input:focus, .input-group select:focus{
 border-color:#2c7be5;
 box-shadow:0 0 0 3px rgba(44,123,229,0.15);
-}
-
-/* VALID */
-.input-group input:valid{
-border-color:#27ae60;
-}
-
-/* INVALID */
-.input-group input:invalid:focus{
-border-color:#e74c3c;
 }
 
 /* PASSWORD WRAPPER */
 .password-wrapper{
 position:relative;
-}
-
-/* REMOVE LEFT ICON */
-.password-wrapper i:first-of-type{
-display:none !important;
 }
 
 /* RIGHT ICON */
@@ -184,6 +173,11 @@ margin-top:10px;
 button:hover{
 transform:translateY(-2px);
 box-shadow:0 10px 25px rgba(44,123,229,0.3);
+}
+
+button:disabled{
+opacity:0.6;
+cursor:not-allowed;
 }
 
 /* LOGIN LINK */
@@ -288,10 +282,9 @@ font-size:12px;
 .weak{ color:#e74c3c; }
 .medium{ color:#f39c12; }
 .strong{ color:#27ae60; }
-
-/* MATCH */
 .match{ color:#27ae60; }
 .not-match{ color:#e74c3c; }
+.error-message{ color:#e74c3c; font-size:12px; margin-top:5px; display:block; }
 </style>
 
 </head>
@@ -304,7 +297,7 @@ font-size:12px;
 <div class="left-panel">
 <div class="left-content">
 
-<img src="/images/logo.png" class="psu-logo">
+<img src="/images/logo.png" class="psu-logo" alt="PSU Logo">
 
 <h1>PPMMIS</h1>
 <p>Physical Plant Maintenance and Management Information System</p>
@@ -328,27 +321,29 @@ font-size:12px;
 
 <!-- FULL NAME -->
 <div class="input-group">
-    <input type="text" name="name" required placeholder=" ">
+    <input type="text" name="name" id="name" required placeholder=" " value="{{ old('name') }}">
     <label>Full Name</label>
 </div>
+@error('name')
+    <small class="error-message">{{ $message }}</small>
+@enderror
 
-<!-- EMAIL -->
+<!-- EMAIL with PSU Domain Restriction -->
 <div class="input-group">
-    <input type="email" name="email" required placeholder=" ">
-    <label>Email</label>
+    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}" pattern=".*@psu\.edu\.ph$" title="Only @psu.edu.ph email addresses are allowed">
+    <label>Email (@psu.edu.ph)</label>
 </div>
+<small id="emailError" style="color:#e74c3c; font-size:12px; display:none;">Only @psu.edu.ph email addresses are allowed</small>
+@error('email')
+    <small class="error-message">{{ $message }}</small>
+@enderror
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
     <input type="password" name="password" id="password" required placeholder=" ">
     <label>Password</label>
-
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
-
-    <!-- STRENGTH TEXT -->
     <small id="strengthText"></small>
-
-    <!-- STRENGTH BAR -->
     <div class="strength-bar">
         <div id="strengthFill"></div>
     </div>
@@ -358,8 +353,6 @@ font-size:12px;
 <div class="input-group password-wrapper">
     <input type="password" name="password_confirmation" id="confirmPassword" required placeholder=" ">
     <label>Confirm Password</label>
-
-    <!-- MATCH MESSAGE -->
     <small id="matchText"></small>
 </div>
 
@@ -385,12 +378,31 @@ document.addEventListener("DOMContentLoaded", function(){
 
 const password = document.getElementById("password");
 const confirmPassword = document.getElementById("confirmPassword");
+const email = document.getElementById("email");
 const toggle = document.getElementById("togglePassword");
 
 const strengthText = document.getElementById("strengthText");
 const strengthFill = document.getElementById("strengthFill");
 const matchText = document.getElementById("matchText");
+const emailError = document.getElementById("emailError");
 const btn = document.getElementById("registerBtn");
+
+/* EMAIL VALIDATION - Only @psu.edu.ph */
+function validateEmail() {
+    const emailValue = email.value;
+    if (emailValue && !emailValue.endsWith('@psu.edu.ph')) {
+        emailError.style.display = 'block';
+        email.setCustomValidity('Only @psu.edu.ph email addresses are allowed');
+        return false;
+    } else {
+        emailError.style.display = 'none';
+        email.setCustomValidity('');
+        return true;
+    }
+}
+
+email.addEventListener('input', validateEmail);
+email.addEventListener('blur', validateEmail);
 
 /* PASSWORD TOGGLE */
 password.addEventListener("input", function(){
@@ -413,7 +425,7 @@ password.addEventListener("input", function(){
 let val = password.value;
 let strength = 0;
 
-if(val.length >= 6) strength++;
+if(val.length >= 8) strength++;
 if(/[A-Z]/.test(val)) strength++;
 if(/[0-9]/.test(val)) strength++;
 if(/[@$!%*?&]/.test(val)) strength++;
@@ -427,13 +439,13 @@ if(val.length === 0){
 if(strength <= 1){
     strengthFill.style.width = "33%";
     strengthFill.style.background = "#e74c3c";
-    strengthText.innerText = "Weak password";
+    strengthText.innerText = "Weak password - Use 8+ chars, uppercase, numbers";
     strengthText.className = "weak";
 }
 else if(strength == 2){
     strengthFill.style.width = "66%";
     strengthFill.style.background = "#f39c12";
-    strengthText.innerText = "Medium strength";
+    strengthText.innerText = "Medium strength - Add uppercase or numbers";
     strengthText.className = "medium";
 }
 else{
@@ -445,25 +457,52 @@ else{
 
 });
 
-/* PASSWORD MATCH */
+/* PASSWORD MATCH & BUTTON STATE */
+function validateForm() {
+    let isValid = true;
+    
+    // Email validation
+    if (!validateEmail()) {
+        isValid = false;
+    }
+    
+    // Password match validation
+    if (confirmPassword.value !== "" && confirmPassword.value !== password.value) {
+        isValid = false;
+    }
+    
+    // Password length validation
+    if (password.value.length > 0 && password.value.length < 8) {
+        isValid = false;
+    }
+    
+    btn.disabled = !isValid;
+}
+
 confirmPassword.addEventListener("input", function(){
 
 if(confirmPassword.value === ""){
     matchText.innerText = "";
+    validateForm();
     return;
 }
 
 if(confirmPassword.value === password.value){
     matchText.innerText = "Passwords match ✔";
     matchText.className = "match";
-    btn.disabled = false;
+    validateForm();
 } else {
     matchText.innerText = "Passwords do not match ❌";
     matchText.className = "not-match";
-    btn.disabled = true;
+    validateForm();
 }
 
 });
+
+password.addEventListener("input", validateForm);
+
+// Initial validation
+validateForm();
 
 });
 </script>
