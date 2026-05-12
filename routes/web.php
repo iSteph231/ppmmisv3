@@ -151,25 +151,3 @@ Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showRese
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 
-Route::get('/debug-maintenance', function() {
-    try {
-        $controller = new App\Http\Controllers\ReportController();
-        $request = new \Illuminate\Http\Request();
-        return $controller->maintenanceReport($request);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ]);
-    }
-});
-
-Route::get('/check-view', function() {
-    $viewPath = resource_path('views/reports/maintenance.blade.php');
-    return [
-        'exists' => file_exists($viewPath),
-        'path' => $viewPath,
-        'all_views' => array_values(array_diff(scandir(resource_path('views/reports')), ['.', '..']))
-    ];
-});

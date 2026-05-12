@@ -94,7 +94,7 @@
                             @endif
                         </td>
                         <td style="padding: 1rem; text-align: center;">
-                            <a href="{{ route('maintenance.show', $schedule->id) }}" style="color: #3b82f6; text-decoration: none;">View</a>
+                            <a href="{{ route('maintenance.edit', $schedule->id) }}" style="color: #3b82f6; text-decoration: none;">View</a>
                         </td>
                     </tr>
                     @empty
