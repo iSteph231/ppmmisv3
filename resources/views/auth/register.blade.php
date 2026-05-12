@@ -92,7 +92,7 @@ margin-bottom:20px;
 }
 
 /* INPUT */
-.input-group input, .input-group select{
+.input-group input{
 width:100%;
 padding:18px 16px 10px 16px;
 border-radius:12px;
@@ -119,16 +119,14 @@ pointer-events:none;
 
 /* FLOAT EFFECT */
 .input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label,
-.input-group select:focus + label,
-.input-group select:not(:placeholder-shown) + label{
+.input-group input:not(:placeholder-shown) + label{
 top:-8px;
 font-size:12px;
 color:#2c7be5;
 }
 
 /* INPUT FOCUS */
-.input-group input:focus, .input-group select:focus{
+.input-group input:focus{
 border-color:#2c7be5;
 box-shadow:0 0 0 3px rgba(44,123,229,0.15);
 }
@@ -285,6 +283,19 @@ font-size:12px;
 .match{ color:#27ae60; }
 .not-match{ color:#e74c3c; }
 .error-message{ color:#e74c3c; font-size:12px; margin-top:5px; display:block; }
+
+/* Email error specific */
+.email-error-container {
+    margin-top: -15px;
+    margin-bottom: 15px;
+}
+
+.email-error {
+    color: #e74c3c;
+    font-size: 12px;
+    display: none;
+    margin-top: 5px;
+}
 </style>
 
 </head>
@@ -328,14 +339,16 @@ font-size:12px;
     <small class="error-message">{{ $message }}</small>
 @enderror
 
-<!-- EMAIL with PSU Domain Restriction -->
+<!-- EMAIL -->
 <div class="input-group">
-    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}" pattern=".*@psu\.edu\.ph$" title="Only @psu.edu.ph email addresses are allowed">
+    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
     <label>Email (@psu.edu.ph)</label>
 </div>
-<small id="emailError" style="color:#e74c3c; font-size:12px; display:none;">Only @psu.edu.ph email addresses are allowed</small>
+<div class="email-error-container">
+    <small class="email-error" id="emailError">❌ Only @psu.edu.ph email addresses are allowed</small>
+</div>
 @error('email')
-    <small class="error-message">{{ $message }}</small>
+    <small class="error-message">❌ {{ $message }}</small>
 @enderror
 
 <!-- PASSWORD -->
@@ -372,7 +385,7 @@ Already have an account?
 
 </div>
 
-<!-- PASSWORD + VALIDATION SCRIPT -->
+<!-- SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
@@ -466,6 +479,11 @@ function validateForm() {
         isValid = false;
     }
     
+    // Check if email is empty
+    if (email.value === "") {
+        isValid = false;
+    }
+    
     // Password match validation
     if (confirmPassword.value !== "" && confirmPassword.value !== password.value) {
         isValid = false;
@@ -473,6 +491,11 @@ function validateForm() {
     
     // Password length validation
     if (password.value.length > 0 && password.value.length < 8) {
+        isValid = false;
+    }
+    
+    // Check if passwords are empty
+    if (password.value === "" || confirmPassword.value === "") {
         isValid = false;
     }
     
@@ -488,11 +511,11 @@ if(confirmPassword.value === ""){
 }
 
 if(confirmPassword.value === password.value){
-    matchText.innerText = "Passwords match ✔";
+    matchText.innerText = "✓ Passwords match";
     matchText.className = "match";
     validateForm();
 } else {
-    matchText.innerText = "Passwords do not match ❌";
+    matchText.innerText = "✗ Passwords do not match";
     matchText.className = "not-match";
     validateForm();
 }
@@ -500,6 +523,7 @@ if(confirmPassword.value === password.value){
 });
 
 password.addEventListener("input", validateForm);
+email.addEventListener("input", validateForm);
 
 // Initial validation
 validateForm();

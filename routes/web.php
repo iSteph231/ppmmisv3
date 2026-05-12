@@ -11,6 +11,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\InspectionReportController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -141,3 +143,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inspections/{id}/complete', [InspectionReportController::class, 'completeForm'])->name('inspections.complete-form');
     Route::post('/inspections/{id}/complete', [InspectionReportController::class, 'complete'])->name('inspections.complete');
 });
+
+// Password Reset Routes
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');

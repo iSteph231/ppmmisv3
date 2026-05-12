@@ -82,10 +82,78 @@ font-size:32px;
 margin-bottom:25px;
 }
 
-/* ========================= */
-/* FLOATING INPUT SYSTEM */
-/* ========================= */
+/* ALERT MESSAGES */
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
 
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.alert i {
+    font-size: 18px;
+}
+
+.close-alert {
+    margin-left: auto;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+
+.close-alert:hover {
+    opacity: 1;
+}
+
+/* FLOATING INPUT SYSTEM */
 .input-group{
 position:relative;
 margin-bottom:22px;
@@ -94,7 +162,7 @@ margin-bottom:22px;
 /* INPUT */
 .input-group input{
 width:100%;
-padding:18px 45px 12px 14px; /* space for eye icon */
+padding:18px 45px 12px 14px;
 border-radius:12px;
 border:1px solid #ddd;
 font-size:14px;
@@ -131,20 +199,7 @@ border-color:#2c7be5;
 box-shadow:0 0 0 3px rgba(44,123,229,0.15);
 }
 
-/* VALID */
-.input-group input:valid{
-border-color:#27ae60;
-}
-
-/* INVALID */
-.input-group input:invalid:focus{
-border-color:#e74c3c;
-}
-
-/* ========================= */
-/* PASSWORD + EYE ICON */
-/* ========================= */
-
+/* PASSWORD WRAPPER */
 .password-wrapper{
 position:relative;
 }
@@ -166,10 +221,7 @@ transition:0.2s;
 color:#2c7be5;
 }
 
-/* ========================= */
 /* HIDE DEFAULT PASSWORD ICON */
-/* ========================= */
-
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear{
 display:none;
@@ -179,10 +231,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button{
 display:none !important;
 }
 
-/* ========================= */
 /* OPTIONS */
-/* ========================= */
-
 .options{
 display:flex;
 justify-content:space-between;
@@ -195,16 +244,20 @@ font-size:14px;
 display:flex;
 align-items:center;
 gap:8px;
+cursor:pointer;
 }
 
 .forgot{
 cursor:pointer;
+color:#2c7be5;
+text-decoration:none;
 }
 
-/* ========================= */
-/* BUTTON */
-/* ========================= */
+.forgot:hover{
+text-decoration:underline;
+}
 
+/* BUTTON */
 button{
 width:100%;
 padding:15px;
@@ -223,10 +276,7 @@ transform:translateY(-2px);
 box-shadow:0 10px 25px rgba(44,123,229,0.3);
 }
 
-/* ========================= */
 /* REGISTER */
-/* ========================= */
-
 .register-section{
 text-align:center;
 margin-top:20px;
@@ -254,10 +304,7 @@ transition:0.3s;
 background:#ddd;
 }
 
-/* ========================= */
 /* BUBBLES */
-/* ========================= */
-
 .bubbles{
 position:absolute;
 width:100%;
@@ -317,10 +364,7 @@ display:block;
 margin:0 auto 20px auto;
 }
 
-/* ========================= */
 /* RESPONSIVE */
-/* ========================= */
-
 @media(max-width:768px){
 
 .container{
@@ -351,7 +395,7 @@ padding:20px;
 <div class="left-panel">
     <div class="left-content">
 
-        <img src="/images/logo.png" class="psu-logo">
+        <img src="/images/logo.png" class="psu-logo" alt="PSU Logo">
 
         <h1>PPMMIS</h1>
         <p>Physical Plant Maintenance and Management Information System</p>
@@ -373,31 +417,61 @@ padding:20px;
 
 <h2>Login</h2>
 
+<!-- SUCCESS MESSAGES -->
+@if(session('success'))
+    <div class="alert alert-success" id="alert-message">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ session('success') }}</span>
+        <span class="close-alert" onclick="this.parentElement.remove()">&times;</span>
+    </div>
+@endif
+
+<!-- ERROR MESSAGES -->
+@if(session('error'))
+    <div class="alert alert-error" id="alert-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ session('error') }}</span>
+        <span class="close-alert" onclick="this.parentElement.remove()">&times;</span>
+    </div>
+@endif
+
+<!-- VALIDATION ERRORS -->
+@if($errors->any())
+    <div class="alert alert-error" id="alert-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>
+            @foreach($errors->all() as $error)
+                {{ $error }}<br>
+            @endforeach
+        </span>
+        <span class="close-alert" onclick="this.parentElement.remove()">&times;</span>
+    </div>
+@endif
+
 <form method="POST" action="{{ route('login') }}">
 @csrf
 
 <!-- EMAIL -->
 <div class="input-group">
-    <input type="email" name="email" required placeholder=" ">
-    <label>Email</label>
+    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
+    <label>Email (@psu.edu.ph)</label>
 </div>
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
     <input type="password" name="password" id="password" required placeholder=" ">
     <label>Password</label>
-
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
 </div>
 
 <!-- OPTIONS -->
 <div class="options">
     <label class="remember">
-        <input type="checkbox">
+        <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
         <span>Remember me</span>
     </label>
 
-    <a class="forgot" href="#">Forgot Password?</a>
+    <a class="forgot" href="{{ route('password.request') }}">Forgot Password?</a>
 </div>
 
 <!-- BUTTON -->
@@ -438,6 +512,19 @@ toggle.addEventListener("click", function(){
         toggle.classList.replace("fa-eye-slash","fa-eye");
     }
 
+});
+
+/* AUTO-HIDE ALERTS AFTER 5 SECONDS */
+const alerts = document.querySelectorAll('.alert');
+alerts.forEach(alert => {
+    setTimeout(() => {
+        if (alert) {
+            alert.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                if (alert) alert.remove();
+            }, 300);
+        }
+    }, 5000);
 });
 
 });

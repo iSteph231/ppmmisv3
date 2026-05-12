@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -13,8 +14,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        // Remove or comment out this line if it's causing issues
-        // $this->middleware('guest')->except('logout');
+        //$this->middleware('guest')->except('logout');
     }
 
     /**
@@ -35,20 +35,35 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
+        // Check if user exists
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            return back()->with('error', '❌ No account found with this email address.')
+                         ->withInput($request->only('email', 'remember'));
+        }
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            // Redirect based on role
-            if (Auth::user()->role === 'admin') {
-                return redirect()->intended('/dashboard');
+            // Check if user is active
+            if (Auth::user()->is_active != true) {
+                Auth::logout();
+                return back()->with('error', '⚠️ Your account is deactivated. Please contact the administrator.')
+                             ->withInput($request->only('email', 'remember'));
             }
             
-            return redirect()->intended('/dashboard');
+            // Redirect based on role
+            if (Auth::user()->role === 'admin') {
+                return redirect()->intended('/dashboard')->with('success', 'Welcome back, ' . Auth::user()->name . '!');
+            }
+            
+            return redirect()->intended('/dashboard')->with('success', 'Welcome back, ' . Auth::user()->name . '!');
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        // Login failed - incorrect password
+        return back()->with('error', '❌ Incorrect password. Please try again.')
+                     ->withInput($request->only('email', 'remember'));
     }
 
     /**
@@ -60,6 +75,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/');
+        return redirect('/login')->with('success', 'You have been logged out successfully.');
     }
 }
