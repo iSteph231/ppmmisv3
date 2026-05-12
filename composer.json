@@ -71,11 +71,6 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ],
-        "post-install-cmd": [
-            "php artisan view:clear",
-            "php artisan config:clear",
-            "php artisan cache:clear"
         ]
         
     },
