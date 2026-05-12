@@ -136,14 +136,14 @@ class ReportController extends Controller
     {
         $query = MaintenanceSchedule::query();
         
-        if ($request->filled('campus') && $request->campus !== 'all') {
-            $query->where('campus', $request->campus);
-        }
+        // REMOVED: campus filter - column no longer exists in database
         
+        // Keep status filter
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
         
+        // Keep date filters
         if ($request->filled('date_from')) {
             $query->whereDate('scheduled_date', '>=', $request->date_from);
         }
@@ -154,7 +154,19 @@ class ReportController extends Controller
         
         $maintenanceSchedules = $query->orderBy('scheduled_date', 'desc')->paginate(20);
         
-        return view('reports.maintenance', compact('maintenanceSchedules'));
+        // Add statistics for the view
+        $totalSchedules = MaintenanceSchedule::count();
+        $pendingSchedules = MaintenanceSchedule::where('status', 'pending')->count();
+        $completedSchedules = MaintenanceSchedule::where('status', 'completed')->count();
+        $inProgressSchedules = MaintenanceSchedule::where('status', 'in_progress')->count();
+        
+        return view('reports.maintenance', compact(
+            'maintenanceSchedules',
+            'totalSchedules',
+            'pendingSchedules',
+            'completedSchedules',
+            'inProgressSchedules'
+        ));
     }
     
     /**
