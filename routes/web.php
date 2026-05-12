@@ -52,23 +52,21 @@ Route::middleware(['auth'])->group(function () {
     // Update status route (specific)
     Route::post('/work-requests/{workRequest}/update-status', [WorkRequestController::class, 'updateStatus'])->name('work-requests.update-status');
     
-    // Export single PDF (specific pattern with {id})
-    Route::get('/work-requests/{id}/export-pdf', [WorkRequestController::class, 'exportSinglePDF'])->name('work-requests.export-single-pdf');
     
     // Resource route (generic - MUST be LAST)
     Route::resource('work-requests', WorkRequestController::class);
     
     });
     
-    // Maintenance Records
-    Route::middleware(['auth'])->group(function () {
-    Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
-    Route::get('/maintenance/create', [MaintenanceController::class, 'create'])->name('maintenance.create');
-    Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('maintenance.store');
-    Route::get('/maintenance/{id}/edit', [MaintenanceController::class, 'edit'])->name('maintenance.edit');
-    Route::put('/maintenance/{id}', [MaintenanceController::class, 'update'])->name('maintenance.update');
-    Route::delete('/maintenance/{id}', [MaintenanceController::class, 'destroy'])->name('maintenance.destroy');
-    
+    Route::prefix('maintenance')->name('maintenance.')->middleware('auth')->group(function () {
+    Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+    Route::get('/create', [MaintenanceController::class, 'create'])->name('create');
+    Route::post('/', [MaintenanceController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [MaintenanceController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [MaintenanceController::class, 'update'])->name('update');
+    Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
+    Route::put('/{id}/complete', [MaintenanceController::class, 'complete'])->name('complete');
+    Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');  // ADD THIS LINE
 });
     
     // Report Routes

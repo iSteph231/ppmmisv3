@@ -51,14 +51,7 @@
                         @enderror
                     </div>
 
-                    {{-- Remarks --}}
-                    <div style="grid-column: span 2;">
-                        <label for="remarks" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">REMARKS</label>
-                        <textarea name="remarks" id="remarks" rows="2" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">{{ old('remarks') }}</textarea>
-                        @error('remarks')
-                            <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    {{-- REMARKS FIELD REMOVED --}}
                 </div>
 
                 {{-- Buttons --}}

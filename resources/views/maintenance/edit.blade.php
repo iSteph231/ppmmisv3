@@ -52,14 +52,7 @@
                         @enderror
                     </div>
 
-                    {{-- Remarks --}}
-                    <div style="grid-column: span 2;">
-                        <label for="remarks" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">REMARKS</label>
-                        <textarea name="remarks" id="remarks" rows="2" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">{{ old('remarks', $schedule->remarks) }}</textarea>
-                        @error('remarks')
-                            <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    {{-- Remarks field removed from main form --}}
                 </div>
 
                 {{-- Buttons --}}
@@ -67,6 +60,17 @@
                     <button type="submit" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">
                         Update Schedule
                     </button>
+                    
+                    @if($schedule->status !== 'completed')
+                    <button type="button" onclick="showCompleteModal()" style="background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">
+                        ✓ Mark as Complete
+                    </button>
+                    @else
+                    <span style="background: #d1fae5; color: #065f46; padding: 0.5rem 1rem; border-radius: 0.5rem;">
+                        ✓ Already Completed
+                    </span>
+                    @endif
+                    
                     <a href="{{ route('maintenance.index') }}" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
                         Cancel
                     </a>
@@ -75,4 +79,45 @@
         </div>
     </div>
 </div>
+
+{{-- Complete Modal with Remarks --}}
+<div id="completeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; border-radius: 1rem; width: 500px; max-width: 90%; padding: 1.5rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Complete Maintenance</h3>
+        <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">This action will mark the maintenance schedule as completed.</p>
+        
+        <form method="POST" action="{{ route('maintenance.complete', $schedule->id) }}">
+            @csrf
+            @method('PUT')
+            
+            <div style="margin-bottom: 1rem;">
+                <label for="completion_notes" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">REMARKS / COMPLETION NOTES</label>
+                <textarea name="completion_notes" id="completion_notes" rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: inherit;" placeholder="Enter completion details, findings, or additional notes..."></textarea>
+                <small style="display: block; color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">Optional: Add any remarks about the completed maintenance</small>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="closeCompleteModal()" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">Cancel</button>
+                <button type="submit" style="background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">Confirm Complete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showCompleteModal() {
+    document.getElementById('completeModal').style.display = 'flex';
+}
+
+function closeCompleteModal() {
+    document.getElementById('completeModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('completeModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCompleteModal();
+    }
+});
+</script>
 @endsection

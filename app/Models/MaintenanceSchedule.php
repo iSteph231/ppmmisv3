@@ -18,10 +18,14 @@ class MaintenanceSchedule extends Model
         'engineer_in_charge',
         'remarks',
         'month_year',
+        'status',
+        'completed_at',
+        'completion_notes',
     ];
 
     protected $casts = [
         'scheduled_date' => 'date',
+        'completed_at' => 'datetime',
     ];
 
     /**

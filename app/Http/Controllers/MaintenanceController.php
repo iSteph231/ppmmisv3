@@ -273,14 +273,17 @@ class MaintenanceController extends Controller
             abort(403, 'Unauthorized. Only Administrators or the assigned Maintenance In-Charge can mark this as completed.');
         }
         
+        // Validate the request
         $validated = $request->validate([
-            'completion_notes' => 'nullable|string',
+            'completion_notes' => 'nullable|string|max:1000',
         ]);
         
+        // Update the schedule
         $schedule->update([
             'status' => 'completed',
             'completed_at' => now(),
             'completion_notes' => $validated['completion_notes'] ?? null,
+            'remarks' => $validated['completion_notes'] ?? $schedule->remarks,
         ]);
         
         // Notify admins about completion
@@ -321,6 +324,15 @@ class MaintenanceController extends Controller
         }
         
         return redirect()->route('maintenance.index')
-            ->with('success', 'Maintenance marked as completed.');
+            ->with('success', 'Maintenance marked as completed successfully.');
+    }
+    
+    /**
+     * Display the specified maintenance schedule.
+     */
+    public function show($id)
+    {
+        $schedule = MaintenanceSchedule::findOrFail($id);
+        return view('maintenance.show', compact('schedule'));
     }
 }
