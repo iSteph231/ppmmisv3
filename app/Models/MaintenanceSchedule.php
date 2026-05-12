@@ -13,7 +13,6 @@ class MaintenanceSchedule extends Model
 
     protected $fillable = [
         'scheduled_date',
-        'campus',
         'activity',
         'maintenance_in_charge',
         'engineer_in_charge',

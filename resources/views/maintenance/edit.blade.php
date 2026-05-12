@@ -25,26 +25,6 @@
                         @enderror
                     </div>
 
-                    {{-- Campus --}}
-                    <div>
-                        <label for="campus" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">CAMPUS *</label>
-                        <select name="campus" id="campus" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" required>
-                            <option value="">Select Campus</option>
-                            <option value="Asingan" {{ old('campus', $schedule->campus) == 'Asingan' ? 'selected' : '' }}>Asingan Campus</option>
-                            <option value="Lingayen" {{ old('campus', $schedule->campus) == 'Lingayen' ? 'selected' : '' }}>Lingayen Campus</option>
-                            <option value="Urdaneta" {{ old('campus', $schedule->campus) == 'Urdaneta' ? 'selected' : '' }}>Urdaneta Campus</option>
-                            <option value="Binmaley" {{ old('campus', $schedule->campus) == 'Binmaley' ? 'selected' : '' }}>Binmaley Campus</option>
-                            <option value="Bayambang" {{ old('campus', $schedule->campus) == 'Bayambang' ? 'selected' : '' }}>Bayambang Campus</option>
-                            <option value="Sta. Maria" {{ old('campus', $schedule->campus) == 'Sta. Maria' ? 'selected' : '' }}>Sta. Maria Campus</option>
-                            <option value="Alaminos" {{ old('campus', $schedule->campus) == 'Alaminos' ? 'selected' : '' }}>Alaminos Campus</option>
-                            <option value="Infanta" {{ old('campus', $schedule->campus) == 'Infanta' ? 'selected' : '' }}>Infanta Campus</option>
-                            <option value="San Carlos" {{ old('campus', $schedule->campus) == 'San Carlos' ? 'selected' : '' }}>San Carlos Campus</option>
-                        </select>
-                        @error('campus')
-                            <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     {{-- Preventive Maintenance Activity --}}
                     <div style="grid-column: span 2;">
                         <label for="activity" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">PREVENTIVE MAINTENANCE ACTIVITY *</label>

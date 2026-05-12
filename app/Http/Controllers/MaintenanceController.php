@@ -16,6 +16,12 @@ class MaintenanceController extends Controller
      */
     public function index(Request $request)
     {
+        // Check if user is admin or personnel
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin', 'personnel'])) {
+            abort(403, 'Unauthorized access. Only Admin and Personnel can access maintenance schedules.');
+        }
+        
         $query = MaintenanceSchedule::query();
         
         // Filter by month/year
@@ -26,11 +32,6 @@ class MaintenanceController extends Controller
                   ->whereMonth('scheduled_date', substr($monthYear, 5, 2));
         }
         
-        // Filter by campus
-        if ($request->filled('campus') && $request->campus !== 'all') {
-            $query->where('campus', $request->campus);
-        }
-        
         $maintenanceSchedules = $query->orderBy('scheduled_date', 'desc')->paginate(10);
         
         return view('maintenance.index', compact('maintenanceSchedules'));
@@ -38,20 +39,31 @@ class MaintenanceController extends Controller
     
     /**
      * Show form to create new schedule.
+     * Only Admin can create.
      */
     public function create()
     {
+        // Only admin can create
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Only Administrators can create maintenance schedules.');
+        }
+        
         return view('maintenance.create');
     }
     
     /**
      * Store a new schedule.
+     * Only Admin can store.
      */
     public function store(Request $request)
     {
+        // Only admin can store
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Only Administrators can create maintenance schedules.');
+        }
+        
         $validated = $request->validate([
             'scheduled_date' => 'required|date',
-            'campus' => 'required|string',
             'activity' => 'required|string',
             'maintenance_in_charge' => 'nullable|string',
             'engineer_in_charge' => 'nullable|string',
@@ -59,12 +71,9 @@ class MaintenanceController extends Controller
         ]);
         
         $validated['month_year'] = Carbon::parse($validated['scheduled_date'])->format('Y-m');
+        $validated['status'] = 'pending';
         
         $maintenanceSchedule = MaintenanceSchedule::create($validated);
-        
-        // ==============================================
-        // CREATE NOTIFICATIONS FOR MAINTENANCE SCHEDULE
-        // ==============================================
         
         // Get all admin users
         $admins = User::where('role', 'admin')->get();
@@ -77,8 +86,8 @@ class MaintenanceController extends Controller
             Notification::create([
                 'user_id' => $admin->id,
                 'title' => 'New Preventive Maintenance Schedule',
-                'message' => "A new preventive maintenance schedule has been added: {$validated['activity']} on {$formattedDate} at {$validated['campus']} campus.",
-                'detail' => "Date: {$formattedDate}\nCampus: {$validated['campus']}\nActivity: {$validated['activity']}\nIn-Charge: " . ($validated['maintenance_in_charge'] ?? 'Not assigned') . "\nEngineer: " . ($validated['engineer_in_charge'] ?? 'Not assigned'),
+                'message' => "A new preventive maintenance schedule has been added: {$validated['activity']} on {$formattedDate}.",
+                'detail' => "Date: {$formattedDate}\nActivity: {$validated['activity']}\nIn-Charge: " . ($validated['maintenance_in_charge'] ?? 'Not assigned') . "\nEngineer: " . ($validated['engineer_in_charge'] ?? 'Not assigned'),
                 'type' => 'maintenance',
                 'is_read' => false,
                 'related_id' => $maintenanceSchedule->id,
@@ -97,7 +106,7 @@ class MaintenanceController extends Controller
                     'user_id' => $p->id,
                     'title' => 'Maintenance Task Assigned',
                     'message' => "You have been assigned as Maintenance In-Charge for: {$validated['activity']} on {$formattedDate}.",
-                    'detail' => "Date: {$formattedDate}\nCampus: {$validated['campus']}\nActivity: {$validated['activity']}\nYour Role: Maintenance In-Charge",
+                    'detail' => "Date: {$formattedDate}\nActivity: {$validated['activity']}\nYour Role: Maintenance In-Charge",
                     'type' => 'assignment',
                     'is_read' => false,
                     'related_id' => $maintenanceSchedule->id,
@@ -112,23 +121,34 @@ class MaintenanceController extends Controller
     
     /**
      * Show form to edit schedule.
+     * Only Admin can edit.
      */
     public function edit($id)
     {
+        // Only admin can edit
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Only Administrators can edit maintenance schedules.');
+        }
+        
         $schedule = MaintenanceSchedule::findOrFail($id);
         return view('maintenance.edit', compact('schedule'));
     }
     
     /**
      * Update schedule.
+     * Only Admin can update.
      */
     public function update(Request $request, $id)
     {
+        // Only admin can update
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Only Administrators can update maintenance schedules.');
+        }
+        
         $schedule = MaintenanceSchedule::findOrFail($id);
         
         $validated = $request->validate([
             'scheduled_date' => 'required|date',
-            'campus' => 'required|string',
             'activity' => 'required|string',
             'maintenance_in_charge' => 'nullable|string',
             'engineer_in_charge' => 'nullable|string',
@@ -140,10 +160,7 @@ class MaintenanceController extends Controller
         $oldData = $schedule->getOriginal();
         $schedule->update($validated);
         
-        // ==============================================
-        // CREATE NOTIFICATIONS FOR UPDATES
-        // ==============================================
-        
+        // Get all admin users
         $admins = User::where('role', 'admin')->get();
         $formattedDate = Carbon::parse($validated['scheduled_date'])->format('F d, Y');
         
@@ -151,9 +168,6 @@ class MaintenanceController extends Controller
         $changes = [];
         if (isset($oldData['scheduled_date']) && $oldData['scheduled_date'] != $validated['scheduled_date']) {
             $changes[] = "Date: " . Carbon::parse($oldData['scheduled_date'])->format('F d, Y') . " → {$formattedDate}";
-        }
-        if (($oldData['campus'] ?? '') != $validated['campus']) {
-            $changes[] = "Campus: {$oldData['campus']} → {$validated['campus']}";
         }
         if (($oldData['activity'] ?? '') != $validated['activity']) {
             $changes[] = "Activity: {$oldData['activity']} → {$validated['activity']}";
@@ -191,7 +205,7 @@ class MaintenanceController extends Controller
                     'user_id' => $p->id,
                     'title' => 'Maintenance Task Reassigned',
                     'message' => "You have been assigned as the new Maintenance In-Charge for: {$validated['activity']} on {$formattedDate}.",
-                    'detail' => "Date: {$formattedDate}\nCampus: {$validated['campus']}\nActivity: {$validated['activity']}\nYour Role: Maintenance In-Charge",
+                    'detail' => "Date: {$formattedDate}\nActivity: {$validated['activity']}\nYour Role: Maintenance In-Charge",
                     'type' => 'assignment',
                     'is_read' => false,
                     'related_id' => $schedule->id,
@@ -206,9 +220,15 @@ class MaintenanceController extends Controller
     
     /**
      * Delete schedule.
+     * Only Admin can delete.
      */
     public function destroy($id)
     {
+        // Only admin can delete
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Only Administrators can delete maintenance schedules.');
+        }
+        
         $schedule = MaintenanceSchedule::findOrFail($id);
         
         // Get admins to notify about deletion
@@ -219,8 +239,8 @@ class MaintenanceController extends Controller
             Notification::create([
                 'user_id' => $admin->id,
                 'title' => 'Maintenance Schedule Removed',
-                'message' => "A preventive maintenance schedule has been removed: {$schedule->activity} on {$formattedDate} at {$schedule->campus} campus.",
-                'detail' => "Date: {$formattedDate}\nCampus: {$schedule->campus}\nActivity: {$schedule->activity}\nReason: Schedule deleted from system",
+                'message' => "A preventive maintenance schedule has been removed: {$schedule->activity} on {$formattedDate}.",
+                'detail' => "Date: {$formattedDate}\nActivity: {$schedule->activity}\nReason: Schedule deleted from system",
                 'type' => 'maintenance',
                 'is_read' => false,
                 'related_id' => $schedule->id,
@@ -236,10 +256,22 @@ class MaintenanceController extends Controller
     
     /**
      * Mark maintenance as completed.
+     * Both Admin and assigned Personnel can mark as completed.
      */
     public function complete($id, Request $request)
     {
         $schedule = MaintenanceSchedule::findOrFail($id);
+        $user = Auth::user();
+        
+        // Check if user is admin OR the assigned maintenance in-charge
+        $isAuthorized = ($user->role === 'admin') || 
+                        ($user->role === 'personnel' && 
+                         $schedule->maintenance_in_charge && 
+                         stripos($schedule->maintenance_in_charge, $user->name) !== false);
+        
+        if (!$isAuthorized) {
+            abort(403, 'Unauthorized. Only Administrators or the assigned Maintenance In-Charge can mark this as completed.');
+        }
         
         $validated = $request->validate([
             'completion_notes' => 'nullable|string',
@@ -259,8 +291,8 @@ class MaintenanceController extends Controller
             Notification::create([
                 'user_id' => $admin->id,
                 'title' => 'Maintenance Completed',
-                'message' => "Preventive maintenance has been completed: {$schedule->activity} on {$formattedDate} at {$schedule->campus} campus.",
-                'detail' => "Date: {$formattedDate}\nCampus: {$schedule->campus}\nActivity: {$schedule->activity}\nCompletion Notes: " . ($validated['completion_notes'] ?? 'No additional notes'),
+                'message' => "Preventive maintenance has been completed: {$schedule->activity} on {$formattedDate}.",
+                'detail' => "Date: {$formattedDate}\nActivity: {$schedule->activity}\nCompleted by: {$user->name}\nCompletion Notes: " . ($validated['completion_notes'] ?? 'No additional notes'),
                 'type' => 'success',
                 'is_read' => false,
                 'related_id' => $schedule->id,
@@ -268,8 +300,8 @@ class MaintenanceController extends Controller
             ]);
         }
         
-        // Notify the maintenance in-charge
-        if (!empty($schedule->maintenance_in_charge)) {
+        // Notify the maintenance in-charge (if different from completer)
+        if (!empty($schedule->maintenance_in_charge) && $user->role !== 'personnel') {
             $personnel = User::where('role', 'personnel')
                 ->where('name', 'like', '%' . $schedule->maintenance_in_charge . '%')
                 ->get();
@@ -279,7 +311,7 @@ class MaintenanceController extends Controller
                     'user_id' => $p->id,
                     'title' => 'Task Completed',
                     'message' => "Your assigned maintenance task has been marked as completed: {$schedule->activity} on {$formattedDate}.",
-                    'detail' => "Date: {$formattedDate}\nCampus: {$schedule->campus}\nActivity: {$schedule->activity}\nStatus: Completed",
+                    'detail' => "Date: {$formattedDate}\nActivity: {$schedule->activity}\nStatus: Completed",
                     'type' => 'success',
                     'is_read' => false,
                     'related_id' => $schedule->id,

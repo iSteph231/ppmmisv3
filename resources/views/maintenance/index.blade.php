@@ -16,20 +16,8 @@
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">For the month of</label>
                 <input type="month" name="month" class="search-input" style="padding: 0.5rem 1rem;" value="{{ request('month', now()->format('Y-m')) }}" onchange="this.form.submit()">
             </div>
-            <div>
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Campus</label>
-                <select name="campus" class="search-input" style="padding: 0.5rem 1rem;" onchange="this.form.submit()">
-                    <option value="all" {{ request('campus') == 'all' ? 'selected' : '' }}>All Campuses</option>
-                    <option value="Asingan" {{ request('campus') == 'Asingan' ? 'selected' : '' }}>Asingan Campus</option>
-                    <option value="Lingayen" {{ request('campus') == 'Lingayen' ? 'selected' : '' }}>Lingayen Campus</option>
-                    <option value="Urdaneta" {{ request('campus') == 'Urdaneta' ? 'selected' : '' }}>Urdaneta Campus</option>
-                    <option value="Binmaley" {{ request('campus') == 'Binmaley' ? 'selected' : '' }}>Binmaley Campus</option>
-                    <option value="Bayambang" {{ request('campus') == 'Bayambang' ? 'selected' : '' }}>Bayambang Campus</option>
-                    <option value="Sta. Maria" {{ request('campus') == 'Sta. Maria' ? 'selected' : '' }}>Sta. Maria Campus</option>
-                </select>
-            </div>
             
-            @if(request()->anyFilled(['month', 'campus']))
+            @if(request()->anyFilled(['month']))
                 <a href="{{ route('maintenance.index') }}" class="btn-cancel" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">Clear Filters</a>
             @endif
         </form>
@@ -48,7 +36,6 @@
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <th style="padding: 0.875rem 1rem; text-align: left;">DATE / SCHEDULE</th>
-                        <th style="padding: 0.875rem 1rem; text-align: left;">CAMPUS</th>
                         <th style="padding: 0.875rem 1rem; text-align: left;">PREVENTIVE MAINTENANCE ACTIVITY</th>
                         <th style="padding: 0.875rem 1rem; text-align: left;">MAINTENANCE IN-CHARGE</th>
                         <th style="padding: 0.875rem 1rem; text-align: left;">ENGINEER-IN CHARGE</th>
@@ -62,7 +49,6 @@
                         <td style="padding: 0.875rem 1rem;">
                             {{ $schedule->scheduled_date ? \Carbon\Carbon::parse($schedule->scheduled_date)->format('F d, Y') : 'N/A' }}
                         </td>
-                        <td style="padding: 0.875rem 1rem;">{{ $schedule->campus ?? 'N/A' }}</td>
                         <td style="padding: 0.875rem 1rem;">{{ $schedule->activity ?? 'N/A' }}</td>
                         <td style="padding: 0.875rem 1rem;">{{ $schedule->maintenance_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 0.875rem 1rem;">{{ $schedule->engineer_in_charge ?? 'N/A' }}</td>
@@ -87,7 +73,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: #94a3b8;">
                             <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
                                     <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
