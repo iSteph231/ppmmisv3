@@ -24,6 +24,7 @@ class User extends Authenticatable
         'is_active',
         'department',
         'phone_number',
+        'is_verified',   // Email verification status
     ];
 
     /**
@@ -34,6 +35,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'otp',           // Hide OTP from serialization
     ];
 
     /**
@@ -45,6 +47,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'is_verified' => 'boolean',
     ];
 
     /**
@@ -96,11 +99,92 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if email is verified
+     */
+    public function hasVerifiedEmail()
+    {
+        return $this->is_verified === true;
+    }
+
+    /**
+     * Mark email as verified
+     */
+    public function markEmailAsVerified()
+    {
+        return $this->update([
+            'is_verified' => true,
+            'email_verified_at' => now(),
+            'otp' => null,
+            'otp_expires_at' => null,
+        ]);
+    }
+
+    /**
+     * Generate and set OTP for user
+     */
+    public function generateOTP()
+    {
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        
+        $this->update([
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(10)
+        ]);
+        
+        return $otp;
+    }
+
+    /**
+     * Verify OTP
+     */
+    public function verifyOTP($otp)
+    {
+        return $this->otp === $otp && 
+               $this->otp_expires_at && 
+               $this->otp_expires_at->isFuture();
+    }
+
+    /**
+     * Clear OTP after verification or expiry
+     */
+    public function clearOTP()
+    {
+        return $this->update([
+            'otp' => null,
+            'otp_expires_at' => null,
+        ]);
+    }
+
+    /**
+     * Check if OTP is expired
+     */
+    public function isOTPExpired()
+    {
+        return $this->otp_expires_at && $this->otp_expires_at->isPast();
+    }
+
+    /**
      * Scope for active users
      */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope for verified users
+     */
+    public function scopeVerified($query)
+    {
+        return $query->where('is_verified', true);
+    }
+
+    /**
+     * Scope for unverified users
+     */
+    public function scopeUnverified($query)
+    {
+        return $query->where('is_verified', false);
     }
 
     /**
@@ -125,5 +209,28 @@ class User extends Authenticatable
     public function scopeUsers($query)
     {
         return $query->where('role', 'user');
+    }
+
+    /**
+     * Get full name with department
+     */
+    public function getFullNameWithDepartmentAttribute()
+    {
+        return $this->department ? "{$this->name} ({$this->department})" : $this->name;
+    }
+
+    /**
+     * Boot method for model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Auto-clear expired OTPs when retrieving user
+        static::retrieved(function ($user) {
+            if ($user->otp && $user->isOTPExpired()) {
+                $user->clearOTP();
+            }
+        });
     }
 }

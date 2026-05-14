@@ -13,6 +13,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\Auth\OTPVerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -148,4 +150,8 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-
+// OTP Verification Routes
+Route::get('/verify-otp', [OTPVerificationController::class, 'showVerificationForm'])->name('otp.verification.form');
+Route::post('/send-otp', [OTPVerificationController::class, 'sendOTP'])->name('otp.send');
+Route::post('/verify-otp', [OTPVerificationController::class, 'verifyOTP'])->name('otp.verify');
+Route::post('/resend-otp', [OTPVerificationController::class, 'resendOTP'])->name('otp.resend');
