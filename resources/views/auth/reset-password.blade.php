@@ -9,164 +9,101 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --sidebar-width: 260px;
-            --primary-color: #0d6efd;
-            --sidebar-bg: #1a1e2c;
-            --content-bg: #f0f2f6;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --psu-blue: #003087;
+            --psu-blue-dark: #001f5b;
+            --psu-blue-deep: #071a3f;
+            --psu-blue-soft: #e8efff;
+            --psu-gold: #f5a800;
+            --psu-gold-soft: #fff4cc;
+            --text: #243044;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--content-bg);
-            display: flex;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--sidebar-bg);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            color: white;
-            transition: all 0.3s;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .sidebar-header p {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            margin: 5px 0 0;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar-menu li {
-            padding: 12px 20px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .sidebar-menu li:hover,
-        .sidebar-menu li.active {
-            background: rgba(255,255,255,0.1);
-            border-left: 3px solid var(--primary-color);
-        }
-
-        .sidebar-menu li a {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-menu li a i {
-            width: 20px;
-            font-size: 1.1rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(245, 168, 0, 0.18), transparent 30rem),
+                linear-gradient(135deg, #f8fbff 0%, #f2f5fb 45%, #edf3ff 100%);
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            background: white;
-            border-radius: 12px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-            color: #1a1e2c;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
+            padding: 20px;
+            color: var(--text);
         }
 
-        /* Reset Password Card */
         .reset-card {
+            max-width: 480px;
+            width: 100%;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-            max-width: 550px;
-            margin: 0 auto;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.09);
+            box-shadow: 0 24px 60px rgba(0, 31, 91, 0.18);
             overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card-header {
-            background: linear-gradient(135deg, var(--primary-color), #0b5ed7);
+            background: linear-gradient(135deg, var(--psu-blue) 0%, var(--psu-blue-dark) 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
+            border-bottom: 5px solid var(--psu-gold);
         }
 
-        .card-header h4 {
-            margin: 0 0 8px 0;
-            font-size: 1.5rem;
+        .brand-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            margin-bottom: 14px;
+        }
+
+        .card-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            font-weight: 800;
         }
 
         .card-header p {
             margin: 0;
-            opacity: 0.9;
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.82);
         }
 
         .card-body {
-            padding: 30px;
+            padding: 40px 30px;
+        }
+
+        .email-display {
+            background: var(--psu-blue-soft);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 500;
+            color: var(--psu-blue-deep);
+            word-break: break-all;
+        }
+
+        .email-display i {
+            color: var(--psu-blue);
+            margin-right: 8px;
         }
 
         .form-group {
@@ -177,27 +114,27 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #333;
+            color: var(--psu-blue-deep);
         }
 
         .form-group label i {
             margin-right: 8px;
-            color: var(--primary-color);
+            color: var(--psu-blue);
         }
 
         .form-control {
             width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 1rem;
             transition: all 0.3s;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+            border-color: var(--psu-blue);
+            box-shadow: 0 0 0 3px rgba(0, 48, 135, 0.12);
         }
 
         .form-control.is-invalid {
@@ -212,31 +149,30 @@
 
         .btn-reset {
             width: 100%;
-            padding: 12px;
-            background: var(--primary-color);
-            color: white;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--psu-gold) 0%, #ffd467 100%);
+            color: var(--psu-blue-deep);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             margin-top: 10px;
         }
 
         .btn-reset:hover {
-            background: #0b5ed7;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(184, 117, 0, 0.24);
         }
 
         .info-text {
-            background: #e7f3ff;
+            background: var(--psu-blue-soft);
             padding: 12px;
             border-radius: 8px;
             margin-top: 20px;
             font-size: 0.85rem;
-            color: #004085;
+            color: var(--psu-blue);
             text-align: center;
         }
 
@@ -244,123 +180,81 @@
             margin-right: 8px;
         }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .main-content {
-                margin-left: 0;
-            }
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h3>PPMMIS</h3>
-            <p>Property & Procurement Management</p>
+    <div class="reset-card">
+        <div class="card-header">
+            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
+            <h2>Create New Password</h2>
+            <p>Please enter your new password below</p>
         </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="#">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="active">
-                <a href="#">
-                    <i class="fas fa-key"></i>
-                    <span>Reset Password</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="fas fa-tasks"></i>
-                    <span>Work Requests</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+        <div class="card-body">
+            @if(session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <h2 class="page-title">Reset Password</h2>
-            <div class="user-info">
-                <span>jane@psu.edu.ph</span>
-                <div class="user-avatar">J</div>
+            <div class="email-display">
+                <i class="fas fa-envelope"></i>
+                <span>{{ $email }}</span>
             </div>
-        </div>
 
-        <!-- Reset Password Form -->
-        <div class="reset-card">
-            <div class="card-header">
-                <h4>Create New Password</h4>
-                <p>Please enter your new password below</p>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ route('password.update') }}">
-                    @csrf
-                    
-                    <input type="hidden" name="token" value="{{ $token ?? '' }}">
-                    
-                    <div class="form-group">
-                        <label for="email">
-                            <i class="fas fa-envelope"></i>
-                            Email Address
-                        </label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                               id="email" name="email" value="{{ $email ?? old('email') }}" 
-                               required readonly>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+            <form method="POST" action="{{ route('password.update') }}">
+                @csrf
+                
+                <input type="hidden" name="token" value="{{ $token }}">
+                <input type="hidden" name="email" value="{{ $email }}">
 
-                    <div class="form-group">
-                        <label for="password">
-                            <i class="fas fa-lock"></i>
-                            New Password
-                        </label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                               id="password" name="password" required autocomplete="new-password">
-                        <small class="text-muted">Minimum 8 characters</small>
-                        @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        New Password
+                    </label>
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                           id="password" name="password" required autocomplete="new-password">
+                    <small class="text-muted">Minimum 8 characters</small>
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div class="form-group">
-                        <label for="password_confirmation">
-                            <i class="fas fa-check-circle"></i>
-                            Confirm Password
-                        </label>
-                        <input type="password" class="form-control" 
-                               id="password_confirmation" name="password_confirmation" 
-                               required autocomplete="new-password">
-                    </div>
+                <div class="form-group">
+                    <label for="password_confirmation">
+                        <i class="fas fa-check-circle"></i>
+                        Confirm Password
+                    </label>
+                    <input type="password" class="form-control" 
+                           id="password_confirmation" name="password_confirmation" 
+                           required autocomplete="new-password">
+                </div>
 
-                    <button type="submit" class="btn-reset">
-                        <i class="fas fa-sync-alt"></i> Reset Password
-                    </button>
+                <button type="submit" class="btn-reset">
+                    <i class="fas fa-sync-alt"></i> Reset Password
+                </button>
 
-                    <div class="info-text">
-                        <i class="fas fa-info-circle"></i>
-                        After resetting your password, you'll be redirected to the login page.
-                    </div>
-                </form>
-            </div>
+                <div class="info-text">
+                    <i class="fas fa-info-circle"></i>
+                    After resetting your password, you'll be redirected to the login page.
+                </div>
+            </form>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

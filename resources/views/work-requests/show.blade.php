@@ -34,7 +34,7 @@
                     </p>
                 </div>
                 <div>
-                    <strong style="color: #6b7280; font-size: 0.875rem;">Title:</strong>
+                    <strong style="color: #6b7280; font-size: 0.875rem;">Type of Service:</strong>
                     <p style="margin-top: 0.25rem; font-size: 1rem;">{{ $workRequest->title }}</p>
                 </div>
                 <div>
@@ -164,7 +164,7 @@
                 </a>
                 
                 {{-- Schedule Inspection Button - ADMIN ONLY --}}
-                @if(Auth::user()->isAdmin())
+                @if(Auth::user()->isAdmin() && ! $workRequest->isInspectionScheduled())
                 <button type="button" onclick="openScheduleModal()" class="btn-create" style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; text-decoration: none; background: #8b5cf6; border: none; cursor: pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
                         <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -174,22 +174,13 @@
                 </button>
                 @endif
                 
-                {{-- Edit Button - ADMIN ONLY --}}
-                @if(Auth::user()->isAdmin())
-                <a href="{{ route('work-requests.edit', $workRequest->id) }}" class="btn-create" style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; text-decoration: none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    Edit Request
-                </a>
-                @endif
             </div>
         </div>
     </div>
 </div>
 
 {{-- Schedule Inspection Modal - ADMIN ONLY --}}
-@if(Auth::user()->isAdmin())
+@if(Auth::user()->isAdmin() && ! $workRequest->isInspectionScheduled())
 <div id="scheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: white; border-radius: 1rem; width: 90%; max-width: 500px; margin: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
         <form method="POST" action="{{ route('work-requests.schedule', $workRequest->id) }}" style="padding: 1.5rem;">

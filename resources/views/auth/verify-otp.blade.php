@@ -15,22 +15,36 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --psu-blue: #003087;
+            --psu-blue-dark: #001f5b;
+            --psu-blue-deep: #071a3f;
+            --psu-blue-soft: #e8efff;
+            --psu-gold: #f5a800;
+            --psu-gold-soft: #fff4cc;
+            --text: #243044;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(245, 168, 0, 0.18), transparent 30rem),
+                linear-gradient(135deg, #f8fbff 0%, #f2f5fb 45%, #edf3ff 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            color: var(--text);
         }
 
         .verification-card {
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.09);
+            box-shadow: 0 24px 60px rgba(0, 31, 91, 0.18);
             overflow: hidden;
             animation: slideUp 0.5s ease;
         }
@@ -47,20 +61,29 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--psu-blue) 0%, var(--psu-blue-dark) 100%);
             color: white;
             padding: 30px;
             text-align: center;
+            border-bottom: 5px solid var(--psu-gold);
+        }
+
+        .brand-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            margin-bottom: 14px;
         }
 
         .card-header h2 {
             margin: 0 0 10px 0;
             font-size: 1.8rem;
+            font-weight: 800;
         }
 
         .card-header p {
             margin: 0;
-            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.82);
         }
 
         .card-body {
@@ -68,18 +91,18 @@
         }
 
         .email-display {
-            background: #f0f2f6;
+            background: var(--psu-blue-soft);
             padding: 12px;
             border-radius: 10px;
             text-align: center;
             margin-bottom: 25px;
             font-weight: 500;
-            color: #333;
+            color: var(--psu-blue-deep);
             word-break: break-all;
         }
 
         .email-display i {
-            color: #667eea;
+            color: var(--psu-blue);
             margin-right: 8px;
         }
 
@@ -97,15 +120,15 @@
             text-align: center;
             font-size: 24px;
             font-weight: bold;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #cbd5e1;
             border-radius: 12px;
             transition: all 0.3s;
         }
 
         .otp-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            border-color: var(--psu-blue);
+            box-shadow: 0 0 0 3px rgba(0, 48, 135, 0.12);
         }
 
         .timer {
@@ -117,14 +140,14 @@
         .timer-countdown {
             font-size: 1.2rem;
             font-weight: bold;
-            color: #667eea;
+            color: var(--psu-blue);
         }
 
         .btn-verify {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--psu-gold) 0%, #ffd467 100%);
+            color: var(--psu-blue-deep);
             border: none;
             border-radius: 10px;
             font-size: 1rem;
@@ -136,7 +159,7 @@
 
         .btn-verify:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+            box-shadow: 0 12px 24px rgba(184, 117, 0, 0.24);
         }
 
         .btn-verify:disabled {
@@ -153,7 +176,7 @@
         .resend-button {
             background: none;
             border: none;
-            color: #667eea;
+            color: var(--psu-blue);
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 500;
@@ -161,7 +184,7 @@
         }
 
         .resend-button:hover:not(:disabled) {
-            color: #764ba2;
+            color: var(--psu-blue-dark);
             text-decoration: underline;
         }
 
@@ -174,8 +197,8 @@
             display: inline-block;
             margin-left: 8px;
             font-weight: bold;
-            color: #764ba2;
-            background: #f0f2f6;
+            color: var(--psu-gold);
+            background: var(--psu-blue-soft);
             padding: 2px 8px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -189,15 +212,15 @@
         }
 
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         .loader {
@@ -216,12 +239,12 @@
         }
 
         .info-text {
-            background: #e7f3ff;
+            background: var(--psu-blue-soft);
             padding: 10px;
             border-radius: 8px;
             margin-top: 20px;
             font-size: 0.8rem;
-            color: #004085;
+            color: var(--psu-blue);
             text-align: center;
         }
     </style>
@@ -229,7 +252,7 @@
 <body>
     <div class="verification-card">
         <div class="card-header">
-            <i class="fas fa-envelope fa-3x mb-3"></i>
+            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
             <h2>Verify Your Email</h2>
             <p>Please enter the verification code sent to your email</p>
         </div>
@@ -345,16 +368,20 @@
         const resendTimerElement = document.getElementById('resendTimer');
         
         function updateResendTimer() {
+            resendBtn.innerHTML = '<i class="fas fa-redo-alt"></i> Resend Code';
+
             if (resendCooldown > 0) {
                 resendBtn.disabled = true;
                 resendTimerElement.textContent = `${resendCooldown}s`;
+                resendBtn.style.color = '#999';
+                resendBtn.style.fontWeight = '500';
                 resendCooldown--;
                 setTimeout(updateResendTimer, 1000);
             } else {
                 resendBtn.disabled = false;
                 resendTimerElement.textContent = '';
                 // Add a subtle visual cue that resend is now available
-                resendBtn.style.color = '#667eea';
+                resendBtn.style.color = '#003087';
                 resendBtn.style.fontWeight = 'bold';
             }
         }

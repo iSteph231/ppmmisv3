@@ -1,239 +1,234 @@
+{{-- resources/views/auth/forgot-password.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>PPMMIS - Forgot Password</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .container {
-        width: 450px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        overflow: hidden;
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>PPMMIS - Forgot Password</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+
+        :root {
+            --psu-blue: #003087;
+            --psu-blue-dark: #001f5b;
+            --psu-blue-deep: #071a3f;
+            --psu-blue-soft: #e8efff;
+            --psu-gold: #f5a800;
+            --psu-gold-soft: #fff4cc;
+            --text: #243044;
         }
-    }
 
-    .header {
-        background: linear-gradient(135deg, #5576E6, #56B3C9);
-        color: white;
-        text-align: center;
-        padding: 40px 30px;
-    }
-
-    .header h1 {
-        font-size: 32px;
-        margin-bottom: 10px;
-    }
-
-    .header p {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-
-    .content {
-        padding: 40px;
-    }
-
-    .content h2 {
-        font-size: 24px;
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    .info-text {
-        color: #666;
-        font-size: 14px;
-        margin-bottom: 25px;
-        line-height: 1.6;
-    }
-
-    .input-group {
-        margin-bottom: 25px;
-    }
-
-    .input-group input {
-        width: 100%;
-        padding: 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        font-size: 14px;
-        transition: all 0.3s;
-        outline: none;
-    }
-
-    .input-group input:focus {
-        border-color: #5576E6;
-        box-shadow: 0 0 0 3px rgba(85,118,230,0.1);
-    }
-
-    .input-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #555;
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    button {
-        width: 100%;
-        padding: 15px;
-        background: linear-gradient(135deg, #5576E6, #56B3C9);
-        color: white;
-        border: none;
-        border-radius: 30px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
-        margin-top: 10px;
-    }
-
-    button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(85,118,230,0.3);
-    }
-
-    .alert {
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-20px);
-            opacity: 0;
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(245, 168, 0, 0.18), transparent 30rem),
+                linear-gradient(135deg, #f8fbff 0%, #f2f5fb 45%, #edf3ff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text);
         }
-        to {
-            transform: translateY(0);
-            opacity: 1;
+
+        .forgot-card {
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.09);
+            box-shadow: 0 24px 60px rgba(0, 31, 91, 0.18);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
         }
-    }
 
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-        border-left: 4px solid #28a745;
-    }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .alert-error {
-        background-color: #f8d7da;
-        color: #721c24;
-        border-left: 4px solid #dc3545;
-    }
+        .card-header {
+            background: linear-gradient(135deg, var(--psu-blue) 0%, var(--psu-blue-dark) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 5px solid var(--psu-gold);
+        }
 
-    .back-link {
-        text-align: center;
-        margin-top: 25px;
-    }
+        .brand-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            margin-bottom: 14px;
+        }
 
-    .back-link a {
-        color: #5576E6;
-        text-decoration: none;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
+        .card-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
 
-    .back-link a:hover {
-        text-decoration: underline;
-    }
+        .card-header p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.82);
+        }
 
-    .psu-logo {
-        width: 80px;
-        margin-bottom: 15px;
-    }
-</style>
+        .card-body {
+            padding: 40px 30px;
+        }
 
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--psu-blue-deep);
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: var(--psu-blue);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--psu-blue);
+            box-shadow: 0 0 0 3px rgba(0, 48, 135, 0.12);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--psu-gold) 0%, #ffd467 100%);
+            color: var(--psu-blue-deep);
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(184, 117, 0, 0.24);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: var(--psu-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-
 <body>
+    <div class="forgot-card">
+        <div class="card-header">
+            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
+            <h2>Forgot Password?</h2>
+            <p>Enter your email to reset your password</p>
+        </div>
+        <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
 
-<div class="container">
-    <div class="header">
-        <img src="/images/logo.png" class="psu-logo" alt="PSU Logo">
-        <h1>PPMMIS</h1>
-        <p>Password Recovery</p>
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+                
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        Email Address (must be @psu.edu.ph)
+                    </label>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                           id="email" name="email" value="{{ old('email') }}" required autofocus>
+                    @error('email')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> Send Reset Link
+                </button>
+
+                <div class="back-link">
+                    <a href="{{ route('login') }}">
+                        <i class="fas fa-arrow-left"></i> Back to Login
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="content">
-        <h2>Forgot Password?</h2>
-        <p class="info-text">Enter your registered email address and we'll send you a link to reset your password.</p>
-
-        @if(session('success'))
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ $errors->first() }}</span>
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('password.email') }}">
-            @csrf
-
-            <div class="input-group">
-                <label>Email Address</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="yourname@psu.edu.ph" required>
-            </div>
-
-            <button type="submit">Send Reset Link</button>
-
-            <div class="back-link">
-                <a href="{{ route('login') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Login
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
 </body>
 </html>

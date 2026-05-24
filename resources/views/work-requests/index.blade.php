@@ -47,6 +47,7 @@
         </form>
         
         {{-- Create Button --}}
+        @unless(Auth::user()->isAdmin())
         <div>
             <a href="{{ route('work-requests.create') }}" class="btn-create">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
@@ -55,6 +56,7 @@
                 New Work Request
             </a>
         </div>
+        @endunless
     </div>
 
     {{-- Work Requests Table --}}
@@ -119,13 +121,6 @@
                                         <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </a>
-                                @if(Auth::user()->role === 'admin')
-                                <a href="{{ route('work-requests.edit', $request->id) }}" class="action-btn edit-btn" title="Edit" style="color: #10b981;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                </a>
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -137,7 +132,9 @@
                                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                                 <p style="margin: 0;">No work requests found</p>
-                                <a href="{{ route('work-requests.create') }}" class="btn-create" style="margin-top: 0.5rem; text-decoration: none;">Create your first request</a>
+                                @unless(Auth::user()->isAdmin())
+                                    <a href="{{ route('work-requests.create') }}" class="btn-create" style="margin-top: 0.5rem; text-decoration: none;">Create your first request</a>
+                                @endunless
                             </div>
                         </td>
                     </tr>
