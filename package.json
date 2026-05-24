@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "vercel-build": "php artisan migrate --force"
     },
     "devDependencies": {
         "@popperjs/core": "^2.11.6",
