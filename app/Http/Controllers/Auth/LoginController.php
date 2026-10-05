@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -14,7 +14,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        //$this->middleware('guest')->except('logout');
+        // $this->middleware('guest')->except('logout');
     }
 
     /**
@@ -22,6 +22,10 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
         return view('auth.login');
     }
 
@@ -37,33 +41,34 @@ class LoginController extends Controller
 
         // Check if user exists
         $user = User::where('email', $request->email)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
             return back()->with('error', '❌ No account found with this email address.')
-                         ->withInput($request->only('email', 'remember'));
+                ->withInput($request->only('email', 'remember'));
         }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            
+
             // Check if user is active
             if (Auth::user()->is_active != true) {
                 Auth::logout();
+
                 return back()->with('error', '⚠️ Your account is deactivated. Please contact the administrator.')
-                             ->withInput($request->only('email', 'remember'));
+                    ->withInput($request->only('email', 'remember'));
             }
-            
+
             // Redirect based on role
             if (Auth::user()->role === 'admin') {
-                return redirect()->intended('/dashboard')->with('success', 'Welcome back, ' . Auth::user()->name . '!');
+                return redirect()->intended('/dashboard')->with('success', 'Welcome back, '.Auth::user()->name.'!');
             }
-            
-            return redirect()->intended('/dashboard')->with('success', 'Welcome back, ' . Auth::user()->name . '!');
+
+            return redirect()->intended('/dashboard')->with('success', 'Welcome back, '.Auth::user()->name.'!');
         }
 
         // Login failed - incorrect password
         return back()->with('error', '❌ Incorrect password. Please try again.')
-                     ->withInput($request->only('email', 'remember'));
+            ->withInput($request->only('email', 'remember'));
     }
 
     /**
@@ -74,7 +79,7 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect('/login')->with('success', 'You have been logged out successfully.');
     }
 }

@@ -44,9 +44,10 @@ class ResetPasswordController extends Controller
                 'email',
                 'regex:/^[a-zA-Z0-9._%+-]+@psu\.edu\.ph$/',
             ],
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'email.regex' => 'Only @psu.edu.ph email addresses are allowed.',
+            'password.required' => 'Password is required.',
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);

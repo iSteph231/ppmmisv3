@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
 {
@@ -57,18 +55,7 @@ class ForgotPasswordController extends Controller
             return back()->with('error', '❌ No account found with this email address.');
         }
 
-        // Generate reset token
-        $token = Str::random(64);
-
-        // Delete old tokens
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        // Store token
-        DB::table('password_reset_tokens')->insert([
-            'email' => $request->email,
-            'token' => $token,
-            'created_at' => now(),
-        ]);
+        $token = Password::broker()->createToken($user);
 
         // Send custom email
         $resetLink = route('password.reset', ['token' => $token, 'email' => $request->email]);

@@ -99,7 +99,6 @@ class WorkRequestController extends Controller
             'repair_item' => 'required_if:request_type,repair|nullable|string',
             'replacement_item' => 'required_if:request_type,replacement|nullable|string',
             'others_specify' => 'required_if:request_type,others|nullable|string',
-            'additional_description' => 'nullable|string',
         ]);
 
         // Generate request number
@@ -115,69 +114,12 @@ class WorkRequestController extends Controller
             $newNumber = '0001';
         }
 
-        // ==============================================
-        // BUILD THE DESCRIPTION FROM REQUEST DETAILS
-        // ==============================================
-
-        // Build a detailed description combining all relevant information
-        $descriptionParts = [];
-
-        // Add location/office info
-        if ($request->filled('building_name') || $request->filled('office_room')) {
-            $location = [];
-            if ($request->filled('building_name')) {
-                $location[] = 'Building: '.$request->building_name;
-            }
-            if ($request->filled('office_room')) {
-                $location[] = 'Room/Office: '.$request->office_room;
-            }
-            $descriptionParts[] = 'LOCATION: '.implode(' | ', $location);
-        }
-
-        // Add request type specific details
-        if ($request->request_type === 'ocular_inspection') {
-            $descriptionParts[] = 'REQUEST TYPE: Ocular Inspection';
-            $descriptionParts[] = 'Location to inspect: '.($request->ocular_location ?? 'Not specified');
-        } elseif ($request->request_type === 'installation') {
-            $descriptionParts[] = 'REQUEST TYPE: Installation';
-            $descriptionParts[] = 'Item to install: '.($request->installation_item ?? 'Not specified');
-        } elseif ($request->request_type === 'repair') {
-            $descriptionParts[] = 'REQUEST TYPE: Repair';
-            $descriptionParts[] = 'Item to repair: '.($request->repair_item ?? 'Not specified');
-        } elseif ($request->request_type === 'replacement') {
-            $descriptionParts[] = 'REQUEST TYPE: Replacement';
-            $descriptionParts[] = 'Item to replace: '.($request->replacement_item ?? 'Not specified');
-        } elseif ($request->request_type === 'others') {
-            $descriptionParts[] = 'REQUEST TYPE: Others';
-            $descriptionParts[] = 'Details: '.($request->others_specify ?? 'Not specified');
-        }
-
-        // Add department info
-        if ($request->filled('department')) {
-            $descriptionParts[] = 'Department: '.$request->department;
-        }
-
-        // Add any additional description if provided
-        if ($request->filled('additional_description')) {
-            $descriptionParts[] = '';
-            $descriptionParts[] = 'ADDITIONAL NOTES:';
-            $descriptionParts[] = $request->additional_description;
-        }
-
-        // If no description parts were added, provide a default
-        if (empty($descriptionParts)) {
-            $descriptionParts[] = 'Work request: '.$request->title;
-        }
-
-        // Combine all parts into one description
-        $fullDescription = implode("\n", $descriptionParts);
-
         // Prepare data for insertion
         $data = [
             'request_number' => "WR-{$yearMonth}-{$newNumber}",
             'user_id' => Auth::id(),
             'title' => $request->title,
-            'description' => $fullDescription,
+            'description' => null,
             'department' => $request->department,
             'building_name' => $request->building_name,
             'office_room' => $request->office_room,
@@ -267,7 +209,9 @@ class WorkRequestController extends Controller
      */
     public function edit(WorkRequest $workRequest)
     {
-        if (! Auth::user()->isAdmin()) {
+        $user = Auth::user();
+
+        if (! $user->isUser() || $user->id !== $workRequest->user_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -279,33 +223,54 @@ class WorkRequestController extends Controller
      */
     public function update(Request $request, WorkRequest $workRequest)
     {
-        if (! Auth::user()->isAdmin()) {
+        $user = Auth::user();
+
+        if (! $user->isUser() || $user->id !== $workRequest->user_id) {
             abort(403, 'Unauthorized action.');
         }
 
         $validated = $request->validate([
+            'title' => 'required|string|max:255',
             'department' => 'nullable|string|max:255',
             'building_name' => 'nullable|string|max:255',
             'office_room' => 'nullable|string|max:255',
-            'status' => 'required|string|in:pending,approved,completed',
-            'admin_notes' => 'nullable|string',
+            'request_type' => ['required', 'string', Rule::in(['ocular_inspection', 'installation', 'repair', 'replacement', 'others'])],
+            'ocular_location' => 'required_if:request_type,ocular_inspection|nullable|string',
+            'installation_item' => 'required_if:request_type,installation|nullable|string',
+            'repair_item' => 'required_if:request_type,repair|nullable|string',
+            'replacement_item' => 'required_if:request_type,replacement|nullable|string',
+            'others_specify' => 'required_if:request_type,others|nullable|string',
         ]);
 
-        $oldStatus = $workRequest->status;
-        $workRequest->update($validated);
+        $data = [
+            'title' => $validated['title'],
+            'description' => null,
+            'department' => $validated['department'] ?? null,
+            'building_name' => $validated['building_name'] ?? null,
+            'office_room' => $validated['office_room'] ?? null,
+            'work_type' => $validated['request_type'],
+            'ocular_details' => null,
+            'installation_details' => null,
+            'repair_details' => null,
+            'replacement_details' => null,
+            'others_details' => null,
+        ];
 
-        // Add notification when status changes
-        if ($oldStatus !== $workRequest->status) {
-            Notification::create([
-                'user_id' => $workRequest->user_id,
-                'title' => 'Work Request Updated',
-                'message' => "Your work request #{$workRequest->id}: '{$workRequest->title}' status has been updated from ".ucfirst($oldStatus).' to '.ucfirst($workRequest->status),
-                'type' => 'info',
-                'is_read' => false,
-            ]);
+        if ($validated['request_type'] === 'ocular_inspection') {
+            $data['ocular_details'] = $validated['ocular_location'] ?? null;
+        } elseif ($validated['request_type'] === 'installation') {
+            $data['installation_details'] = $validated['installation_item'] ?? null;
+        } elseif ($validated['request_type'] === 'repair') {
+            $data['repair_details'] = $validated['repair_item'] ?? null;
+        } elseif ($validated['request_type'] === 'replacement') {
+            $data['replacement_details'] = $validated['replacement_item'] ?? null;
+        } elseif ($validated['request_type'] === 'others') {
+            $data['others_details'] = $validated['others_specify'] ?? null;
         }
 
-        return redirect()->route('work-requests.index')
+        $workRequest->update($data);
+
+        return redirect()->route('work-requests.show', $workRequest)
             ->with('success', 'Work request updated successfully.');
     }
 

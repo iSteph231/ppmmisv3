@@ -1,193 +1,286 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Work Request - {{ $request->request_number }}</title>
-    <style>
-        body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 12px;
-            margin: 20px;
-            color: #333;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #16a34a;
-        }
-        
-        .header h1 {
-            color: #16a34a;
-            margin: 0;
-            font-size: 24px;
-        }
-        
-        .header p {
-            color: #6b7280;
-            margin: 5px 0 0;
-        }
-        
-        .info-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        .card-header {
-            background: #f1f5f9;
-            padding: 10px 15px;
-            border-bottom: 1px solid #e5e7eb;
-            font-weight: bold;
-            color: #1e293b;
-        }
-        
-        .card-body {
-            padding: 15px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #64748b;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        
-        .info-value {
-            font-size: 13px;
-            color: #1e293b;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
-        .badge-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .badge-approved {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-        
-        .badge-completed {
-            background: #d1fae5;
-            color: #059669;
-        }
-        
-        .description-box {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #16a34a;
-            margin: 15px 0;
-        }
-        
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 9px;
-            color: #94a3b8;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Work Requests Batch Export</title>
+
+<style>
+@page {
+    size: A4 landscape;
+    margin: 15px;
+}
+
+body {
+    font-family: DejaVu Sans, Arial, sans-serif;
+    font-size: 12px;
+}
+
+.wrapper {
+    page-break-after: always;
+    width: 100%;
+}
+
+.wrapper:last-child {
+    page-break-after: auto;
+}
+
+.main {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000;
+}
+
+.main td {
+    border: 1px solid #000;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logo-box {
+    width: 80px;
+    text-align: center;
+}
+
+.title {
+    text-align: center;
+}
+
+.title h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.title p {
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+.line_1, .line_2, .line_3, .line_4, .line_5 {
+    text-align: center;
+}
+
+.line_1 {
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    min-width: 200px;
+    width: auto;
+    margin-left: 5px;
+}
+
+.line_2 {
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    min-width: 200px;
+    width: auto;
+    margin-left: 40px;
+}
+
+.line_3 {
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    min-width: 200px;
+    width: auto;
+    margin-left: 63px;
+}
+
+.line_4 {
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    min-width: 200px;
+    width: auto;
+    margin-left: 28px;
+}
+
+.line_5 {
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    min-width: 200px;
+    width: auto;
+    margin-left: 28px;
+}
+
+.checkbox {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #000;
+    display: inline-block;
+    margin-right: 8px;
+    background-color: white;
+    position: relative;
+    vertical-align: middle;
+    margin-left: 300px;
+}
+
+.checkbox.checked::before {
+    content: "\2713";
+    color: black;
+    font-family: DejaVu Sans, Arial, sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+    left: 0;
+    line-height: 1;
+    position: absolute;
+    text-align: center;
+    top: -7px;
+    width: 14px;
+}
+
+.work-table {
+    width: 100%;
+}
+
+.work-table td {
+    border: none;
+    padding: 6px 0;
+    vertical-align: middle;
+}
+
+.signature-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.signature-table td {
+    border: 1px solid #000;
+    height: 140px;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.center {
+    text-align: center;
+    font-size: 11px;
+    margin-top: 50px;
+}
+
+.empty-state {
+    font-size: 16px;
+    margin-top: 100px;
+    text-align: center;
+}
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>PPMMIS</h1>
-        <p>Physical Plant Maintenance and Management Information System</p>
-        <h3>Work Request Details</h3>
-        <p>Generated on: {{ date('F d, Y h:i A') }}</p>
-    </div>
 
-    <div class="info-card">
-        <div class="card-header">REQUEST INFORMATION</div>
-        <div class="card-body">
-            <div class="info-grid">
-                <div>
-                    <div class="info-label">Request Number</div>
-                    <div class="info-value">{{ $request->request_number ?? 'N/A' }}</div>
-                </div>
-                <div>
-                    <div class="info-label">Status</div>
-                    <div class="info-value">
-                        <span class="badge badge-{{ $request->status }}">
-                            {{ ucfirst($request->status) }}
-                        </span>
-                    </div>
-                </div>
-                <div>
-                    <div class="info-label">Title</div>
-                    <div class="info-value">{{ $request->title }}</div>
-                </div>
-                <div>
-                    <div class="info-label">Requested By</div>
-                    <div class="info-value">{{ $request->user->name ?? 'N/A' }}</div>
-                </div>
-                <div>
-                    <div class="info-label">Department</div>
-                    <div class="info-value">{{ $request->user->department ?? 'N/A' }}</div>
-                </div>
-                <div>
-                    <div class="info-label">Date Requested</div>
-                    <div class="info-value">{{ $request->created_at->format('F d, Y h:i A') }}</div>
-                </div>
-                @if($workRequest->location)
-                <div>
-                    <div class="info-label">Location</div>
-                    <div class="info-value">{{ $request->location }}</div>
-                </div>
-                @endif
-                @if($workRequest->completed_at)
-                <div>
-                    <div class="info-label">Date Completed</div>
-                    <div class="info-value">{{ $request->completed_at->format('F d, Y h:i A') }}</div>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
+@forelse($workRequests as $workRequest)
+<div class="wrapper">
+    <table class="main">
+        <tr>
+            <td colspan="2">
+                <table class="header-table">
+                    <tr>
+                        <td class="logo-box">
+                            @if(file_exists(public_path('images/logo.png')))
+                            <img src="file://{{ public_path('images/logo.png') }}" style="width:70px;">
+                            @else
+                            <div style="width:70px; height:70px; border:1px solid #ccc; text-align:center; line-height:70px;">PSU</div>
+                            @endif
+                        </td>
+                        <td class="title">
+                            <h2>WORK REQUEST FORM</h2>
+                            <p>PANGASINAN STATE UNIVERSITY</p>
+                            <p>Asingan Campus</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
 
-    <div class="info-card">
-        <div class="card-header">DESCRIPTION</div>
-        <div class="card-body">
-            <div class="description-box">
-                <p>{{ $workRequest->description }}</p>
-            </div>
-        </div>
-    </div>
+        <tr>
+            <td colspan="2">
+                <strong>DATE :</strong>
+                {{ $workRequest->created_at ? $workRequest->created_at->format('Y-m-d') : date('Y-m-d') }}
+            </td>
+        </tr>
 
-    @if($workRequest->admin_notes)
-    <div class="info-card">
-        <div class="card-header">ADMINISTRATOR NOTES</div>
-        <div class="card-body">
-            <div class="description-box" style="background: #fef3c7; border-left-color: #f59e0b;">
-                <p>{{ $workRequest->admin_notes }}</p>
-            </div>
-        </div>
-    </div>
-    @endif
+        <tr>
+            <td width="50%"><strong>CAMPUS :</strong> <span class="line-with-value">Asingan</span></td>
+            <td width="50%"><strong>DEPARTMENT :</strong> <span class="line-with-value">{{ $workRequest->department ?? '' }}</span></td>
+        </tr>
 
-    <div class="footer">
-        <p>This document is generated automatically by PPMMIS.</p>
-        <p>© {{ date('Y') }} Physical Plant Maintenance and Management Information System</p>
-    </div>
+        <tr>
+            <td><strong>BUILDING NAME :</strong> <span class="line-with-value">{{ $workRequest->building_name ?? '' }}</span></td>
+            <td><strong>NAME OF OFFICE / ROOM :</strong> <span class="line-with-value">{{ $workRequest->office_room ?? '' }}</span></td>
+        </tr>
+
+        <tr>
+            <td colspan="2">
+                <strong>WORK REQUEST:</strong>
+
+                <table class="work-table" style="margin-top: 8px;">
+                    <tr>
+                        <td width="250">
+                            <div class="checkbox {{ $workRequest->work_type == 'ocular_inspection' ? 'checked' : '' }}"></div>
+                        </td>
+                        <td>Ocular inspection of <span class="line_1">{{ $workRequest->work_type == 'ocular_inspection' ? ($workRequest->ocular_details ?? '') : '' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td width="250">
+                            <div class="checkbox {{ $workRequest->work_type == 'installation' ? 'checked' : '' }}"></div>
+                        </td>
+                        <td>Installation of <span class="line_2">{{ $workRequest->work_type == 'installation' ? ($workRequest->installation_details ?? '') : '' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td width="250">
+                            <div class="checkbox {{ $workRequest->work_type == 'repair' ? 'checked' : '' }}"></div>
+                        </td>
+                        <td>Repair of <span class="line_3">{{ $workRequest->work_type == 'repair' ? ($workRequest->repair_details ?? '') : '' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td width="250">
+                            <div class="checkbox {{ $workRequest->work_type == 'replacement' ? 'checked' : '' }}"></div>
+                        </td>
+                        <td>Replacement of <span class="line_4">{{ $workRequest->work_type == 'replacement' ? ($workRequest->replacement_details ?? '') : '' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td width="250">
+                            <div class="checkbox {{ $workRequest->work_type == 'others' ? 'checked' : '' }}"></div>
+                        </td>
+                        <td>Others (specify) <span class="line_5">{{ $workRequest->work_type == 'others' ? ($workRequest->others_details ?? '') : '' }}</span></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" style="padding:0;">
+                <table class="signature-table">
+                    <tr>
+                        <td width="33%">
+                            <strong>Requestor :</strong>
+                            <div class="center">Signature over Printed Name</div>
+                            <p style="margin-top: 15px;">
+                                <strong>Position / Designation:</strong><br>
+                            </p>
+                        </td>
+                        <td width="33%">
+                            <strong>Approved by :</strong>
+                            <div class="center">Signature over Printed Name</div>
+                            <p style="margin-top: 15px;">
+                                <strong>Date :</strong><br>
+                            </p>
+                        </td>
+                        <td width="33%">
+                            <strong>Work Request Accomplished by :</strong>
+                            <div class="center">Signature over Printed Name</div>
+                            <p style="margin-top: 15px;">
+                                <strong>Date :</strong><br>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+@empty
+    <div class="empty-state">No work requests found for export.</div>
+@endforelse
+
 </body>
 </html>

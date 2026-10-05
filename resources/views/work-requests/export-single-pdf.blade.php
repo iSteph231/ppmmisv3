@@ -11,7 +11,7 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: DejaVu Sans, Arial, sans-serif;
     font-size: 12px;
 }
 
@@ -122,11 +122,10 @@ body {
     width: 14px;
     height: 14px;
     border: 2px solid #000;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
     margin-right: 8px;
     background-color: white;
+    position: relative;
     vertical-align: middle;
     margin-left: 300px;
 }
@@ -134,10 +133,15 @@ body {
 .checkbox.checked::before {
     content: "\2713";
     color: black;
-    font-size: 12px;
+    font-family: DejaVu Sans, Arial, sans-serif;
+    font-size: 22px;
     font-weight: bold;
-    display: block;
+    left: 0;
     line-height: 1;
+    position: absolute;
+    text-align: center;
+    top: -7px;
+    width: 14px;
 }
 
 .work-table {
@@ -213,7 +217,7 @@ body {
 
 <!-- CAMPUS & DEPARTMENT -->
 <tr>
-    <td width="50%"><strong>CAMPUS :</strong> <span class="line-with-value">{{ $workRequest->campus ?? '' }}</span></td>
+    <td width="50%"><strong>CAMPUS :</strong> <span class="line-with-value">Asingan</span></td>
     <td width="50%"><strong>DEPARTMENT :</strong> <span class="line-with-value">{{ $workRequest->department ?? '' }}</span></td>
 </tr>
 
@@ -232,9 +236,9 @@ body {
 <table class="work-table" style="margin-top: 8px;">
     <tr>
         <td width="250">
-            <div class="checkbox {{ $workRequest->work_type == 'ocular' ? 'checked' : '' }}"></div>
+            <div class="checkbox {{ $workRequest->work_type == 'ocular_inspection' ? 'checked' : '' }}"></div>
         </td>
-        <td>Ocular inspection of <span class="line_1">{{ $workRequest->work_type == 'ocular' ? ($workRequest->ocular_details ?? '') : '' }}</span></td>
+        <td>Ocular inspection of <span class="line_1">{{ $workRequest->work_type == 'ocular_inspection' ? ($workRequest->ocular_details ?? '') : '' }}</span></td>
     </tr>
     <tr>
         <td width="250">

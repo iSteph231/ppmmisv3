@@ -6,7 +6,7 @@
 <div class="content-wrapper">
     <div class="greeting-section">
         <h1 class="greeting-title">Complete Inspection Report</h1>
-        <p class="greeting-subtitle">Enter findings and recommendations to approve this work request</p>
+        <p class="greeting-subtitle">Enter findings, observations, and recommendations to approve this work request</p>
     </div>
 
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
@@ -25,6 +25,13 @@
                     </div>
                 </div>
                 
+                {{-- Observation --}}
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="observation" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Observation *</label>
+                    <textarea name="observation" id="observation" rows="5" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-family: inherit;" required>{{ old('observation') }}</textarea>
+                    <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">Record observations made during the inspection</p>
+                </div>
+
                 {{-- Findings --}}
                 <div style="margin-bottom: 1.5rem;">
                     <label for="findings" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Findings *</label>
@@ -39,18 +46,11 @@
                     <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">Provide recommendations based on the findings</p>
                 </div>
                 
-{{-- Status --}}
-<div style="margin-bottom: 1.5rem;">
-    <label for="status" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Inspection Result *</label>
-    <select name="status" id="status" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;" required>
-        <option value="">Select Result</option>
-        <option value="approved">Approve - Inspection Successful (Work Request will be Approved)</option>
-        <option value="cancelled">Reject - Inspection Failed (Work Request will remain Pending)</option>
-    </select>
-    <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
-        <strong>Note:</strong> Selecting "Approve" will mark the inspection report as "Approved" and the work request as "Approved"
-    </p>
-</div>
+                <input type="hidden" name="status" value="approved">
+
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.5rem; color: #065f46;">
+                    <strong>Note:</strong> Submitting this report will mark the inspection report as "Approved" and the work request as "Approved".
+                </div>
                 
                 {{-- Buttons --}}
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">

@@ -228,8 +228,12 @@
                         New Password
                     </label>
                     <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                           id="password" name="password" required autocomplete="new-password">
+                           id="password" name="password" required minlength="8" autocomplete="new-password">
                     <small class="text-muted">Minimum 8 characters</small>
+                    <small id="strengthText" style="display: block;" aria-live="polite"></small>
+                    <div style="height: 4px; background: #eee; margin-top: 6px; border-radius: 4px; overflow: hidden;">
+                        <div id="strengthFill" style="height: 100%; width: 0;"></div>
+                    </div>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -243,6 +247,7 @@
                     <input type="password" class="form-control" 
                            id="password_confirmation" name="password_confirmation" 
                            required autocomplete="new-password">
+                    <small id="matchText" style="display: block;" aria-live="polite"></small>
                 </div>
 
                 <button type="submit" class="btn-reset">
@@ -256,5 +261,6 @@
             </form>
         </div>
     </div>
+@include('auth.password-feedback')
 </body>
 </html>

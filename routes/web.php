@@ -1,20 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\WorkRequestController;
-use App\Http\Controllers\MaintenanceController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OTPVerificationController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FacilityRequestController;
+use App\Http\Controllers\InspectionReportController;
+use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WorkRequestController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,60 +39,75 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 // ==================== PROTECTED ROUTES ====================
 Route::middleware(['auth'])->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
-    
+
+    // Inventory
+    Route::view('/inventory', 'inventory')->middleware('role:admin')->name('inventory.index');
+
+    // Facility Requests
+    Route::get('/request-facility', [FacilityRequestController::class, 'index'])->middleware('role:admin,user')->name('request-facility.index');
+    Route::get('/request-facility/create', [FacilityRequestController::class, 'create'])->middleware('role:user')->name('request-facility.create');
+    Route::post('/request-facility', [FacilityRequestController::class, 'store'])->middleware('role:user')->name('request-facility.store');
+    Route::get('/request-facility/{facilityRequest}', [FacilityRequestController::class, 'show'])->middleware('role:admin,user')->name('request-facility.show');
+    Route::get('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'photos'])->middleware('role:user')->name('request-facility.photos');
+    Route::post('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'uploadPhotos'])->middleware('role:user')->name('request-facility.photos.store');
+    Route::get('/request-facility/{facilityRequest}/photos/{stage}', [FacilityRequestController::class, 'photo'])->middleware('role:admin,user')->name('request-facility.photo');
+    Route::patch('/request-facility/{facilityRequest}/approve', [FacilityRequestController::class, 'approve'])->middleware('role:admin')->name('request-facility.approve');
+
     // Work Requests
     Route::middleware(['auth'])->group(function () {
-    
-    // ==================== WORK REQUESTS ROUTES ====================
-    // IMPORTANT: Specific routes MUST come BEFORE the resource route
-    
-    // Update status route (specific)
-    Route::post('/work-requests/{workRequest}/update-status', [WorkRequestController::class, 'updateStatus'])->name('work-requests.update-status');
-    
-    
-    // Resource route (generic - MUST be LAST)
-    Route::resource('work-requests', WorkRequestController::class);
-    
+
+        // ==================== WORK REQUESTS ROUTES ====================
+        // IMPORTANT: Specific routes MUST come BEFORE the resource route
+
+        // Update status route (specific)
+        Route::post('/work-requests/{workRequest}/update-status', [WorkRequestController::class, 'updateStatus'])->name('work-requests.update-status');
+
+        // Resource route (generic - MUST be LAST)
+        Route::resource('work-requests', WorkRequestController::class);
+
     });
-    
+
     Route::prefix('maintenance')->name('maintenance.')->middleware('auth')->group(function () {
-    Route::get('/', [MaintenanceController::class, 'index'])->name('index');
-    Route::get('/create', [MaintenanceController::class, 'create'])->name('create');
-    Route::post('/', [MaintenanceController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [MaintenanceController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [MaintenanceController::class, 'update'])->name('update');
-    Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
-    Route::put('/{id}/complete', [MaintenanceController::class, 'complete'])->name('complete');
-    Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');  // ADD THIS LINE
-});
-    
+        Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+        Route::get('/create', [MaintenanceController::class, 'create'])->name('create');
+        Route::post('/', [MaintenanceController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [MaintenanceController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [MaintenanceController::class, 'update'])->name('update');
+        Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
+        Route::put('/{id}/complete', [MaintenanceController::class, 'complete'])->name('complete');
+        Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');  // ADD THIS LINE
+    });
+
     // Report Routes - Only accessible by admin role
-Route::prefix('reports')->name('reports.')->middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/', [ReportController::class, 'index'])->name('index');
-    Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
-    Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
-    Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
-});
-    
+    Route::prefix('reports')->name('reports.')->middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
+        Route::get('/work-requests/export/pdf', [ReportController::class, 'exportWorkRequestsPdf'])->name('work-requests.export-pdf');
+        Route::get('/work-requests/{workRequest}/export/pdf', [ReportController::class, 'exportWorkRequestPdf'])->name('work-requests.export-single-pdf');
+        Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
+        Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
+        Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
+    });
+
     // Users (Admin only)
     Route::middleware(['role:admin'])->group(function () {
-        Route::resource('users', UserController::class);
+        Route::resource('users', UserController::class)->except(['create', 'store', 'edit', 'update']);
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     });
-    
+
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications');
     Route::get('/settings/system', [SettingsController::class, 'systemInfo'])->name('settings.system');
-    
+
     // Notifications (AJAX)
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
@@ -116,12 +131,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('work-requests', WorkRequestController::class);
 });
 
-Route::get('/notifications/fetch', function() {
+Route::get('/notifications/fetch', function () {
     $notifications = Auth::user()->notifications ?? collect([]);
+
     return response()->json(['success' => true, 'notifications' => $notifications]);
 })->middleware('auth');
 
-Route::post('/notifications/mark-read', function() {
+Route::post('/notifications/mark-read', function () {
     // handle mark as read
 })->middleware('auth');
 
@@ -139,6 +155,7 @@ Route::put('/work-requests/{workRequest}/schedule', [WorkRequestController::clas
 // Inspection Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/inspections', [InspectionReportController::class, 'index'])->name('inspections.index');
+    Route::get('/inspections/export/pdf', [InspectionReportController::class, 'exportAllPdf'])->name('inspections.export-all-pdf');
     Route::get('/inspections/{id}', [InspectionReportController::class, 'show'])->name('inspections.show');
     Route::get('/inspections/{id}/complete', [InspectionReportController::class, 'completeForm'])->name('inspections.complete-form');
     Route::post('/inspections/{id}/complete', [InspectionReportController::class, 'complete'])->name('inspections.complete');

@@ -293,10 +293,36 @@
         return {
             unreadCount: 0,
             notifications: @json($notifications ?? []),
+            notificationTimer: null,
             
             init() {
                 this.initChart();
                 this.updateUnreadCount();
+                this.refreshNotifications();
+                this.notificationTimer = setInterval(() => this.refreshNotifications(), 15000);
+            },
+
+            destroy() {
+                clearInterval(this.notificationTimer);
+            },
+
+            async refreshNotifications() {
+                if (document.hidden) return;
+
+                try {
+                    const response = await fetch(@json(route('notifications.index')), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+                    if (data.success) {
+                        this.notifications = data.data;
+                        this.unreadCount = data.unread_count;
+                    }
+                } catch (error) {
+                    console.error('Unable to refresh notifications:', error);
+                }
             },
             
             updateUnreadCount() {
@@ -360,7 +386,7 @@
                         const notif = this.notifications.find(n => n.id === id);
                         if (notif) {
                             notif.read = true;
-                            this.updateUnreadCount();
+                            this.refreshNotifications();
                         }
                     }
                 })
@@ -379,7 +405,7 @@
                 .then(data => {
                     if (data.success) {
                         this.notifications.forEach(n => n.read = true);
-                        this.updateUnreadCount();
+                        this.refreshNotifications();
                     }
                 })
                 .catch(err => console.error(err));

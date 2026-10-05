@@ -7,6 +7,11 @@
     <div class="greeting-section">
         <h1 class="greeting-title">Work Requests Report</h1>
         <p class="greeting-subtitle">View and filter all work requests</p>
+        <div style="margin-top: 1rem;">
+            <a href="{{ route('reports.work-requests.export-pdf', request()->query()) }}" style="background: #dc2626; color: white; padding: 0.625rem 1rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.875rem; display: inline-block;">
+                Export Batch PDF
+            </a>
+        </div>
     </div>
 
     {{-- Filters --}}
@@ -110,6 +115,9 @@
                         <td style="padding: 1rem;">{{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('M d, Y') : 'N/A' }}</td>
                         <td style="padding: 1rem; text-align: center;">
                             <a href="{{ route('work-requests.show', $request->id) }}" style="color: #3b82f6; text-decoration: none;">View</a>
+                            @if($request->status === 'approved')
+                            <a href="{{ route('reports.work-requests.export-single-pdf', $request->id) }}" style="color: #dc2626; text-decoration: none; margin-left: 0.75rem;">Export PDF</a>
+                            @endif
                         </td>
                     </tr>
                     @empty

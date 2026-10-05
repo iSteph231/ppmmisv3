@@ -18,6 +18,7 @@ class InspectionReport extends Model
         'inspection_notes',
         'status',
         'findings',
+        'observation',
         'recommendations',
         'actual_inspection_date',
         'inspected_by',
@@ -30,8 +31,11 @@ class InspectionReport extends Model
 
     // Status constants
     const STATUS_PENDING = 'pending';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -55,7 +59,7 @@ class InspectionReport extends Model
      */
     public function getStatusBadgeClassAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'badge-warning',
             'approved' => 'badge-success',
             'completed' => 'badge-info',
@@ -87,7 +91,7 @@ class InspectionReport extends Model
     {
         return $query->where('status', 'approved');
     }
-    
+
     /**
      * Scope for completed reports
      */

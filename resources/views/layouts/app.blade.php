@@ -40,6 +40,18 @@
                     <span class="nav-text">Dashboard</span>
                 </a>
 
+                {{-- Inventory Link - Admin Only --}}
+                @auth
+                    @if(Auth::user()->isAdmin())
+                <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 8l-9-5-9 5m18 0v8l-9 5m9-13l-9 5M3 8v8l9 5M3 8l9 5m0 0v8M7.5 5.5l9 5"></path>
+                    </svg>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                    @endif
+                @endauth
+
                 {{-- Work Requests Link --}}
                 <a href="{{ route('work-requests.index') }}" class="nav-item {{ request()->routeIs('work-requests.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,6 +59,16 @@
                     </svg>
                     <span class="nav-text">Work Requests</span>
                 </a>
+
+                {{-- Request Facility Link --}}
+                @if(Auth::user()->isAdmin() || Auth::user()->isUser())
+                <a href="{{ route('request-facility.index') }}" class="nav-item {{ request()->routeIs('request-facility.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3v18M5 5h14v14H5z"></path>
+                    </svg>
+                    <span class="nav-text">Request Facility</span>
+                </a>
+                @endif
 
                 {{-- Inspection Report Link - ADMIN ONLY --}}
                 @auth
@@ -179,6 +201,13 @@
     </div>
 
     {{-- Your Custom JS (from public folder) --}}
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
     @stack('scripts')
 </body>

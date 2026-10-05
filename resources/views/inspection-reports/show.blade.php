@@ -83,6 +83,16 @@
             </div>
             @endif
             
+            {{-- Observation (if completed) --}}
+            @if($inspectionReport->observation)
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Observation</h2>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+                    <p>{{ $inspectionReport->observation }}</p>
+                </div>
+            </div>
+            @endif
+
             {{-- Findings (if completed) --}}
             @if($inspectionReport->findings)
             <div style="margin-bottom: 1.5rem;">

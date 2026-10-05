@@ -2,6 +2,67 @@
 
 @section('title', 'Maintenance Report')
 
+@push('styles')
+<style>
+    .maintenance-report-filter-form {
+        align-items: end;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(3, minmax(200px, 1fr)) auto;
+    }
+
+    .maintenance-report-filter-actions {
+        align-items: center;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .maintenance-report-filter-button {
+        align-items: center;
+        border: none;
+        border-radius: 0.375rem;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 0.875rem;
+        font-weight: 600;
+        height: 42px;
+        justify-content: center;
+        line-height: 1;
+        min-width: 108px;
+        padding: 0 1rem;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .maintenance-report-filter-button.secondary {
+        min-width: 78px;
+    }
+
+    @media (max-width: 1024px) {
+        .maintenance-report-filter-form {
+            grid-template-columns: repeat(2, minmax(200px, 1fr));
+        }
+
+        .maintenance-report-filter-actions {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .maintenance-report-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .maintenance-report-filter-actions {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="content-wrapper">
     <div class="greeting-section">
@@ -12,7 +73,7 @@
     {{-- Filters --}}
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem; overflow: hidden;">
         <div style="padding: 1.5rem;">
-            <form method="GET" action="{{ route('reports.maintenance') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <form method="GET" action="{{ route('reports.maintenance') }}" class="maintenance-report-filter-form">
                 <div>
                     <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Status</label>
                     <select name="status" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
@@ -33,9 +94,10 @@
                     <input type="date" name="date_to" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" value="{{ request('date_to') }}">
                 </div>
 
-                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
-                    <button type="submit" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer;">Apply Filters</button>
-                    <a href="{{ route('reports.maintenance') }}" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; text-decoration: none;">Clear</a>
+                <div class="maintenance-report-filter-actions">
+                    <button type="submit" class="maintenance-report-filter-button" style="background: #3b82f6;">Apply Filters</button>
+                    <a href="{{ route('reports.maintenance') }}" class="maintenance-report-filter-button secondary" style="background: #6b7280;">Clear</a>
+                    <a href="{{ route('reports.maintenance.export-pdf', request()->query()) }}" class="maintenance-report-filter-button" style="background: #dc2626;">Export PDF</a>
                 </div>
             </form>
         </div>

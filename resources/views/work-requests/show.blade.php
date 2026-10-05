@@ -53,7 +53,7 @@
                     </p>
                 </div>
                 <div>
-                    <strong style="color: #6b7280; font-size: 0.875rem;">Submitted By:</strong>
+                    <strong style="color: #6b7280; font-size: 0.875rem;">Process Owner:</strong>
                     <p style="margin-top: 0.25rem; font-size: 1rem;">{{ $workRequest->user->name ?? 'N/A' }}</p>
                 </div>
                 <div>
@@ -126,16 +126,6 @@
                 </div>
             </div>
             
-            {{-- Additional Description --}}
-            @if($workRequest->description)
-            <div style="margin-bottom: 1.5rem;">
-                <strong style="color: #6b7280; font-size: 0.875rem;">Additional Description:</strong>
-                <div style="margin-top: 0.5rem; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb;">
-                    <p style="margin: 0; line-height: 1.6;">{{ $workRequest->description }}</p>
-                </div>
-            </div>
-            @endif
-            
             {{-- Admin Notes - Only visible to Admin --}}
             @if($workRequest->admin_notes && Auth::user()->isAdmin())
             <div style="margin-bottom: 1.5rem;">
@@ -162,6 +152,16 @@
                     </svg>
                     Back to List
                 </a>
+
+                @if(Auth::user()->isUser() && Auth::id() === $workRequest->user_id)
+                <a href="{{ route('work-requests.edit', $workRequest->id) }}" class="btn-create" style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; text-decoration: none; background: #3b82f6;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Edit Request
+                </a>
+                @endif
                 
                 {{-- Schedule Inspection Button - ADMIN ONLY --}}
                 @if(Auth::user()->isAdmin() && ! $workRequest->isInspectionScheduled())

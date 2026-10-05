@@ -108,14 +108,6 @@
                 @enderror
             </div>
 
-            {{-- Additional Description (OPTIONAL - user's extra notes) --}}
-            <div style="margin-bottom: 1.5rem;">
-                <label for="description" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                    Additional Description <span style="color: #6b7280; font-size: 0.7rem;">(Optional)</span>
-                </label>
-                <textarea name="additional_description" id="additional_description" class="search-input" rows="4" style="width: 100%; resize: vertical;" placeholder="Provide any additional details about this request...">{{ old('additional_description') }}</textarea>
-            </div>
-
             {{-- Form Buttons --}}
             <div style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                 <a href="{{ route('work-requests.index') }}" class="btn-create" style="background: #9ca3af; text-decoration: none;">

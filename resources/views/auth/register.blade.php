@@ -353,8 +353,9 @@ font-size:12px;
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
-    <input type="password" name="password" id="password" required placeholder=" ">
+    <input type="password" name="password" id="password" required minlength="8" autocomplete="new-password" placeholder=" ">
     <label>Password</label>
+    <small>Minimum 8 characters</small>
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
     <small id="strengthText"></small>
     <div class="strength-bar">
@@ -432,44 +433,6 @@ toggle.addEventListener("click", function(){
     }
 });
 
-/* PASSWORD STRENGTH */
-password.addEventListener("input", function(){
-
-let val = password.value;
-let strength = 0;
-
-if(val.length >= 8) strength++;
-if(/[A-Z]/.test(val)) strength++;
-if(/[0-9]/.test(val)) strength++;
-if(/[@$!%*?&]/.test(val)) strength++;
-
-if(val.length === 0){
-    strengthFill.style.width = "0%";
-    strengthText.innerText = "";
-    return;
-}
-
-if(strength <= 1){
-    strengthFill.style.width = "33%";
-    strengthFill.style.background = "#e74c3c";
-    strengthText.innerText = "Weak password - Use 8+ chars, uppercase, numbers";
-    strengthText.className = "weak";
-}
-else if(strength == 2){
-    strengthFill.style.width = "66%";
-    strengthFill.style.background = "#f39c12";
-    strengthText.innerText = "Medium strength - Add uppercase or numbers";
-    strengthText.className = "medium";
-}
-else{
-    strengthFill.style.width = "100%";
-    strengthFill.style.background = "#27ae60";
-    strengthText.innerText = "Strong password";
-    strengthText.className = "strong";
-}
-
-});
-
 /* PASSWORD MATCH & BUTTON STATE */
 function validateForm() {
     let isValid = true;
@@ -531,5 +494,6 @@ validateForm();
 });
 </script>
 
+@include('auth.password-feedback')
 </body>
 </html>

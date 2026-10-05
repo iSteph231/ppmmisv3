@@ -10,8 +10,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifications = Notification::where('user_id', Auth::id())
-            ->orWhereNull('user_id')
+        $notifications = Notification::forUser(Auth::id())
             ->latest()
             ->take(10)
             ->get()
@@ -24,37 +23,34 @@ class NotificationController extends Controller
                     'read' => (bool) $notification->is_read,
                 ];
             });
-        
-        $unreadCount = Notification::where('user_id', Auth::id())
-            ->orWhereNull('user_id')
-            ->where('is_read', false)
+
+        $unreadCount = Notification::forUser(Auth::id())
+            ->unread()
             ->count();
-        
+
         return response()->json([
             'success' => true,
             'data' => $notifications,
-            'unread_count' => $unreadCount
+            'unread_count' => $unreadCount,
         ]);
     }
-    
+
     public function markAsRead($id)
     {
-        $notification = Notification::where('user_id', Auth::id())
-            ->orWhereNull('user_id')
+        $notification = Notification::forUser(Auth::id())
             ->findOrFail($id);
-        
+
         $notification->update(['is_read' => true]);
-        
+
         return response()->json(['success' => true]);
     }
-    
+
     public function markAllAsRead()
     {
-        Notification::where('user_id', Auth::id())
-            ->orWhereNull('user_id')
-            ->where('is_read', false)
+        Notification::forUser(Auth::id())
+            ->unread()
             ->update(['is_read' => true]);
-        
+
         return response()->json(['success' => true]);
     }
 }
