@@ -78,8 +78,16 @@ class FacilityRequestController extends Controller
         $facilityRequest->load('user');
         $logoPath = public_path('images/inventory/convenience-outlet.png');
         $logo = is_file($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
+        $photos = [];
+        $disk = Storage::disk('local');
+        foreach (['before', 'after'] as $stage) {
+            $path = $facilityRequest->{$stage.'_photo_path'};
+            $photos[$stage] = $path && $disk->exists($path)
+                ? 'data:'.$disk->mimeType($path).';base64,'.base64_encode($disk->get($path))
+                : null;
+        }
 
-        return Pdf::loadView('facility-requests.export-pdf', compact('facilityRequest', 'logo'))
+        return Pdf::loadView('facility-requests.export-pdf', compact('facilityRequest', 'logo', 'photos'))
             ->setPaper('a4')
             ->download('facility-request-'.$facilityRequest->request_number.'.pdf')
             ->header('Cache-Control', 'private, no-store');

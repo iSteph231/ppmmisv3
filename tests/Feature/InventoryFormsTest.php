@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\InventoryForms;
 use Tests\TestCase;
 
 class InventoryFormsTest extends TestCase
@@ -21,15 +22,6 @@ class InventoryFormsTest extends TestCase
         }
     }
 
-    private const FORMS = [
-        'convenience-outlet' => ['Convenience Outlet', 30, 15],
-        'exhaust-fan' => ['Exhaust Fan', 30, 15],
-        'floor-drains' => ['Floor Drains', 22, 15],
-        'lavatories' => ['Lavatories', 22, 15],
-        'service-meter' => ['Service Meter', 30, 15],
-        'walls' => ['Walls', 24, 19],
-    ];
-
     public function test_admin_can_browse_the_numbered_inventory_list_in_name_order(): void
     {
         $user = User::factory()->make(['role' => 'admin']);
@@ -38,9 +30,9 @@ class InventoryFormsTest extends TestCase
         $response = $this->actingAs($user)->get(route('inventory.index'));
 
         $response->assertOk()->assertSee('<ol class="list-decimal', false);
-        $response->assertSeeTextInOrder(array_column(self::FORMS, 0));
+        $response->assertSeeTextInOrder(array_values(InventoryForms::names()));
 
-        foreach (self::FORMS as $slug => [$name]) {
+        foreach (InventoryForms::names() as $slug => $name) {
             $response->assertSee(route('inventory.'.$slug));
         }
     }
@@ -50,7 +42,7 @@ class InventoryFormsTest extends TestCase
         $user = User::factory()->make(['role' => 'admin']);
         $user->id = 1;
 
-        foreach (self::FORMS as $slug => [$name]) {
+        foreach (InventoryForms::names() as $slug => $name) {
             $this->actingAs($user)->get(route('inventory.'.$slug))
                 ->assertOk()
                 ->assertSeeText('New '.$name.' Entry')
@@ -63,7 +55,7 @@ class InventoryFormsTest extends TestCase
 
     public function test_guests_are_redirected_from_inventory_and_every_form(): void
     {
-        foreach (array_merge(['index'], array_keys(self::FORMS)) as $slug) {
+        foreach (array_merge(['index'], array_keys(InventoryForms::names())) as $slug) {
             $this->get(route('inventory.'.$slug))->assertRedirect(route('login'));
         }
     }
@@ -74,7 +66,7 @@ class InventoryFormsTest extends TestCase
             $user = User::factory()->make(['role' => $role]);
             $user->id = 1;
 
-            foreach (array_merge(['index'], array_keys(self::FORMS)) as $slug) {
+            foreach (array_merge(['index'], array_keys(InventoryForms::names())) as $slug) {
                 $this->actingAs($user)->get(route('inventory.'.$slug))->assertForbidden();
             }
         }

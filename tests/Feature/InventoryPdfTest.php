@@ -133,7 +133,10 @@ class InventoryPdfTest extends TestCase
             ])->render();
             $this->assertStringContainsString('INVENTORY OF '.strtoupper($name), $html);
             $this->assertStringContainsString($layout['code'], $html);
-            $source = file_get_contents(base_path('NEWHTML/inventory_'.str_replace('-', '_', $form).'/inventory_'.str_replace('-', '_', $form).'.php'));
+            $source = file_get_contents(resource_path('views/inventory/pdf/'.$form.'.blade.php'));
+            if ($layout['code'] === '') {
+                $source = file_get_contents(base_path('newHTML/'.$form.'-inventory.blade.php'));
+            }
             preg_match('/<thead>.*?<\/thead>/s', $source, $header);
             $this->assertStringContainsString($header[0], $html);
             preg_match('/<tbody>(.*?)<\/tbody>/s', $html, $body);
@@ -142,6 +145,9 @@ class InventoryPdfTest extends TestCase
             preg_match_all('/<td>(.*?)<\/td>/s', $rows[1][0], $cells);
             $this->assertSame($expected, $cells[1]);
             $this->assertStringNotContainsString('<input', $html);
+            $pdf = Pdf::loadHTML($html)->setPaper('a4', 'landscape');
+            $pdf->output();
+            $this->assertSame(1, $pdf->getDomPDF()->getCanvas()->get_page_count(), $form);
         }
     }
 

@@ -36,18 +36,20 @@
                 <table class="header-table">
                     <tr>
                         <td class="logo-cell">
-                            <img src="{{ public_path('images/inventory/'.$form.'.png') }}" alt="PSU Seal">
+                            <img src="{{ public_path('images/inventory/'.(is_file(public_path('images/inventory/'.$form.'.png')) ? $form : 'convenience-outlet').'.png') }}" alt="PSU Seal">
                         </td>
                         <td class="title-cell">
                             <h1>INVENTORY OF {{ strtoupper($name) }}</h1>
                             <p class="campus">PANGASINAN STATE UNIVERSITY</p>
                             <p class="campus-sub">Asingan Campus</p>
                         </td>
+                        @if ($layout['code'] !== '')
                         <td class="code-cell">
                             <div>{{ $layout['code'] }}</div>
                             <div>Rev. 0</div>
                             <div>03-Oct-2017</div>
                         </td>
+                        @endif
                     </tr>
                 </table>
                 <table class="data-table">

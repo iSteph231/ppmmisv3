@@ -23,9 +23,26 @@
         .evaluation-ratings .rating-mark { text-align: center; width: 7%; font-weight: bold; }
         .evaluation-ratings tr { page-break-inside: avoid; }
         .evaluation-comments { border: 1px solid #000; padding: 8px; min-height: 80px; }
+        .usage-photos { page-break-before: always; }
+        .usage-photo { page-break-inside: avoid; margin-bottom: 20px; text-align: center; }
+        .usage-photo img { max-width: 100%; max-height: 280px; }
     </style>
 </head>
 <body>
     @include('facility-requests.evaluation-pdf')
+    <div class="usage-photos">
+        <h1>Usage Photos</h1>
+        <p>{{ $facilityRequest->request_number }} · {{ $facilityRequest->facility }}</p>
+        @foreach(['before' => 'Before Use', 'after' => 'After Use'] as $stage => $label)
+            <div class="usage-photo">
+                <h2>{{ $label }}</h2>
+                @if(!empty($photos[$stage]))
+                    <img src="{{ $photos[$stage] }}" alt="{{ $label }}">
+                @else
+                    <p>Photo unavailable.</p>
+                @endif
+            </div>
+        @endforeach
+    </div>
 </body>
 </html>

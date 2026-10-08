@@ -58,16 +58,19 @@ class FacilityRequestPdfTest extends TestCase
             $response->assertOk()->assertDownload('facility-request-FR-PDF-0001.pdf')->assertHeader('Content-Type', 'application/pdf');
             $this->assertStringStartsWith('%PDF-', $response->getContent());
             $this->assertStringContainsString('/Subtype /Image', $response->getContent());
+            $this->assertMatchesRegularExpression('~/Type /Pages\\s*/Kids \\[.*?\\]\\s*/Count 2~s', $response->getContent());
         }
         $html = view('facility-requests.export-pdf', [
             'facilityRequest' => $facility->load('user'),
             'photos' => ['before' => 'data:image/jpeg;base64,before', 'after' => 'data:image/png;base64,after'],
         ])->render();
-        $this->assertStringNotContainsString('data:image/jpeg;base64,before', $html);
-        $this->assertStringNotContainsString('data:image/png;base64,after', $html);
+        $this->assertStringContainsString('data:image/jpeg;base64,before', $html);
+        $this->assertStringContainsString('data:image/png;base64,after', $html);
         $this->assertStringContainsString('FACILITY EVALUATION FORM', $html);
         $this->assertStringNotContainsString('Request Details', $html);
-        $this->assertStringNotContainsString('Usage Photos', $html);
+        $this->assertStringContainsString('Usage Photos', $html);
+        $this->assertStringContainsString('.usage-photos { page-break-before: always; }', $html);
+        $this->assertLessThan(strpos($html, 'Usage Photos'), strpos($html, 'FACILITY EVALUATION FORM'));
         $this->assertStringNotContainsString('Meeting setup', $html);
     }
 

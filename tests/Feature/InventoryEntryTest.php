@@ -38,7 +38,7 @@ class InventoryEntryTest extends TestCase
             $this->assertSame($data, $entry->data);
             $this->get(route('inventory.'.$form))->assertSeeText('Main Building')->assertSeeText('ITEM-001');
         }
-        $this->assertDatabaseCount('inventory_entries', 6);
+        $this->assertDatabaseCount('inventory_entries', count(InventoryForms::names()));
     }
 
     public function test_each_inventory_type_has_its_specific_fields(): void
@@ -51,7 +51,7 @@ class InventoryEntryTest extends TestCase
                     $response->assertSee('name="data['.$key.']"', false)->assertSeeText($field['label']);
                 }
             }
-            if ($form !== 'walls') {
+            if (! in_array($form, ['walls', 'doors', 'windows'], true)) {
                 $response->assertDontSee('data[height]', false);
             }
         }
