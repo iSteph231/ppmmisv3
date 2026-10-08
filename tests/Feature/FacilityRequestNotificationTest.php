@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class FacilityRequestNotificationTest extends TestCase
@@ -12,6 +14,7 @@ class FacilityRequestNotificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
 
         foreach ([
             '0001_01_01_000000_create_users_table.php',
@@ -19,6 +22,9 @@ class FacilityRequestNotificationTest extends TestCase
             '2026_04_24_055441_create_notifications_table.php',
             '2026_09_24_000000_create_facility_requests_table.php',
             '2026_10_06_052045_add_usage_photos_to_facility_requests_table.php',
+            '2026_10_07_105141_add_evaluation_to_facility_requests_table.php',
+            '2026_10_07_111240_add_use_details_to_facility_requests_table.php',
+            '2026_10_08_112933_add_program_image_to_facility_requests_table.php',
         ] as $migration) {
             $this->artisan('migrate', [
                 '--path' => 'database/migrations/'.$migration,
@@ -34,16 +40,33 @@ class FacilityRequestNotificationTest extends TestCase
         $personnel = User::factory()->create(['role' => 'personnel']);
 
         $this->actingAs($requester)->post(route('request-facility.store'), [
+            'program_image' => UploadedFile::fake()->image('program.png'),
             'facility' => 'Conference Room A',
             'category' => 'Room Setup',
             'requested_date' => now()->addDay()->toDateString(),
             'purpose' => 'Prepare for a meeting.',
+            'requested_time' => '09:30',
+            'lead_person' => 'Test Lead',
+            'contact_number' => '09123456789',
+            'participants' => 'Participant - College',
+            'requested_by' => 'Test Requestor',
+            'status' => 'approved',
+            'user_id' => $personnel->id,
         ])->assertRedirect(route('request-facility.index'));
 
         $facilityRequest = FacilityRequest::sole();
+        $this->assertSame('09:30', substr($facilityRequest->requested_time, 0, 5));
+        $this->assertSame('Test Lead', $facilityRequest->lead_person);
+        $this->assertSame('09123456789', $facilityRequest->contact_number);
+        $this->assertSame('Participant - College', $facilityRequest->participants);
+        $this->assertSame('Test Requestor', $facilityRequest->requested_by);
+        $this->assertSame('Facility Use', $facilityRequest->category);
+        $this->assertSame('pending', $facilityRequest->status);
+        $this->assertSame($requester->id, $facilityRequest->user_id);
         $this->assertDatabaseCount('notifications', 2);
 
         foreach ($admins as $admin) {
+            $this->actingAs($admin)->get(route('request-facility.show', $facilityRequest))->assertOk()->assertSee('Test Lead')->assertSee('Participant - College')->assertSee('09123456789');
             $notification = Notification::where('user_id', $admin->id)->sole();
             $this->assertFalse($notification->is_read);
             $this->assertSame(FacilityRequest::class, $notification->related_type);
@@ -86,7 +109,7 @@ class FacilityRequestNotificationTest extends TestCase
         $facilityRequest = $this->createFacilityRequest($owner, 'FR-REVIEW-0001');
 
         $this->actingAs($admin)->get(route('request-facility.index'))
-            ->assertOk()->assertSee($facilityRequest->request_number)->assertDontSee('Add Request');
+            ->assertOk()->assertSee($facilityRequest->request_number)->assertDontSee('Add Request')->assertSeeText('Action')->assertSeeText('Review Request');
         $this->get(route('request-facility.show', $facilityRequest))
             ->assertOk()->assertSee($facilityRequest->purpose)->assertSee('Approve Request');
         $this->patch(route('request-facility.approve', $facilityRequest))
@@ -114,7 +137,9 @@ class FacilityRequestNotificationTest extends TestCase
         $otherRequest = $this->createFacilityRequest($otherUser, 'FR-OTHER-0001');
 
         $this->actingAs($owner)->get(route('request-facility.index'))
-            ->assertOk()->assertSee($ownRequest->request_number)->assertDontSee($otherRequest->request_number);
+            ->assertOk()->assertSee($ownRequest->request_number)->assertDontSee($otherRequest->request_number)
+            ->assertDontSee('<th scope="col">Action</th>', false)
+            ->assertDontSee('facility-export-actions')->assertDontSee('Approve Request');
         $this->get(route('request-facility.show', $otherRequest))->assertForbidden();
         foreach ([$ownRequest, $otherRequest] as $facilityRequest) {
             $this->patch(route('request-facility.approve', $facilityRequest))->assertForbidden();
@@ -141,6 +166,58 @@ class FacilityRequestNotificationTest extends TestCase
             ->assertOk()->assertSee($approved->request_number)->assertDontSee($pending->request_number);
         $this->get(route('request-facility.index', ['status' => 'invalid']))
             ->assertSessionHasErrors('status');
+    }
+
+    public function test_empty_user_request_table_has_six_columns_and_no_actions(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $this->actingAs($user)->get(route('request-facility.index'))
+            ->assertOk()
+            ->assertSee('colspan="6"', false)
+            ->assertDontSee('<th scope="col">Action</th>', false)
+            ->assertSeeText('No facility requests found.');
+    }
+
+    public function test_user_actions_appear_only_after_admin_approval(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $pending = $this->createFacilityRequest($owner, 'FR-PENDING-ACTIONS');
+        $approved = $this->createFacilityRequest($owner, 'FR-APPROVED-ACTIONS');
+        $approved->update(['status' => 'approved']);
+
+        $this->actingAs($owner)->get(route('request-facility.index'))
+            ->assertOk()
+            ->assertSee('<th scope="col">Action</th>', false)
+            ->assertSee(route('request-facility.show', $approved))
+            ->assertSee(route('request-facility.photos', $approved))
+            ->assertDontSee(route('request-facility.show', $pending))
+            ->assertDontSee('Approve Request');
+        $this->get(route('request-facility.index', ['status' => 'pending']))
+            ->assertOk()->assertDontSee('<th scope="col">Action</th>', false);
+
+        $approved->update(['status' => 'finished']);
+        $this->get(route('request-facility.index'))
+            ->assertOk()
+            ->assertDontSee('<th scope="col">Action</th>', false)
+            ->assertDontSee(route('request-facility.export-pdf', $approved))
+            ->assertDontSee(route('request-facility.photos', $approved));
+    }
+
+    public function test_reference_form_fields_are_required_and_invalid_values_are_rejected(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $this->actingAs($owner)->get(route('request-facility.create'))
+            ->assertOk()->assertSee('Facility Use Request Form')->assertSee('List of Participants')
+            ->assertSee('Lead / Focal Person')->assertDontSee('Request Category');
+        $this->post(route('request-facility.store'), [
+            'facility' => 'Conference Room',
+            'requested_date' => now()->subDay()->toDateString(),
+            'requested_time' => '25:90',
+            'purpose' => 'Meeting.',
+            'contact_number' => 'invalid-number',
+        ])->assertSessionHasErrors(['requested_date', 'requested_time', 'contact_number', 'lead_person', 'participants', 'requested_by']);
+        $this->assertDatabaseCount('facility_requests', 0);
     }
 
     private function createFacilityRequest(User $owner, string $number): FacilityRequest

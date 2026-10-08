@@ -10,6 +10,18 @@ class FacilityRequest extends Model
 {
     use HasFactory;
 
+    public const EVALUATION_INDICATORS = [
+        'ventilation' => 'Well ventilated.',
+        'lighting' => 'Well lighted.',
+        'safety' => 'Safe and comfortable.',
+        'space' => 'Enough space.',
+        'comfort_rooms' => 'Comfort rooms are accessible.',
+        'signage' => 'Signages are visible.',
+        'fire_extinguishers' => 'Fire extinguishers are visible and ready to use.',
+        'chairs' => 'Numbers of chairs are enough.',
+        'water' => 'Water supply is available.',
+    ];
+
     protected $fillable = [
         'user_id',
         'request_number',
@@ -17,13 +29,22 @@ class FacilityRequest extends Model
         'category',
         'requested_date',
         'purpose',
+        'requested_time',
+        'lead_person',
+        'contact_number',
+        'participants',
+        'requested_by',
         'status',
+        'program_image_path',
+        'decline_reason',
         'before_photo_path',
         'after_photo_path',
+        'evaluation',
     ];
 
     protected $casts = [
         'requested_date' => 'date',
+        'evaluation' => 'array',
     ];
 
     public function user()

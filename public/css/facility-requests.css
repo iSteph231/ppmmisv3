@@ -52,3 +52,4 @@
 
 .facility-page .facility-photo { width:100%; max-height:360px; object-fit:contain; background:#f1f5f9; border:1px solid var(--border); border-radius:var(--radius-md); }
 .facility-page .facility-summary { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+.facility-page .facility-export-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.75rem; }

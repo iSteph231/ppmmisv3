@@ -56,6 +56,26 @@
 
     {{-- Report Options --}}
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
+            <h3 class="text-lg font-semibold mb-2">Facility Requests</h3>
+            <p class="text-sm text-slate-500 mb-4">Completed requests, usage photos, and facility evaluations</p>
+            <a href="{{ route('reports.facility-requests') }}" class="btn-create">View Report</a>
+        </div>
+        {{-- Inventory Card --}}
+        <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+            <div style="padding: 1.5rem; text-align: center;">
+                <div style="width: 60px; height: 60px; background: #dbeafe; border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <svg width="30" height="30" fill="none" stroke="#3b82f6" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 8l-9-5-9 5m18 0v8l-9 5m9-13l-9 5M3 8v8l9 5M3 8l9 5m0 0v8M7.5 5.5l9 5"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Inventory</h3>
+                <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">View inventory items</p>
+                <a href="{{ route('inventory.index') }}" class="btn-create" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.875rem; display: inline-block;">
+                    View Inventory
+                </a>
+            </div>
+        </div>
         {{-- Work Requests Report Card --}}
         <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
             <div style="padding: 1.5rem; text-align: center;">

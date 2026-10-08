@@ -8,7 +8,7 @@
     <div class="greeting-section facility-page-header">
         <div>
             <h1 class="greeting-title">Facility Usage Photos</h1>
-            <p class="greeting-subtitle">{{ $facilityRequest->request_number }} · {{ $facilityRequest->facility }}</p>
+            <p class="greeting-subtitle">{{ $facilityRequest->request_number }} ï¿½ {{ $facilityRequest->facility }}</p>
         </div>
         <a href="{{ route('request-facility.show', $facilityRequest) }}" class="facility-btn-secondary">Back to Request</a>
     </div>
@@ -19,7 +19,7 @@
         <div class="table-header">
             <div>
                 <h2 class="table-title">Before and After Use</h2>
-                <p class="facility-card-subtitle">{{ $facilityRequest->status === 'finished' ? 'Both photos are uploaded. Your request is finished.' : 'Upload one image per stage. Your request stays approved until both photos are saved.' }}</p>
+                <p class="facility-card-subtitle">{{ $facilityRequest->status === 'finished' ? 'Both photos and the required evaluation are complete. Your request is finished.' : 'Upload one image per stage, then complete the facility evaluation to finish your request.' }}</p>
             </div>
         </div>
         <form method="POST" action="{{ route('request-facility.photos.store', $facilityRequest) }}" enctype="multipart/form-data" class="facility-form">
@@ -39,12 +39,13 @@
                     </div>
                 @endforeach
             </div>
-            @if($facilityRequest->status === 'approved')
+            @if($facilityRequest->status === 'approved' && (! $facilityRequest->before_photo_path || ! $facilityRequest->after_photo_path))
                 <div class="facility-form-actions"><button type="submit" class="btn-create">Save Photos</button></div>
-            @else
+            @elseif($facilityRequest->status === 'finished')
                 <div class="facility-form-actions"><a href="{{ route('request-facility.create') }}" class="btn-create">Request Another Facility</a></div>
             @endif
         </form>
     </div>
+    @include('facility-requests.evaluation')
 </div>
 @endsection

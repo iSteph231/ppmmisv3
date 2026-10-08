@@ -40,18 +40,6 @@
                     <span class="nav-text">Dashboard</span>
                 </a>
 
-                {{-- Inventory Link - Admin Only --}}
-                @auth
-                    @if(Auth::user()->isAdmin())
-                <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 8l-9-5-9 5m18 0v8l-9 5m9-13l-9 5M3 8v8l9 5M3 8l9 5m0 0v8M7.5 5.5l9 5"></path>
-                    </svg>
-                    <span class="nav-text">Inventory</span>
-                </a>
-                    @endif
-                @endauth
-
                 {{-- Work Requests Link --}}
                 <a href="{{ route('work-requests.index') }}" class="nav-item {{ request()->routeIs('work-requests.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +86,7 @@
                 {{-- Reports Link - Only visible to ADMIN and PERSONNEL --}}
                 @auth
                     @if(Auth::user()->isAdmin() || Auth::user()->role === 'personnel')
-                    <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                    <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*', 'inventory.*') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>

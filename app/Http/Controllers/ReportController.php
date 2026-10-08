@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FacilityRequest;
 use App\Models\MaintenanceSchedule;
 use App\Models\User;
 use App\Models\WorkRequest;
@@ -9,12 +10,23 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class ReportController extends Controller
 {
     /**
      * Display reports dashboard
      */
+    public function facilityRequestsReport(): View
+    {
+        $facilityRequests = FacilityRequest::with('user')
+            ->where('status', 'finished')
+            ->latest('updated_at')
+            ->latest('id')
+            ->paginate(10);
+
+        return view('reports.facility-requests', compact('facilityRequests'));
+    }
     public function index()
     {
         $user = Auth::user();

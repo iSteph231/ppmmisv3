@@ -52,7 +52,7 @@ class FacilityRequestAccessTest extends TestCase
 
         $this->get(route('request-facility.create'))->assertOk()->assertSee('Submit Request');
         $this->post(route('request-facility.store'), [])
-            ->assertSessionHasErrors(['facility', 'category', 'requested_date', 'purpose']);
+            ->assertSessionHasErrors(['facility', 'requested_date', 'requested_time', 'purpose', 'lead_person', 'contact_number', 'participants', 'requested_by']);
     }
 
     public function test_guests_cannot_create_or_submit_facility_requests(): void

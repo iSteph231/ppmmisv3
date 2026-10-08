@@ -8,12 +8,14 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacilityRequestController;
 use App\Http\Controllers\InspectionReportController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkRequestController;
+use App\Support\InventoryForms;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,15 +48,29 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
 
     // Inventory
-    Route::view('/inventory', 'inventory')->middleware('role:admin')->name('inventory.index');
-
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+        foreach (array_keys(InventoryForms::names()) as $form) {
+            Route::get('/inventory/'.$form, [InventoryController::class, 'show'])
+                ->defaults('form', $form)->name('inventory.'.$form);
+        }
+        Route::get('/inventory/{form}/export/pdf', [InventoryController::class, 'exportPdf'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.export-pdf');
+        Route::get('/inventory/{form}/entries/{entry}/export/pdf', [InventoryController::class, 'exportPdf'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.entries.export-pdf');
+        Route::post('/inventory/{form}/entries', [InventoryController::class, 'store'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.entries.store');
+    });
     // Facility Requests
     Route::get('/request-facility', [FacilityRequestController::class, 'index'])->middleware('role:admin,user')->name('request-facility.index');
     Route::get('/request-facility/create', [FacilityRequestController::class, 'create'])->middleware('role:user')->name('request-facility.create');
     Route::post('/request-facility', [FacilityRequestController::class, 'store'])->middleware('role:user')->name('request-facility.store');
     Route::get('/request-facility/{facilityRequest}', [FacilityRequestController::class, 'show'])->middleware('role:admin,user')->name('request-facility.show');
+    Route::get('/request-facility/{facilityRequest}/program-image', [FacilityRequestController::class, 'programImage'])->middleware('role:admin,user')->name('request-facility.program-image');
+    Route::get('/request-facility/{facilityRequest}/export-pdf', [FacilityRequestController::class, 'exportPdf'])->middleware('role:admin')->name('request-facility.export-pdf');
     Route::get('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'photos'])->middleware('role:user')->name('request-facility.photos');
     Route::post('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'uploadPhotos'])->middleware('role:user')->name('request-facility.photos.store');
+    Route::post('/request-facility/{facilityRequest}/evaluation', [FacilityRequestController::class, 'storeEvaluation'])->middleware('role:user')->name('request-facility.evaluation.store');
     Route::get('/request-facility/{facilityRequest}/photos/{stage}', [FacilityRequestController::class, 'photo'])->middleware('role:admin,user')->name('request-facility.photo');
     Route::patch('/request-facility/{facilityRequest}/approve', [FacilityRequestController::class, 'approve'])->middleware('role:admin')->name('request-facility.approve');
 
@@ -91,6 +107,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/work-requests/{workRequest}/export/pdf', [ReportController::class, 'exportWorkRequestPdf'])->name('work-requests.export-single-pdf');
         Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
         Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
+        Route::get('/facility-requests', [ReportController::class, 'facilityRequestsReport'])->name('facility-requests');
         Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
     });
 

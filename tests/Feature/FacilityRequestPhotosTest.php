@@ -20,6 +20,9 @@ class FacilityRequestPhotosTest extends TestCase
             '2026_04_24_055441_create_notifications_table.php',
             '2026_09_24_000000_create_facility_requests_table.php',
             '2026_10_06_052045_add_usage_photos_to_facility_requests_table.php',
+            '2026_10_07_105141_add_evaluation_to_facility_requests_table.php',
+            '2026_10_07_111240_add_use_details_to_facility_requests_table.php',
+            '2026_10_08_112933_add_program_image_to_facility_requests_table.php',
         ] as $migration) {
             $this->artisan('migrate', ['--path' => 'database/migrations/'.$migration, '--no-interaction' => true])->assertExitCode(0);
         }
@@ -41,12 +44,59 @@ class FacilityRequestPhotosTest extends TestCase
         ]);
     }
 
-    private function submission(): array
+    private function evaluationAnswers(): array
     {
-        return ['facility' => 'Second Room', 'category' => 'Room Setup', 'requested_date' => now()->addDay()->toDateString(), 'purpose' => 'Another meeting'];
+        return [
+            'name' => 'Test Respondent',
+            'age' => 21,
+            'gender' => 'Female',
+            'client_category' => 'Students',
+            'semester' => 'First',
+            'academic_year' => '2026–2027',
+            'ratings' => array_fill_keys(array_keys(FacilityRequest::EVALUATION_INDICATORS), 5),
+            'comments' => 'Thank you.',
+        ];
     }
 
-    public function test_photos_can_be_uploaded_separately_and_unlock_requests_only_when_both_exist(): void
+    public function test_evaluation_requires_photos_owner_and_valid_complete_ratings(): void
+    {
+        $facility = $this->approvedRequest();
+        $owner = auth()->user();
+        $answers = $this->evaluationAnswers();
+
+        $this->post(route('request-facility.evaluation.store', $facility), $answers)->assertStatus(409);
+        $facility->update(['before_photo_path' => 'before.jpg', 'after_photo_path' => 'after.jpg']);
+        foreach (['user', 'admin', 'personnel'] as $role) {
+            $this->actingAs(User::factory()->create(['role' => $role]))
+                ->post(route('request-facility.evaluation.store', $facility), $answers)->assertForbidden();
+        }
+        $this->actingAs($owner);
+        foreach ([0, 6, 'invalid'] as $rating) {
+            $invalid = $answers;
+            $invalid['ratings']['water'] = $rating;
+            $this->post(route('request-facility.evaluation.store', $facility), $invalid)->assertSessionHasErrors('ratings.water');
+        }
+        $invalid = $answers;
+        unset($invalid['ratings']['chairs']);
+        $this->post(route('request-facility.evaluation.store', $facility), $invalid)->assertSessionHasErrors('ratings.chairs');
+        $invalid = $answers;
+        $invalid['client_category'] = 'Others';
+        $this->post(route('request-facility.evaluation.store', $facility), $invalid)->assertSessionHasErrors('other_category');
+        $this->assertNull($facility->fresh()->evaluation);
+        $this->assertSame('approved', $facility->fresh()->status);
+
+        $this->post(route('request-facility.evaluation.store', $facility), $answers)->assertRedirect();
+        $this->get(route('request-facility.show', $facility))->assertOk()->assertSee('Thank you.');
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('request-facility.show', $facility))->assertOk()->assertSee('Thank you.');
+    }
+
+    private function submission(): array
+    {
+        return ['facility' => 'Second Room', 'category' => 'Room Setup', 'requested_date' => now()->addDay()->toDateString(), 'purpose' => 'Another meeting', 'requested_time' => '09:30', 'lead_person' => 'Test Lead', 'contact_number' => '09123456789', 'participants' => 'Participant - College', 'requested_by' => 'Test Requestor'];
+    }
+
+    public function test_photos_and_evaluation_are_required_before_requesting_another_facility(): void
     {
         $facility = $this->approvedRequest();
         $this->get(route('request-facility.photos', $facility))->assertOk();
@@ -62,25 +112,35 @@ class FacilityRequestPhotosTest extends TestCase
         $this->post(route('request-facility.store'), $this->submission())->assertSessionHasErrors('facility');
         $this->post(route('request-facility.photos.store', $facility), ['after_photo' => UploadedFile::fake()->image('after.png')])->assertRedirect();
         $facility->refresh();
-        $this->assertSame('finished', $facility->status);
+        $this->assertSame('approved', $facility->status);
         Storage::disk('local')->assertExists($facility->after_photo_path);
         $this->assertSame($facility->photoDirectory(), dirname($facility->after_photo_path));
         $this->assertSame($facility->request_number.'-after.png', basename($facility->after_photo_path));
+        $this->get(route('request-facility.photos', $facility))->assertOk()->assertSee('Facility Evaluation Form')->assertDontSee('Request Another Facility');
+        $this->get(route('request-facility.create'))->assertRedirect(route('request-facility.photos', $facility));
+        $this->post(route('request-facility.store'), $this->submission())->assertSessionHasErrors('facility');
+        $this->post(route('request-facility.evaluation.store', $facility), [])->assertSessionHasErrors('ratings');
+        $answers = $this->evaluationAnswers();
+        $this->post(route('request-facility.evaluation.store', $facility), $answers)->assertRedirect();
+        $this->assertSame('finished', $facility->fresh()->status);
+        $this->assertSame($answers['ratings'], $facility->fresh()->evaluation['ratings']);
+        $this->post(route('request-facility.evaluation.store', $facility), $answers)->assertStatus(409);
+        $this->get(route('request-facility.photos', $facility))->assertOk()->assertSee('Request Another Facility');
         $this->get(route('request-facility.create'))->assertOk();
         $this->post(route('request-facility.store'), $this->submission())->assertRedirect(route('request-facility.index'));
         $this->assertDatabaseCount('facility_requests', 2);
         $this->get(route('request-facility.index', ['status' => 'finished']))->assertOk()->assertSee('Finished');
     }
 
-    public function test_both_photos_can_finish_a_request_in_one_submission(): void
+    public function test_both_photos_require_evaluation_and_cannot_be_replaced(): void
     {
         $facility = $this->approvedRequest();
         $this->post(route('request-facility.photos.store', $facility), [
             'before_photo' => UploadedFile::fake()->image('before.jpg'),
             'after_photo' => UploadedFile::fake()->image('after.jpg'),
         ])->assertRedirect();
-        $this->assertSame('finished', $facility->fresh()->status);
-        $this->post(route('request-facility.photos.store', $facility), ['before_photo' => UploadedFile::fake()->image('extra.jpg')])->assertStatus(409);
+        $this->assertSame('approved', $facility->fresh()->status);
+        $this->post(route('request-facility.photos.store', $facility), ['before_photo' => UploadedFile::fake()->image('extra.jpg')])->assertSessionHasErrors('before_photo');
     }
 
     public function test_existing_numbered_folders_are_moved_and_saved_paths_updated(): void

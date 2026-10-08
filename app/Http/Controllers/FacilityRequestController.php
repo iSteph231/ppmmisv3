@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFacilityEvaluationRequest;
+use App\Http\Requests\StoreFacilityRequest;
 use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +24,7 @@ class FacilityRequestController extends Controller
     public function index(Request $request): View
     {
         $filters = $request->validate([
-            'status' => ['nullable', Rule::in(['pending', 'approved', 'finished'])],
+            'status' => ['nullable', Rule::in(['pending', 'approved', 'finished', 'declined'])],
             'search' => ['nullable', 'string', 'max:255'],
         ]);
         $user = Auth::user();
@@ -35,6 +39,7 @@ class FacilityRequestController extends Controller
             'pending' => (clone $query)->where('status', 'pending')->count(),
             'approved' => (clone $query)->where('status', 'approved')->count(),
             'finished' => (clone $query)->where('status', 'finished')->count(),
+            'declined' => (clone $query)->where('status', 'declined')->count(),
         ];
 
         if (! empty($filters['status'])) {
@@ -65,6 +70,21 @@ class FacilityRequestController extends Controller
         return view('facility-requests.show', compact('facilityRequest'));
     }
 
+    public function exportPdf(FacilityRequest $facilityRequest): Response
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        abort_unless($facilityRequest->status === 'finished', 409, 'Only finished facility requests can be exported.');
+
+        $facilityRequest->load('user');
+        $logoPath = public_path('images/inventory/convenience-outlet.png');
+        $logo = is_file($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
+
+        return Pdf::loadView('facility-requests.export-pdf', compact('facilityRequest', 'logo'))
+            ->setPaper('a4')
+            ->download('facility-request-'.$facilityRequest->request_number.'.pdf')
+            ->header('Cache-Control', 'private, no-store');
+    }
+
     public function approve(FacilityRequest $facilityRequest): RedirectResponse
     {
         DB::transaction(function () use ($facilityRequest): void {
@@ -93,7 +113,7 @@ class FacilityRequestController extends Controller
         $outstanding = FacilityRequest::where('user_id', Auth::id())->where('status', 'approved')->first();
         if ($outstanding) {
             return redirect()->route('request-facility.photos', $outstanding)
-                ->with('error', 'Upload the before and after photos for your approved request before requesting another facility.');
+                ->with('error', 'Upload both photos and complete the facility evaluation before requesting another facility.');
         }
 
         return view('facility-requests.create');
@@ -105,6 +125,15 @@ class FacilityRequestController extends Controller
         abort_unless(in_array($facilityRequest->status, ['approved', 'finished'], true), 409);
 
         return view('facility-requests.photos', compact('facilityRequest'));
+    }
+
+    public function programImage(FacilityRequest $facilityRequest): StreamedResponse
+    {
+        abort_unless(Auth::user()->isAdmin() || $facilityRequest->user_id === Auth::id(), 403);
+        $path = $facilityRequest->program_image_path;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
     }
 
     public function photo(FacilityRequest $facilityRequest, string $stage): StreamedResponse
@@ -153,9 +182,6 @@ class FacilityRequestController extends Controller
                         $facilityRequest->{$stage.'_photo_path'} = $path;
                     }
                 }
-                if ($facilityRequest->before_photo_path && $facilityRequest->after_photo_path) {
-                    $facilityRequest->status = 'finished';
-                }
                 $facilityRequest->save();
             });
         } catch (\Throwable $exception) {
@@ -164,47 +190,95 @@ class FacilityRequestController extends Controller
         }
 
         return redirect()->route('request-facility.photos', $facilityRequest)
-            ->with('success', 'Photos saved. '.($facilityRequest->fresh()->status === 'finished' ? 'Your request is finished. You can now request another facility.' : 'Upload the remaining photo to finish this request.'));
+            ->with('success', 'Photos saved. '.($facilityRequest->fresh()->status === 'finished' ? 'Your request is finished.' : 'After both photos are uploaded, complete the facility evaluation before requesting another facility.'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function storeEvaluation(StoreFacilityEvaluationRequest $request, FacilityRequest $facilityRequest): RedirectResponse
     {
-        $validated = $request->validate([
-            'facility' => ['required', 'string', 'max:255'],
-            'category' => ['required', Rule::in(['Room Setup', 'Maintenance', 'Equipment', 'Utility', 'Security'])],
-            'requested_date' => ['required', 'date', 'after_or_equal:today'],
-            'purpose' => ['required', 'string', 'max:2000'],
-        ]);
+        DB::transaction(function () use ($request, $facilityRequest): void {
+            User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+            $facilityRequest = FacilityRequest::whereKey($facilityRequest->id)->lockForUpdate()->firstOrFail();
+            abort_unless($facilityRequest->status === 'approved' && $facilityRequest->before_photo_path && $facilityRequest->after_photo_path && ! $facilityRequest->evaluation, 409);
 
-        $prefix = 'FR-'.now()->format('Ym').'-';
-        $lastRequest = FacilityRequest::where('request_number', 'like', $prefix.'%')->latest('id')->first();
-        $nextNumber = $lastRequest ? ((int) substr($lastRequest->request_number, -4)) + 1 : 1;
-
-        DB::transaction(function () use ($validated, $prefix, $nextNumber): void {
-            User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
-            if (FacilityRequest::where('user_id', Auth::id())->where('status', 'approved')->exists()) {
-                throw ValidationException::withMessages(['facility' => 'Finish your approved facility request by uploading both photos before submitting another request.']);
-            }
-            $facilityRequest = FacilityRequest::create($validated + [
-                'user_id' => Auth::id(),
-                'request_number' => $prefix.str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT),
-                'status' => 'pending',
+            $facilityRequest->update([
+                'evaluation' => $request->validated() + ['submitted_at' => now()->toIso8601String()],
+                'status' => 'finished',
             ]);
-
-            foreach (User::where('role', 'admin')->get(['id']) as $admin) {
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'New Facility Request',
-                    'message' => "Facility request {$facilityRequest->request_number} for {$facilityRequest->facility} from ".Auth::user()->name,
-                    'type' => 'info',
-                    'is_read' => false,
-                    'related_id' => $facilityRequest->id,
-                    'related_type' => FacilityRequest::class,
-                ]);
-            }
         });
 
+        return redirect()->route('request-facility.photos', $facilityRequest)
+            ->with('success', 'Evaluation submitted. Your request is finished. You can now request another facility.');
+    }
+
+    public function store(StoreFacilityRequest $request): RedirectResponse
+    {
+        $validated = $request->safe()->except('program_image');
+        $storedPath = null;
+
+        try {
+            $facilityRequest = DB::transaction(function () use ($request, $validated, &$storedPath): FacilityRequest {
+                User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+                if (FacilityRequest::where('user_id', $request->user()->id)->where('status', 'approved')->exists()) {
+                    throw ValidationException::withMessages(['facility' => 'Upload both photos and complete the facility evaluation before submitting another request.']);
+                }
+
+                $prefix = 'FR-'.now()->format('Ym').'-';
+                $lastRequest = FacilityRequest::where('request_number', 'like', $prefix.'%')->latest('id')->first();
+                $nextNumber = $lastRequest ? ((int) substr($lastRequest->request_number, -4)) + 1 : 1;
+
+                if ($request->hasFile('program_image')) {
+                    $storedPath = $request->file('program_image')->store('facility-requests/programs', 'local');
+                    if (! $storedPath) {
+                        throw new \RuntimeException('Unable to store the program or event planner image.');
+                    }
+                }
+
+                $facilityRequest = FacilityRequest::create($validated + [
+                    'user_id' => $request->user()->id,
+                    'category' => 'Facility Use',
+                    'request_number' => $prefix.str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT),
+                    'program_image_path' => $storedPath,
+                    'status' => $storedPath ? 'pending' : 'declined',
+                    'decline_reason' => $storedPath ? null : 'Automatically declined because no program or event planner image was attached.',
+                ]);
+
+                if ($facilityRequest->status === 'declined') {
+                    Notification::create([
+                        'user_id' => $request->user()->id,
+                        'title' => 'Facility Request Declined',
+                        'message' => "Your facility request {$facilityRequest->request_number} was automatically declined because no program or event planner image was attached. Submit a new request with the image.",
+                        'type' => 'info',
+                        'is_read' => false,
+                        'related_id' => $facilityRequest->id,
+                        'related_type' => FacilityRequest::class,
+                    ]);
+                } else {
+                    foreach (User::where('role', 'admin')->get(['id']) as $admin) {
+                        Notification::create([
+                            'user_id' => $admin->id,
+                            'title' => 'New Facility Request',
+                            'message' => "Facility request {$facilityRequest->request_number} for {$facilityRequest->facility} from ".$request->user()->name,
+                            'type' => 'info',
+                            'is_read' => false,
+                            'related_id' => $facilityRequest->id,
+                            'related_type' => FacilityRequest::class,
+                        ]);
+                    }
+                }
+
+                return $facilityRequest;
+            });
+        } catch (\Throwable $exception) {
+            if ($storedPath) {
+                Storage::disk('local')->delete($storedPath);
+            }
+            throw $exception;
+        }
+
         return redirect()->route('request-facility.index')
-            ->with('success', 'Facility request submitted successfully.');
+            ->with($facilityRequest->status === 'declined' ? 'error' : 'success',
+                $facilityRequest->status === 'declined'
+                    ? $facilityRequest->decline_reason.' Please submit a new request with the image.'
+                    : 'Facility request submitted successfully.');
     }
 }
