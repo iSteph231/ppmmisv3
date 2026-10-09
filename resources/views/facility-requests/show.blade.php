@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div class="content-wrapper facility-page">
+<div class="content-wrapper facility-page" data-request-updates="facility-details">
     <div class="greeting-section facility-page-header">
         <div>
             <h1 class="greeting-title">Facility Request Details</h1>

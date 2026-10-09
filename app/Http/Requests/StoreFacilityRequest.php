@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreFacilityRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class StoreFacilityRequest extends FormRequest
     {
         return [
             'program_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:5120'],
-            'facility' => ['required', 'string', 'max:255'],
+            'facility' => ['required', 'string', 'max:255', Rule::in(config('facilities.options'))],
             'requested_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'requested_time' => ['required', 'date_format:H:i'],
             'purpose' => ['required', 'string', 'max:2000'],

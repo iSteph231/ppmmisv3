@@ -79,7 +79,7 @@
             </div>
         </div>
         
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto;" data-request-updates="work-list">
             <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -144,7 +144,7 @@
         </div>
         
         @if(isset($workRequests) && method_exists($workRequests, 'links'))
-        <div style="padding: 0.75rem 1.5rem; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+        <div data-request-updates="work-pagination" style="padding: 0.75rem 1.5rem; border-top: 1px solid #e5e7eb; background: #f9fafb;">
             {{ $workRequests->appends(request()->query())->links() }}
         </div>
         @endif

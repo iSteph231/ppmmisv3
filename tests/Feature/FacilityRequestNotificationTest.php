@@ -41,7 +41,7 @@ class FacilityRequestNotificationTest extends TestCase
 
         $this->actingAs($requester)->post(route('request-facility.store'), [
             'program_image' => UploadedFile::fake()->image('program.png'),
-            'facility' => 'Conference Room A',
+            'facility' => 'Activity Center',
             'category' => 'Room Setup',
             'requested_date' => now()->addDay()->toDateString(),
             'purpose' => 'Prepare for a meeting.',

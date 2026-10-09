@@ -131,7 +131,7 @@ class FacilityRequestProgramImageTest extends TestCase
     private function submission(): array
     {
         return [
-            'facility' => 'Conference Room',
+            'facility' => 'Activity Center',
             'requested_date' => now()->addDay()->toDateString(),
             'requested_time' => '09:30',
             'purpose' => 'Event program',

@@ -93,7 +93,7 @@ class FacilityRequestPhotosTest extends TestCase
 
     private function submission(): array
     {
-        return ['facility' => 'Second Room', 'category' => 'Room Setup', 'requested_date' => now()->addDay()->toDateString(), 'purpose' => 'Another meeting', 'requested_time' => '09:30', 'lead_person' => 'Test Lead', 'contact_number' => '09123456789', 'participants' => 'Participant - College', 'requested_by' => 'Test Requestor'];
+        return ['facility' => 'Room 2', 'category' => 'Room Setup', 'requested_date' => now()->addDay()->toDateString(), 'purpose' => 'Another meeting', 'requested_time' => '09:30', 'lead_person' => 'Test Lead', 'contact_number' => '09123456789', 'participants' => 'Participant - College', 'requested_by' => 'Test Requestor'];
     }
 
     public function test_photos_and_evaluation_are_required_before_requesting_another_facility(): void

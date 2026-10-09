@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
     // Facility Requests
     Route::get('/request-facility', [FacilityRequestController::class, 'index'])->middleware('role:admin,user')->name('request-facility.index');
     Route::get('/request-facility/create', [FacilityRequestController::class, 'create'])->middleware('role:user')->name('request-facility.create');
+    Route::get('/request-facility/availability', [FacilityRequestController::class, 'availability'])->middleware('role:user')->name('request-facility.availability');
     Route::post('/request-facility', [FacilityRequestController::class, 'store'])->middleware('role:user')->name('request-facility.store');
     Route::get('/request-facility/{facilityRequest}', [FacilityRequestController::class, 'show'])->middleware('role:admin,user')->name('request-facility.show');
     Route::get('/request-facility/{facilityRequest}/program-image', [FacilityRequestController::class, 'programImage'])->middleware('role:admin,user')->name('request-facility.program-image');

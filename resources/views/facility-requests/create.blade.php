@@ -33,7 +33,17 @@
                 @foreach(['facility' => 'Facility Requested', 'requested_date' => 'Date of Use', 'requested_time' => 'Time of Use', 'lead_person' => 'Lead / Focal Person', 'contact_number' => 'Contact Number'] as $field => $label)
                     <div class="facility-field {{ $field === 'facility' ? 'facility-field-wide' : '' }}">
                         <label for="{{ $field }}" class="facility-label">{{ $label }}</label>
+                        @if($field === 'facility')
+                            <select id="facility" name="facility" class="facility-input" data-availability-url="{{ route('request-facility.availability') }}" required aria-invalid="{{ $errors->has('facility') ? 'true' : 'false' }}" aria-describedby="facility-availability @error('facility') facility-error @enderror">
+                                <option value="" disabled @selected(!old('facility'))>Select a facility</option>
+                                @foreach(config('facilities.options') as $facility)
+                                    <option value="{{ $facility }}" @selected(old('facility') === $facility)>{{ $loop->iteration }}. {{ $facility }}</option>
+                                @endforeach
+                            </select>
+                            <p id="facility-availability" class="facility-result-count" role="status" aria-live="polite">Select a date and time to check available facilities.</p>
+                        @else
                         <input id="{{ $field }}" name="{{ $field }}" type="{{ ['requested_date' => 'date', 'requested_time' => 'time', 'contact_number' => 'tel'][$field] ?? 'text' }}" class="facility-input" value="{{ old($field, $field === 'contact_number' ? Auth::user()->phone_number : ($field === 'lead_person' ? Auth::user()->name : '')) }}" required @if($field === 'requested_date') min="{{ now()->toDateString() }}" @elseif($field !== 'requested_time') maxlength="{{ $field === 'contact_number' ? 50 : 255 }}" @endif aria-invalid="{{ $errors->has($field) ? 'true' : 'false' }}" @error($field) aria-describedby="{{ $field }}-error" @enderror>
+                        @endif
                         @error($field)<p id="{{ $field }}-error" class="facility-error">{{ $message }}</p>@enderror
                     </div>
                 @endforeach
@@ -77,6 +87,7 @@
 @endsection
 
 @push('scripts')
+<script defer src="{{ asset('js/facility-availability.js') }}"></script>
 <script>
     (() => {
         const currentDate = document.getElementById('facility-current-date');

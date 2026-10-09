@@ -48,16 +48,6 @@
                     <span class="nav-text">Work Requests</span>
                 </a>
 
-                {{-- Request Facility Link --}}
-                @if(Auth::user()->isAdmin() || Auth::user()->isUser())
-                <a href="{{ route('request-facility.index') }}" class="nav-item {{ request()->routeIs('request-facility.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3v18M5 5h14v14H5z"></path>
-                    </svg>
-                    <span class="nav-text">Request Facility</span>
-                </a>
-                @endif
-
                 {{-- Inspection Report Link - ADMIN ONLY --}}
                 @auth
                     @if(Auth::user()->isAdmin())
@@ -71,6 +61,16 @@
                     @endif
                 @endauth
 
+                {{-- Facility Use Request Link --}}
+                @if(Auth::user()->isAdmin() || Auth::user()->isUser())
+                <a href="{{ route('request-facility.index') }}" class="nav-item {{ request()->routeIs('request-facility.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3v18M5 5h14v14H5z"></path>
+                    </svg>
+                    <span class="nav-text">Facility Use Request</span>
+                </a>
+                @endif
+
                 {{-- Maintenance Records Link - Only visible to ADMIN and PERSONNEL --}}
                 @auth
                     @if(Auth::user()->isAdmin() || Auth::user()->role === 'personnel')
@@ -78,7 +78,7 @@
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
-                        <span class="nav-text">Maintenance Records</span>
+                        <span class="nav-text">Maintenance Reports</span>
                     </a>
                     @endif
                 @endauth
@@ -91,18 +91,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                         <span class="nav-text">Reports</span>
-                    </a>
-                    @endif
-                @endauth
-
-                {{-- Users Link - Admin Only --}}
-                @auth
-                    @if(Auth::user()->isAdmin())
-                    <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <span class="nav-text">Users</span>
                     </a>
                     @endif
                 @endauth
@@ -197,6 +185,7 @@
         });
     </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script defer src="{{ asset('js/request-updates.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

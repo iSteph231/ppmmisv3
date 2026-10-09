@@ -14,7 +14,7 @@
     {{-- STATISTICS CARDS --}}
     @if(Auth::user()->isAdmin())
         {{-- Admin Cards --}}
-        <div class="stats-grid">
+        <div data-request-updates="dashboard-stats" class="stats-grid">
             <div class="stat-card">
                 <div class="stat-card-content">
                     <div>
@@ -74,7 +74,7 @@
 
     @elseif(Auth::user()->isPersonnel())
         {{-- Personnel Cards --}}
-        <div class="stats-grid user-stats">
+        <div data-request-updates="dashboard-stats" class="stats-grid user-stats">
             <div class="stat-card">
                 <div class="stat-card-content">
                     <div>
@@ -120,7 +120,7 @@
 
     @else
         {{-- Regular User Cards --}}
-        <div class="stats-grid user-stats">
+        <div data-request-updates="dashboard-stats" class="stats-grid user-stats">
             <div class="stat-card">
                 <div class="stat-card-content">
                     <div>
@@ -220,7 +220,7 @@
                 <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="Search requests..." class="search-input">
             </div>
         </div>
-        <div class="data-table">
+        <div class="data-table" data-request-updates="dashboard-requests">
             <table>
                 <thead>
                     <tr>
@@ -279,7 +279,7 @@
             </table>
         </div>
         @if(isset($workRequests) && method_exists($workRequests, 'links'))
-        <div class="table-footer">
+        <div class="table-footer" data-request-updates="dashboard-footer">
             {{ $workRequests->links() }}
         </div>
         @endif
@@ -299,7 +299,7 @@
                 this.initChart();
                 this.updateUnreadCount();
                 this.refreshNotifications();
-                this.notificationTimer = setInterval(() => this.refreshNotifications(), 15000);
+                this.notificationTimer = setInterval(() => this.refreshNotifications(), 3000);
             },
 
             destroy() {

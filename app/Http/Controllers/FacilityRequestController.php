@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FacilityAvailabilityRequest;
 use App\Http\Requests\StoreFacilityEvaluationRequest;
 use App\Http\Requests\StoreFacilityRequest;
 use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -21,6 +25,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FacilityRequestController extends Controller
 {
+    public function availability(FacilityAvailabilityRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        return response()->json([
+            'unavailable' => FacilityRequest::reservedAt($validated['requested_date'], $validated['requested_time'])
+                ->whereIn('facility', config('facilities.options'))
+                ->distinct()->orderBy('facility')->pluck('facility'),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
     public function index(Request $request): View
     {
         $filters = $request->validate([
@@ -222,12 +237,21 @@ class FacilityRequestController extends Controller
     {
         $validated = $request->safe()->except('program_image');
         $storedPath = null;
+        $submissionLock = Cache::lock('facility-request-submissions', 120);
 
         try {
+            $submissionLock->block(5);
             $facilityRequest = DB::transaction(function () use ($request, $validated, &$storedPath): FacilityRequest {
                 User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
                 if (FacilityRequest::where('user_id', $request->user()->id)->where('status', 'approved')->exists()) {
                     throw ValidationException::withMessages(['facility' => 'Upload both photos and complete the facility evaluation before submitting another request.']);
+                }
+
+                if (FacilityRequest::reservedAt($validated['requested_date'], $validated['requested_time'])
+                    ->where('facility', $validated['facility'])->exists()) {
+                    throw ValidationException::withMessages([
+                        'facility' => 'This facility is already requested for the selected date and time. Please select another available facility.',
+                    ]);
                 }
 
                 $prefix = 'FR-'.now()->format('Ym').'-';
@@ -276,11 +300,15 @@ class FacilityRequestController extends Controller
 
                 return $facilityRequest;
             });
+        } catch (LockTimeoutException $exception) {
+            throw ValidationException::withMessages(['facility' => 'Availability is being updated. Please try submitting your request again.']);
         } catch (\Throwable $exception) {
             if ($storedPath) {
                 Storage::disk('local')->delete($storedPath);
             }
             throw $exception;
+        } finally {
+            $submissionLock->release();
         }
 
         return redirect()->route('request-facility.index')

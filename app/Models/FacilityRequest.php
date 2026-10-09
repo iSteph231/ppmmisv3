@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -58,5 +59,12 @@ class FacilityRequest extends Model
         $facility = Str::slug(Str::limit($this->facility, 60, '')) ?: 'facility';
 
         return 'facility-requests/'.$requester.' - '.$facility.' - '.$this->request_number;
+    }
+
+    public function scopeReservedAt(Builder $query, string $date, string $time): Builder
+    {
+        return $query->whereDate('requested_date', $date)
+            ->whereTime('requested_time', $time.':00')
+            ->whereIn('status', ['pending', 'approved']);
     }
 }

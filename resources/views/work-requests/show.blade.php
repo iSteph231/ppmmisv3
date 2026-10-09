@@ -3,7 +3,7 @@
 @section('title', 'Work Request Details')
 
 @section('content')
-<div class="content-wrapper">
+<div class="content-wrapper" data-request-updates="work-details">
     <div class="greeting-section">
         <h1 class="greeting-title">Work Request Details</h1>
         <p class="greeting-subtitle">View request information</p>

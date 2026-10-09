@@ -10,7 +10,7 @@
 @php
     $showActions = Auth::user()->isAdmin() || $facilityRequests->getCollection()->contains(fn ($facilityRequest) => in_array($facilityRequest->status, ['approved', 'declined'], true));
 @endphp
-<div class="content-wrapper facility-page">
+<div class="content-wrapper facility-page" data-request-updates="facility-list">
     <div class="greeting-section facility-page-header">
         <div>
             <h1 class="greeting-title">{{ Auth::user()->isAdmin() ? 'Facility Requests' : 'My Facility Requests' }}</h1>
