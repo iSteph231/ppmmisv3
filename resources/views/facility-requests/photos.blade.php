@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Facility Usage Photos')
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/facility-requests.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/facility-requests.css').'?v='.substr(hash_file('sha256', public_path('css/facility-requests.css')), 0, 16) }}">
 @endpush
 @section('content')
 <div class="content-wrapper facility-page">

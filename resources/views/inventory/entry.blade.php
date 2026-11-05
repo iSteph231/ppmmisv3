@@ -3,7 +3,7 @@
 @section('title', 'Inventory - '.$name)
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/inventory.css') }}">
+<link rel="stylesheet" href="{{ asset('css/inventory.css').'?v='.substr(hash_file('sha256', public_path('css/inventory.css')), 0, 16) }}">
 @endpush
 
 @section('content')

@@ -3,7 +3,7 @@
 @section('title', 'Facility Use Request Form')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/facility-requests.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/facility-requests.css').'?v='.substr(hash_file('sha256', public_path('css/facility-requests.css')), 0, 16) }}">
 @endpush
 
 @section('content')
@@ -87,7 +87,7 @@
 @endsection
 
 @push('scripts')
-<script defer src="{{ asset('js/facility-availability.js') }}"></script>
+<script defer src="{{ asset('js/facility-availability.js').'?v='.substr(hash_file('sha256', public_path('js/facility-availability.js')), 0, 16) }}"></script>
 <script>
     (() => {
         const currentDate = document.getElementById('facility-current-date');

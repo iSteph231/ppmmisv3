@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     {{-- Your Custom CSS (from public folder) --}}
-    <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/ppmmis-dashboard.css')), 0, 16) }}">
     
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -186,8 +186,8 @@
             }
         });
     </script>
-    <script src="{{ asset('js/dashboard.js') }}"></script>
-    <script defer src="{{ asset('js/request-updates.js') }}"></script>
+    <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
+    <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
     @stack('scripts')
 </body>
 </html>

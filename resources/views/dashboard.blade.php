@@ -3,7 +3,7 @@
 <head>
     <title>Dashboard - Maintenance System</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/dashboard.css')), 0, 16) }}">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
