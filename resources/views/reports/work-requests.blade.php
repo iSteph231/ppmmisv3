@@ -17,7 +17,7 @@
     {{-- Filters --}}
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem; overflow: hidden;">
         <div style="padding: 1.5rem;">
-            <form method="GET" action="{{ route('reports.work-requests') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <form method="GET" action="{{ route('reports.work-requests') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1rem;">
                 <div>
                     <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Status</label>
                     <select name="status" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
@@ -60,7 +60,7 @@
     </div>
 
     {{-- Statistics Cards --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Total Work Requests</h3>
             <p style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ $totalRequests ?? 0 }}</p>

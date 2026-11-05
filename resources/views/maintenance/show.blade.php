@@ -29,7 +29,7 @@
             {{-- Schedule Information --}}
             <div style="margin-bottom: 1.5rem;">
                 <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Schedule Information</h2>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div class="responsive-grid-two" style="display: grid; gap: 1rem;">
                     <div><strong>Scheduled Date:</strong> {{ $schedule->scheduled_date ? \Carbon\Carbon::parse($schedule->scheduled_date)->format('F d, Y') : 'N/A' }}</div>
                     <div><strong>Activity:</strong> {{ $schedule->activity ?? 'N/A' }}</div>
                     <div><strong>Maintenance In-Charge:</strong> {{ $schedule->maintenance_in_charge ?? 'N/A' }}</div>

@@ -4,6 +4,8 @@
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    initResponsiveTables();
+    initWorkRequestNavigation();
     console.log('Dashboard JS loaded');
     
     // Initialize chart if it exists
@@ -12,6 +14,116 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize search functionality
     initSearch();
 });
+
+function initWorkRequestNavigation() {
+    const content = document.querySelector('.dashboard-content');
+    if (!content) {
+        return;
+    }
+
+    const mobileViewport = window.matchMedia('(max-width: 1023px)');
+    function openRequest(event) {
+        const row = event.target.closest('[data-work-request-row]');
+        if (!mobileViewport.matches || !row || event.target.closest('a, button, input, select, textarea')) {
+            return;
+        }
+        if (event.type === 'keydown') {
+            if (!['Enter', ' '].includes(event.key) || event.repeat) {
+                return;
+            }
+            event.preventDefault();
+        }
+
+        if (row.dataset.requestUrl) {
+            window.location.assign(row.dataset.requestUrl);
+        }
+    }
+
+    content.addEventListener('click', openRequest);
+    content.addEventListener('keydown', openRequest);
+    mobileViewport.addEventListener('change', () => updateResponsiveTables(content));
+}
+
+/**
+ * Keep column labels available when tables stack on small screens, including
+ * tables replaced by the live request updates.
+ */
+function initResponsiveTables() {
+    const content = document.querySelector('.dashboard-content');
+    if (!content) {
+        return;
+    }
+
+    updateResponsiveTables(content);
+    new MutationObserver(() => updateResponsiveTables(content)).observe(content, { childList: true, subtree: true });
+}
+
+function updateResponsiveTables(content) {
+    content.querySelectorAll('table').forEach((table) => {
+        if (!table.tHead) {
+            return;
+        }
+
+        const columns = [];
+        const headerGrid = [];
+        Array.from(table.tHead.rows).forEach((row, rowIndex) => {
+            headerGrid[rowIndex] ??= [];
+            let columnIndex = 0;
+            Array.from(row.cells).forEach((cell) => {
+                while (headerGrid[rowIndex][columnIndex]) {
+                    columnIndex++;
+                }
+                const header = cell.cloneNode(true);
+                header.querySelectorAll('br').forEach((lineBreak) => lineBreak.replaceWith(' '));
+                const label = header.textContent.replace(/\s+/g, ' ').trim();
+                for (let offset = 0; offset < cell.colSpan; offset++) {
+                    (columns[columnIndex + offset] ??= []).push(label);
+                    for (let depth = 0; depth < cell.rowSpan; depth++) {
+                        headerGrid[rowIndex + depth] ??= [];
+                        headerGrid[rowIndex + depth][columnIndex + offset] = true;
+                    }
+                }
+                cell.setAttribute('role', 'columnheader');
+                columnIndex += cell.colSpan;
+            });
+            row.setAttribute('role', 'row');
+        });
+
+        table.dataset.responsiveTable = '';
+        table.setAttribute('role', 'table');
+        table.tHead.setAttribute('role', 'rowgroup');
+        if (!table.classList.contains('data-table')) {
+            table.parentElement.classList.add('responsive-table-container');
+        }
+        Array.from(table.tBodies).forEach((body) => {
+            body.setAttribute('role', 'rowgroup');
+            Array.from(body.rows).forEach((row) => {
+                row.setAttribute('role', 'row');
+                if (row.hasAttribute('data-work-request-row')) {
+                    if (window.matchMedia('(max-width: 1023px)').matches) {
+                        row.setAttribute('tabindex', '0');
+                        row.setAttribute('aria-label', `View work request ${row.querySelector('.mobile-summary-field')?.textContent.trim() ?? ''}`);
+                    } else {
+                        row.removeAttribute('tabindex');
+                        row.removeAttribute('aria-label');
+                    }
+                }
+                let columnIndex = 0;
+                Array.from(row.cells).forEach((cell) => {
+                    cell.setAttribute('role', 'cell');
+                    if (cell.colSpan === 1) {
+                        cell.dataset.label = (columns[columnIndex] ?? []).join(' / ')
+                            || cell.querySelector('input')?.getAttribute('aria-label')
+                            || `Column ${columnIndex + 1}`;
+                    } else {
+                        cell.removeAttribute('data-label');
+                    }
+                    columnIndex += cell.colSpan;
+                });
+            });
+        });
+    });
+}
 
 /**
  * Initialize Chart.js

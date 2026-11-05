@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 updated.querySelectorAll('script').forEach((script) => script.remove());
+                if (typeof window.updateResponsiveTables === 'function') {
+                    window.updateResponsiveTables(updated);
+                }
                 if (region.innerHTML !== updated.innerHTML) {
                     region.replaceChildren(...updated.childNodes);
                 }

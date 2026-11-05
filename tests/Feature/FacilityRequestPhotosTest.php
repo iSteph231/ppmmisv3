@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FacilityRequest;
 use App\Models\User;
+use App\Services\FacilityImageStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -14,6 +15,9 @@ class FacilityRequestPhotosTest extends TestCase
     {
         parent::setUp();
         Storage::fake('local');
+        $this->partialMock(FacilityImageStorage::class, function ($mock): void {
+            $mock->shouldReceive('store')->andReturnUsing(fn ($file, $directory, $filename = null) => $file->storeAs($directory, $filename ?? $file->hashName(), 'local'));
+        });
         foreach ([
             '0001_01_01_000000_create_users_table.php',
             '2026_04_24_061654_add_role_and_active_to_users_table.php',

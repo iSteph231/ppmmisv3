@@ -55,7 +55,7 @@
     </div>
 
     {{-- Report Options --}}
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div class="responsive-grid-three" style="display: grid; gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
             <h3 class="text-lg font-semibold mb-2">Facility Requests</h3>
             <p class="text-sm text-slate-500 mb-4">Completed requests, usage photos, and facility evaluations</p>
@@ -146,7 +146,7 @@
     </div>
 
     {{-- Charts Section --}}
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="responsive-grid-two" style="display: grid; gap: 1.5rem;">
         {{-- Monthly Work Requests Chart --}}
         <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem;">
             <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Monthly Work Requests ({{ now()->year }})</h3>

@@ -10,7 +10,7 @@
     </div>
 
     {{-- Key Metrics Cards --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Completion Rate</h3>
             <p style="font-size: 2rem; font-weight: bold; color: #10b981;">{{ $completionRate ?? 0 }}%</p>
@@ -35,7 +35,7 @@
         <canvas id="monthlyTrendsChart" style="max-height: 400px; width: 100%;"></canvas>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         {{-- Work Types Distribution --}}
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Work Requests by Type</h2>

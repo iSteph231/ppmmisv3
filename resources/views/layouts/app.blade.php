@@ -23,10 +23,10 @@
     
     @stack('styles')
 </head>
-<body x-data="{ sidebarOpen: false }">
+<body x-data="{ sidebarOpen: false, mobileViewport: window.innerWidth < 1024 }" @keydown.escape.window="sidebarOpen = false" @resize.window="mobileViewport = window.innerWidth < 1024; if (!mobileViewport) sidebarOpen = false">
     <div class="dashboard-container">
         {{-- ========== SIDEBAR ========== --}}
-        <aside class="sidebar" :class="{'open': sidebarOpen}">
+        <aside id="main-sidebar" class="sidebar" :class="{'open': sidebarOpen}" :inert="!sidebarOpen && mobileViewport">
             <div class="sidebar-header">
                 <span class="sidebar-brand">PPMMIS</span>
             </div>
@@ -119,12 +119,14 @@
             </nav>
         </aside>
 
+        <div class="sidebar-backdrop" x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak aria-hidden="true"></div>
+
         {{-- ========== MAIN CONTENT ========== --}}
-        <main class="main-content">
+        <main class="main-content" :class="{ 'sidebar-active': sidebarOpen }">
             <header class="top-nav">
                 <div class="top-nav-container">
                     {{-- Mobile Menu Toggle --}}
-                    <button @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn">
+                    <button type="button" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn" aria-label="Toggle navigation" aria-controls="main-sidebar" :aria-expanded="sidebarOpen.toString()">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>

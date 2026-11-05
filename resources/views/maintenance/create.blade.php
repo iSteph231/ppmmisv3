@@ -14,7 +14,7 @@
             <form method="POST" action="{{ route('maintenance.store') }}">
                 @csrf
 
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                <div class="responsive-grid-two" style="display: grid; gap: 1.5rem;">
                     {{-- Date / Schedule --}}
                     <div>
                         <label for="scheduled_date" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">DATE / SCHEDULE *</label>

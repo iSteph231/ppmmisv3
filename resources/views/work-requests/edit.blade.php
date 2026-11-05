@@ -17,7 +17,7 @@
             <input type="hidden" name="title" id="title" value="{{ old('title', $workRequest->title) }}">
 
             <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div class="responsive-grid-two" style="display: grid; gap: 1rem;">
                     <div>
                         <strong>Request #:</strong> {{ $workRequest->request_number ?? 'N/A' }}
                     </div>

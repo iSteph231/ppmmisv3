@@ -28,7 +28,7 @@
             {{-- Request Information --}}
             <div style="margin-bottom: 1.5rem;">
                 <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Request Information</h2>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div class="responsive-grid-two" style="display: grid; gap: 1rem;">
                     <div><strong>Request #:</strong> {{ $inspectionReport->workRequest->request_number ?? 'N/A' }}</div>
                     <div><strong>Title:</strong> {{ $inspectionReport->workRequest->title ?? 'N/A' }}</div>
                     <div><strong>Requester:</strong> {{ $inspectionReport->workRequest->user->name ?? 'N/A' }}</div>
@@ -40,7 +40,7 @@
             <div style="margin-bottom: 1.5rem;">
                 <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Inspection Details</h2>
                 <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="responsive-grid-two" style="display: grid; gap: 1rem;">
                         <div><strong>Scheduled Date:</strong> {{ $inspectionReport->scheduled_date ? \Carbon\Carbon::parse($inspectionReport->scheduled_date)->format('F d, Y h:i A') : 'N/A' }}</div>
                         <div><strong>Work Type:</strong> {{ ucfirst(str_replace('_', ' ', $inspectionReport->workRequest->work_type ?? 'N/A')) }}</div>
                         @if($inspectionReport->actual_inspection_date)

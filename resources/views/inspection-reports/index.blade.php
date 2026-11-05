@@ -91,7 +91,7 @@
         </form>
         
         {{-- Search Box --}}
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <div class="page-toolbar-actions" style="display: flex; gap: 0.75rem; align-items: center;">
             <a href="{{ route('inspections.export-all-pdf') }}" class="btn-create" style="background: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
                 Export All PDF
             </a>
