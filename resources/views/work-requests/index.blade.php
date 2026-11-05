@@ -80,7 +80,7 @@
         </div>
         
         <div style="overflow-x: auto;" data-request-updates="work-list">
-            <table class="work-requests-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <table class="mobile-summary-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <th style="padding: 0.875rem 1rem; text-align: left;">ID</th>
@@ -94,7 +94,7 @@
                 </thead>
                 <tbody>
                     @forelse($workRequests ?? [] as $request)
-                    <tr data-work-request-row="{{ $request->id }}" data-request-url="{{ route('work-requests.show', $request->id) }}" style="border-bottom: 1px solid #f1f5f9;">
+                    <tr data-request-url="{{ route('work-requests.show', $request->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 0.875rem 1rem;">#{{ $request->id }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem; font-family: monospace;">
                             {{ $request->request_number ?? 'N/A' }}

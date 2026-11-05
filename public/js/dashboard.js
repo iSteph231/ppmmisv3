@@ -5,7 +5,7 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     initResponsiveTables();
-    initWorkRequestNavigation();
+    initRequestNavigation();
     console.log('Dashboard JS loaded');
     
     // Initialize chart if it exists
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSearch();
 });
 
-function initWorkRequestNavigation() {
+function initRequestNavigation() {
     const content = document.querySelector('.dashboard-content');
     if (!content) {
         return;
@@ -23,7 +23,7 @@ function initWorkRequestNavigation() {
 
     const mobileViewport = window.matchMedia('(max-width: 1023px)');
     function openRequest(event) {
-        const row = event.target.closest('[data-work-request-row]');
+        const row = event.target.closest('tr[data-request-url]');
         if (!mobileViewport.matches || !row || event.target.closest('a, button, input, select, textarea')) {
             return;
         }
@@ -99,10 +99,10 @@ function updateResponsiveTables(content) {
             body.setAttribute('role', 'rowgroup');
             Array.from(body.rows).forEach((row) => {
                 row.setAttribute('role', 'row');
-                if (row.hasAttribute('data-work-request-row')) {
+                if (row.hasAttribute('data-request-url')) {
                     if (window.matchMedia('(max-width: 1023px)').matches) {
                         row.setAttribute('tabindex', '0');
-                        row.setAttribute('aria-label', `View work request ${row.querySelector('.mobile-summary-field')?.textContent.trim() ?? ''}`);
+                        row.setAttribute('aria-label', `View details: ${row.querySelector('.mobile-summary-field')?.textContent.trim() ?? ''}`);
                     } else {
                         row.removeAttribute('tabindex');
                         row.removeAttribute('aria-label');

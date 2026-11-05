@@ -126,7 +126,7 @@
     {{-- Maintenance Table --}}
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table class="mobile-summary-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <th style="padding: 1rem; text-align: left;">Scheduled Date</th>
@@ -139,10 +139,10 @@
                 </thead>
                 <tbody>
                     @forelse($maintenanceSchedules as $schedule)
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <tr data-request-url="{{ route('maintenance.show', $schedule->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 1rem;">{{ $schedule->scheduled_date ? \Carbon\Carbon::parse($schedule->scheduled_date)->format('M d, Y') : 'N/A' }}</td>
-                        <td style="padding: 1rem;">{{ $schedule->activity ?? 'N/A' }}</td>
-                        <td style="padding: 1rem;">{{ $schedule->maintenance_in_charge ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" style="padding: 1rem;">{{ $schedule->activity ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" style="padding: 1rem;">{{ $schedule->maintenance_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">{{ $schedule->engineer_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">
                             @if($schedule->status == 'pending')

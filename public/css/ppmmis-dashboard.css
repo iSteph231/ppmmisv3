@@ -1205,6 +1205,12 @@ body {
 }
 
 /* Tables fit their container on desktop and become labeled records on mobile. */
+@media print, (min-width: 1024px) {
+    .mobile-only-cell {
+        display: none;
+    }
+}
+
 @media screen {
     .dashboard-content table {
         width: 100%;
@@ -1329,15 +1335,15 @@ body {
         padding: 1.5rem 0 !important;
     }
 
-    .dashboard-content table.work-requests-table > tbody > tr > td:not(.mobile-summary-field):not([colspan]) {
+    .dashboard-content table.mobile-summary-table > tbody > tr > td:not(.mobile-summary-field):not([colspan]) {
         display: none;
     }
 
-    .work-requests-table [data-work-request-row] {
+    .mobile-summary-table tr[data-request-url] {
         cursor: pointer;
     }
 
-    .work-requests-table [data-work-request-row]:focus-visible {
+    .mobile-summary-table tr[data-request-url]:focus-visible {
         outline: 2px solid var(--psu-blue);
         outline-offset: -2px;
     }

@@ -72,11 +72,11 @@
             @endif
         </form>
         <div class="data-table">
-            <table>
+            <table class="mobile-summary-table">
                 <thead>
                     <tr>
                         <th scope="col">Request #</th>
-                        @if(Auth::user()->isAdmin())<th scope="col">Requester</th>@endif
+                        <th scope="col" @class(['mobile-only-cell' => !Auth::user()->isAdmin()])>Requester</th>
                         <th scope="col">Facility / Area</th>
                         <th scope="col">Category</th>
                         <th scope="col">Requested Date</th>
@@ -87,9 +87,9 @@
                 </thead>
                 <tbody>
                     @forelse($facilityRequests as $facilityRequest)
-                        <tr>
-                            <td class="facility-request-number">{{ $facilityRequest->request_number }}</td>
-                            @if(Auth::user()->isAdmin())<td>{{ $facilityRequest->user->name }}</td>@endif
+                        <tr data-request-url="{{ route('request-facility.show', $facilityRequest) }}">
+                            <td class="facility-request-number mobile-summary-field">{{ $facilityRequest->request_number }}</td>
+                            <td @class(['mobile-summary-field', 'mobile-only-cell' => !Auth::user()->isAdmin()])>{{ $facilityRequest->user->name }}</td>
                             <td>{{ $facilityRequest->facility }}</td>
                             <td>{{ $facilityRequest->category }}</td>
                             <td>{{ $facilityRequest->requested_date->format('M d, Y') }}</td>
@@ -113,7 +113,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ Auth::user()->isAdmin() ? 8 : ($showActions ? 7 : 6) }}" class="empty-table">
+                            <td colspan="{{ $showActions ? 8 : 7 }}" class="empty-table">
                                 <div class="empty-state">
                                     <p>No facility requests found.</p>
                                     @if(Auth::user()->isUser())

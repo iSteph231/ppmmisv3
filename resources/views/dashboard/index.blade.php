@@ -221,7 +221,7 @@
             </div>
         </div>
         <div class="data-table" data-request-updates="dashboard-requests">
-            <table>
+            <table class="mobile-summary-table">
                 <thead>
                     <tr>
                         <th style="width: 5%">ID</th>
@@ -235,11 +235,11 @@
                 </thead>
                 <tbody>
                     @forelse($workRequests ?? [] as $request)
-                    <tr>
+                    <tr data-request-url="{{ route('work-requests.show', $request->id) }}">
                         <td data-label="ID">#{{ $request->id }}</td>
-                        <td data-label="Request #">{{ $request->request_number ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" data-label="Request #">{{ $request->request_number ?? 'N/A' }}</td>
                         <td data-label="Title">{{ $request->title }}</td>
-                        <td data-label="Requester">{{ $request->user->name ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" data-label="Requester">{{ $request->user->name ?? 'N/A' }}</td>
                         <td data-label="Status">
                             @php
                                 $statusClass = match($request->status) {
