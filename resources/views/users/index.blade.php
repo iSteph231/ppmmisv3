@@ -115,5 +115,5 @@
 @endsection
 
 @push('scripts')
-    <script defer src="{{ asset('js/user-roles.js') }}"></script>
+    <script defer src="{{ asset('js/user-roles.js').'?v='.substr(hash_file('sha256', public_path('js/user-roles.js')), 0, 16) }}"></script>
 @endpush
