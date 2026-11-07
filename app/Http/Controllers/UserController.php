@@ -2,14 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
+use App\Mail\AccountCreated;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class UserController extends Controller
 {
@@ -56,7 +64,7 @@ class UserController extends Controller
     /**
      * Show the form for creating a new user
      */
-    public function create()
+    public function create(): View
     {
         return view('users.create');
     }
@@ -64,35 +72,29 @@ class UserController extends Controller
     /**
      * Store a newly created user
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,user,engineer',
-            'department' => 'nullable|string',
-            'phone_number' => 'nullable|string',
+        $generatedPassword = Str::password(20);
+        $user = new User([
+            ...$request->validated(),
+            'password' => Hash::make($generatedPassword),
+            'is_active' => true,
+            'is_verified' => true,
         ]);
+        $user->email_verified_at = now();
+        $user->save();
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        try {
+            Mail::to($user->email)->send(new AccountCreated(
+                $user->name, $user->email, $generatedPassword, $user->role,
+            ));
+        } catch (TransportExceptionInterface $exception) {
+            return redirect()->route('users.index')->with('error',
+                'Account created, but the login details email could not be sent. The user can use Forgot Password to set a password.');
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'department' => $request->department,
-            'phone_number' => $request->phone_number,
-            'is_active' => true,
-        ]);
-
         return redirect()->route('users.index')
-            ->with('success', 'User created successfully!');
+            ->with('success', 'Account created. Login details have been emailed to '.$user->email.'.');
     }
 
     /**
@@ -151,18 +153,34 @@ class UserController extends Controller
     /**
      * Remove the specified user
      */
-    public function destroy($id)
+    public function destroy(User $user): RedirectResponse
     {
-        $user = User::findOrFail($id);
-
-        if ($user->id === auth()->id()) {
-            return redirect()->back()->with('error', 'You cannot delete your own account.');
+        if ($user->is(auth()->user())) {
+            return back()->with('error', 'You cannot remove your own account.');
         }
 
-        $user->delete();
+        if (DB::table('work_requests')->where('user_id', $user->id)
+            ->orWhere('requester_id', $user->id)->orWhere('assigned_to', $user->id)->exists()
+            || DB::table('facility_requests')->where('user_id', $user->id)->exists()
+            || DB::table('inventory_entries')->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'This account has linked requests or inventory records and cannot be removed.');
+        }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully!');
+        try {
+            DB::transaction(function () use ($user): void {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+                DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                $user->delete();
+            });
+        } catch (QueryException $exception) {
+            if (! in_array((string) $exception->getCode(), ['23000', '23503'], true)) {
+                throw $exception;
+            }
+
+            return back()->with('error', 'This account has linked records and cannot be removed.');
+        }
+
+        return redirect()->route('users.index')->with('success', 'Account removed successfully!');
     }
 
     /**

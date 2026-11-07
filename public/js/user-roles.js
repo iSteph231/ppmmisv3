@@ -1,5 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dialog = document.getElementById('role-confirmation');
+    const removalDialog = document.getElementById('account-removal');
+
+    document.querySelectorAll('[data-remove-account]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (removalDialog.open) {
+                return;
+            }
+            removalDialog.querySelector('[data-remove-name]').textContent = form.dataset.userName;
+            removalDialog.querySelector('[data-remove-email]').textContent = form.dataset.userEmail;
+            removalDialog.returnValue = '';
+            removalDialog.addEventListener('close', () => {
+                if (removalDialog.returnValue === 'remove') {
+                    form.querySelector('button').disabled = true;
+                    HTMLFormElement.prototype.submit.call(form);
+                }
+            }, { once: true });
+            removalDialog.showModal();
+        });
+    });
 
     function confirmRoleChange(form, select) {
         dialog.querySelector('[data-confirm-name]').textContent = form.dataset.userName;

@@ -44,19 +44,16 @@ class UserRolesTest extends TestCase
 
     public function test_user_creation_rejects_removed_and_unknown_roles(): void
     {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
         foreach (['personnel', 'manager'] as $role) {
-            $request = Request::create('/users', 'POST', [
+            $this->post(route('users.store'), [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
                 'password' => 'password123',
                 'password_confirmation' => 'password123',
                 'role' => $role,
-            ]);
-
-            $response = app(UserController::class)->store($request);
-
-            $this->assertTrue($response->getSession()->get('errors')->has('role'));
-            $this->assertSame(0, User::count());
+            ])->assertSessionHasErrors('role');
+            $this->assertSame(1, User::count());
         }
     }
 

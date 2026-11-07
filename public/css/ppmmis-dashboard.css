@@ -1442,13 +1442,13 @@ body {
     line-height: 1.5;
 }
 
-#role-confirmation {
+#role-confirmation, #account-removal {
     width: min(32rem, calc(100% - 2rem));
     max-height: calc(100dvh - 2rem);
     overflow-y: auto;
 }
 
-#role-confirmation::backdrop {
+#role-confirmation::backdrop, #account-removal::backdrop {
     background: rgb(15 23 42 / 65%);
 }
 

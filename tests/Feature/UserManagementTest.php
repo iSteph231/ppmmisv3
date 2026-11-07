@@ -2,7 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Mail\AccountCreated;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -15,6 +20,11 @@ class UserManagementTest extends TestCase
             '0001_01_01_000000_create_users_table.php',
             '2026_04_24_061654_add_role_and_active_to_users_table.php',
             '2026_11_03_141756_add_engineer_to_user_roles.php',
+            '2026_05_13_205842_add_otp_fields_to_users_table.php',
+            '2026_04_24_062233_create_work_requests_table.php',
+            '2026_04_28_080517_add_user_id_to_work_requests_table.php',
+            '2026_09_24_000000_create_facility_requests_table.php',
+            '2026_10_08_105045_create_inventory_entries_table.php',
         ] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
@@ -87,6 +97,144 @@ class UserManagementTest extends TestCase
             $this->assertSame('user', $user->fresh()->role);
         }
         $this->patch(route('users.role.update', 99999), ['role' => 'engineer'])->assertNotFound();
+    }
+
+    public function test_admin_can_create_user_and_engineer_accounts_without_password_fields(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Mail::fake();
+        $this->get(route('users.create'))->assertOk()->assertSee('Add Account')
+            ->assertDontSee('value="admin"', false)->assertDontSee('name="password"', false)
+            ->assertDontSee('name="password_confirmation"', false)->assertDontSee('name="phone_number"', false);
+
+        foreach (['user', 'engineer'] as $role) {
+            $this->post(route('users.store'), [
+                'name' => 'New Account', 'email' => $role.'@psu.edu.ph',
+                'role' => $role,
+            ])->assertRedirect(route('users.index'))->assertSessionHas('success');
+            $created = User::where('email', $role.'@psu.edu.ph')->firstOrFail();
+            $this->assertSame($role, $created->role);
+            $this->assertFalse(Hash::check('password123', $created->password));
+            $this->assertNull($created->phone_number);
+            $this->assertTrue($created->is_active);
+            $this->assertTrue($created->is_verified);
+            $this->assertNotNull($created->email_verified_at);
+            Mail::assertSent(AccountCreated::class, function (AccountCreated $mail) use ($created): bool {
+                return $mail->hasTo($created->email)
+                    && $mail->email === $created->email
+                    && $mail->role === $created->role
+                    && Hash::check($mail->generatedPassword, $created->password);
+            });
+        }
+    }
+
+    public function test_new_account_validation_rejects_duplicate_email_and_admin_role(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->post(route('users.store'), [
+            'name' => 'Duplicate', 'email' => $admin->email,
+            'role' => 'admin',
+        ])->assertSessionHasErrors(['email', 'role']);
+        $this->assertSame(1, User::count());
+    }
+
+    public function test_removed_fields_are_ignored_and_admin_creation_is_rejected(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->post(route('users.store'), [
+            'name' => 'New User', 'email' => 'new.user@psu.edu.ph', 'role' => 'user',
+            'password' => 'injected-password', 'phone_number' => '123456789',
+        ])->assertRedirect(route('users.index'));
+        $created = User::where('email', 'new.user@psu.edu.ph')->firstOrFail();
+        $this->assertFalse(Hash::check('injected-password', $created->password));
+        $this->assertNull($created->phone_number);
+        $this->post(route('users.store'), [
+            'name' => 'New Admin', 'email' => 'new.admin@psu.edu.ph', 'role' => 'admin',
+        ])->assertSessionHasErrors('role');
+        $this->assertDatabaseMissing('users', ['email' => 'new.admin@psu.edu.ph']);
+    }
+
+    public function test_credentials_email_matches_the_existing_template_and_escapes_content(): void
+    {
+        $mail = new AccountCreated('Jane <User>', '22as1345_ms@psu.edu.ph', 'Random<Password>123!', 'engineer');
+        $mail->assertHasSubject('Your PPMMIS Account Login Details');
+        $mail->assertSeeInHtml('Pangasinan State University');
+        $mail->assertSeeInHtml('22as1345_ms@psu.edu.ph');
+        $mail->assertSeeInHtml('Random<Password>123!');
+        $mail->assertSeeInHtml('Jane <User>');
+        $mail->assertSeeInHtml('Sign In to PPMMIS');
+        $mail->assertSeeInHtml('Engineer');
+    }
+
+    public function test_mail_failure_does_not_report_credentials_as_sent(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Mail::shouldReceive('to')->once()->with('new@psu.edu.ph')->andReturnSelf();
+        Mail::shouldReceive('send')->once()->andThrow(new TransportException('SMTP unavailable'));
+
+        $this->post(route('users.store'), [
+            'name' => 'New Account', 'email' => 'new@psu.edu.ph', 'role' => 'user',
+        ])->assertRedirect(route('users.index'))->assertSessionHas('error')->assertSessionMissing('success');
+        $this->assertDatabaseHas('users', ['email' => 'new@psu.edu.ph']);
+    }
+
+    public function test_admin_can_remove_another_account_and_its_session(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $target = User::factory()->create();
+        DB::table('sessions')->insert(['id' => 'target-session', 'user_id' => $target->id, 'payload' => '', 'last_activity' => time()]);
+        $this->actingAs($admin)->delete(route('users.destroy', $target))->assertRedirect(route('users.index'));
+        $this->assertModelMissing($target);
+        $this->assertDatabaseMissing('sessions', ['id' => 'target-session']);
+        $this->delete(route('users.destroy', $admin))->assertSessionHas('error');
+        $this->assertModelExists($admin);
+        $this->delete(route('users.destroy', 99999))->assertNotFound();
+    }
+
+    public function test_account_with_linked_records_cannot_be_removed(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $target = User::factory()->create();
+        DB::table('facility_requests')->insert([
+            'user_id' => $target->id, 'request_number' => 'FR-TEST', 'facility' => 'Hall',
+            'category' => 'Meeting', 'requested_date' => '2026-11-07', 'purpose' => 'Meeting',
+        ]);
+        $this->actingAs($admin)->delete(route('users.destroy', $target))->assertSessionHas('error');
+        $this->assertModelExists($target);
+        $this->assertDatabaseHas('facility_requests', ['user_id' => $target->id]);
+    }
+
+    public function test_work_and_inventory_links_prevent_account_removal(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        foreach (['user_id', 'requester_id', 'assigned_to'] as $column) {
+            $target = User::factory()->create();
+            DB::table('work_requests')->insert([
+                $column => $target->id, 'title' => 'Repair', 'description' => 'Repair request',
+                'request_number' => 'WR-'.$column,
+            ]);
+            $this->delete(route('users.destroy', $target))->assertSessionHas('error');
+            $this->assertModelExists($target);
+        }
+        $target = User::factory()->create();
+        DB::table('inventory_entries')->insert(['user_id' => $target->id, 'form' => 'test', 'data' => '{}']);
+        $this->delete(route('users.destroy', $target))->assertSessionHas('error');
+        $this->assertModelExists($target);
+    }
+
+    public function test_only_admins_can_add_or_remove_accounts(): void
+    {
+        $target = User::factory()->create();
+        $this->get(route('users.create'))->assertRedirect(route('login'));
+        $this->post(route('users.store'), [])->assertRedirect(route('login'));
+        $this->delete(route('users.destroy', $target))->assertRedirect(route('login'));
+        foreach (['user', 'engineer'] as $role) {
+            $this->actingAs(User::factory()->create(['role' => $role]));
+            $this->get(route('users.create'))->assertForbidden();
+            $this->post(route('users.store'), [])->assertForbidden();
+            $this->delete(route('users.destroy', $target))->assertForbidden();
+        }
+        $this->assertModelExists($target);
     }
 
     public function test_admin_cannot_remove_their_own_admin_role(): void
