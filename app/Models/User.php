@@ -90,6 +90,10 @@ class User extends Authenticatable
 
     public function isAccountActive(): bool
     {
+        if ($this->isAdmin()) {
+            return $this->is_active;
+        }
+
         return $this->is_active && $this->hasVerifiedEmail() && ! $this->must_change_password;
     }
 

@@ -44,6 +44,19 @@ class AccountRequestTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_designation_is_required_and_uses_the_correct_validation_label(): void
+    {
+        $this->get(route('register'))->assertOk()->assertSee('Designation')->assertDontSee('Department (optional)');
+        foreach ([null, '', '   '] as $designation) {
+            $response = $this->post(route('register'), [
+                'name' => 'Requesting User', 'email' => 'designation@psu.edu.ph', 'department' => $designation,
+            ]);
+            $response->assertSessionHasErrors('department');
+            $this->assertStringContainsString('designation', session('errors')->first('department'));
+        }
+        $this->assertSame(0, AccountRequest::count());
+    }
+
     public function test_requests_validate_psu_email_and_prevent_duplicates(): void
     {
         AccountRequest::factory()->create(['email' => 'pending@psu.edu.ph']);

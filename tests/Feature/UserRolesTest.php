@@ -100,6 +100,7 @@ class UserRolesTest extends TestCase
         $this->post(route('register'), [
             'name' => 'New Registrant',
             'email' => 'registrant@psu.edu.ph',
+            'department' => 'Instructor',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'engineer',

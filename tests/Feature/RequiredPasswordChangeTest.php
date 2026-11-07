@@ -97,6 +97,14 @@ class RequiredPasswordChangeTest extends TestCase
         }
     }
 
+    public function test_admin_status_remains_active_without_email_verification(): void
+    {
+        $admin = User::factory()->make(['role' => 'admin', 'is_active' => true, 'is_verified' => false]);
+        $this->assertTrue($admin->isAccountActive());
+        $admin->is_active = false;
+        $this->assertFalse($admin->isAccountActive());
+    }
+
     public function test_password_reset_does_not_reactivate_a_previously_verified_disabled_account(): void
     {
         $user = User::factory()->create(['email' => 'disabled@psu.edu.ph', 'is_active' => false, 'is_verified' => true]);

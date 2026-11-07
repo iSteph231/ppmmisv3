@@ -24,7 +24,13 @@ class StoreAccountRequestRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@psu\.edu\.ph$/', 'unique:users,email', 'unique:account_requests,email'],
-            'department' => ['nullable', 'string', 'max:255'],
+            'department' => ['required', 'string', 'max:255'],
         ];
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return ['department' => 'designation'];
     }
 }

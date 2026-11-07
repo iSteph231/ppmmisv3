@@ -23,14 +23,15 @@
         <div class="table-header"><h2 id="account-requests-title" class="table-title">Account Requests ({{ $accountRequests->total() }})</h2></div>
         <div class="data-table overflow-x-auto">
             <table>
-                <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Review request</th></tr></thead>
+                <thead><tr><th>Name</th><th>Email</th><th>Designation</th><th>Review request</th></tr></thead>
                 <tbody>
                     @forelse($accountRequests as $accountRequest)
                         <tr>
                             <td>{{ $accountRequest->name }}</td><td>{{ $accountRequest->email }}</td>
                             <td>{{ $accountRequest->department ?? 'Not specified' }}</td>
                             <td>
-                                <form method="POST" action="{{ route('account-requests.approve', $accountRequest) }}" class="flex flex-wrap items-center gap-2">
+                                <div class="request-review-actions">
+                                <form method="POST" action="{{ route('account-requests.approve', $accountRequest) }}" class="request-review-approve">
                                     @csrf
                                     <label for="request-role-{{ $accountRequest->id }}" class="sr-only">Role for {{ $accountRequest->name }}</label>
                                     <select id="request-role-{{ $accountRequest->id }}" name="role" required class="rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
@@ -38,11 +39,12 @@
                                     </select>
                                     <button type="submit" class="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">Approve and email link</button>
                                 </form>
-                                <form method="POST" action="{{ route('account-requests.decline', $accountRequest) }}" class="mt-2">
+                                <form method="POST" action="{{ route('account-requests.decline', $accountRequest) }}" class="request-review-decline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="rounded-lg border border-red-700 px-4 py-2 font-semibold text-red-800">Decline request</button>
                                 </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
