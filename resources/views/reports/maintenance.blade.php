@@ -8,7 +8,7 @@
         align-items: end;
         display: grid;
         gap: 1rem;
-        grid-template-columns: repeat(3, minmax(200px, 1fr)) auto;
+        grid-template-columns: repeat(3, minmax(min(100%, 200px), 1fr)) auto;
     }
 
     .maintenance-report-filter-actions {
@@ -43,7 +43,7 @@
 
     @media (max-width: 1024px) {
         .maintenance-report-filter-form {
-            grid-template-columns: repeat(2, minmax(200px, 1fr));
+            grid-template-columns: repeat(2, minmax(min(100%, 200px), 1fr));
         }
 
         .maintenance-report-filter-actions {
@@ -104,7 +104,7 @@
     </div>
 
     {{-- Statistics Cards --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Total Schedules</h3>
             <p style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ $totalSchedules ?? 0 }}</p>
@@ -126,7 +126,7 @@
     {{-- Maintenance Table --}}
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table class="mobile-summary-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <th style="padding: 1rem; text-align: left;">Scheduled Date</th>
@@ -139,10 +139,10 @@
                 </thead>
                 <tbody>
                     @forelse($maintenanceSchedules as $schedule)
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <tr data-request-url="{{ route('maintenance.show', $schedule->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 1rem;">{{ $schedule->scheduled_date ? \Carbon\Carbon::parse($schedule->scheduled_date)->format('M d, Y') : 'N/A' }}</td>
-                        <td style="padding: 1rem;">{{ $schedule->activity ?? 'N/A' }}</td>
-                        <td style="padding: 1rem;">{{ $schedule->maintenance_in_charge ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" style="padding: 1rem;">{{ $schedule->activity ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" style="padding: 1rem;">{{ $schedule->maintenance_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">{{ $schedule->engineer_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">
                             @if($schedule->status == 'pending')

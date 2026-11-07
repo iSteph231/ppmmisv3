@@ -2,6 +2,15 @@
 
 return [
 
+    'google_drive' => [
+        'folder_id' => env('GOOGLE_DRIVE_FOLDER_ID'),
+        'ca_bundle' => env('GOOGLE_DRIVE_CA_BUNDLE'),
+        'service_account_path' => env('GOOGLE_DRIVE_SERVICE_ACCOUNT_PATH', storage_path('app/google-service-account.json')),
+        'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+        'refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

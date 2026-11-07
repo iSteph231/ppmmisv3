@@ -91,7 +91,7 @@
         </form>
         
         {{-- Search Box --}}
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <div class="page-toolbar-actions" style="display: flex; gap: 0.75rem; align-items: center;">
             <a href="{{ route('inspections.export-all-pdf') }}" class="btn-create" style="background: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
                 Export All PDF
             </a>
@@ -107,7 +107,7 @@
     {{-- Inspections Table --}}
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <table class="mobile-summary-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
                 <thead>
                     <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <th style="padding: 0.875rem 1rem; text-align: left;">ID</th>
@@ -121,15 +121,15 @@
                 </thead>
                 <tbody>
                     @forelse($inspections as $inspection)
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <tr data-request-url="{{ route('inspections.show', $inspection->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 0.875rem 1rem;">#{{ $inspection->id }}</td>
-                        <td style="padding: 0.875rem 1rem; font-family: monospace;">
+                        <td class="mobile-summary-field" style="padding: 0.875rem 1rem; font-family: monospace;">
                             {{ $inspection->workRequest->request_number ?? 'N/A' }}
                         </td>
                         <td style="padding: 0.875rem 1rem;">
                             {{ $inspection->workRequest->title ?? 'N/A' }}
                         </td>
-                        <td style="padding: 0.875rem 1rem;">
+                        <td class="mobile-summary-field" style="padding: 0.875rem 1rem;">
                             {{ $inspection->workRequest->user->name ?? 'N/A' }}
                         </td>
                         <td style="padding: 0.875rem 1rem;">

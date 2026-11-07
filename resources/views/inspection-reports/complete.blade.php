@@ -17,7 +17,7 @@
                 {{-- Work Request Info --}}
                 <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
                     <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Work Request Details</h3>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    <div class="responsive-grid-two" style="display: grid; gap: 0.5rem;">
                         <div><strong>Request #:</strong> {{ $inspectionReport->workRequest->request_number }}</div>
                         <div><strong>Title:</strong> {{ $inspectionReport->workRequest->title }}</div>
                         <div><strong>Scheduled Date:</strong> {{ \Carbon\Carbon::parse($inspectionReport->scheduled_date)->format('F d, Y h:i A') }}</div>

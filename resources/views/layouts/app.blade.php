@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     {{-- Your Custom CSS (from public folder) --}}
-    <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/ppmmis-dashboard.css')), 0, 16) }}">
     
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -23,10 +23,10 @@
     
     @stack('styles')
 </head>
-<body x-data="{ sidebarOpen: false }">
+<body x-data="{ sidebarOpen: false, mobileViewport: window.innerWidth < 1024 }" @keydown.escape.window="sidebarOpen = false" @resize.window="mobileViewport = window.innerWidth < 1024; if (!mobileViewport) sidebarOpen = false">
     <div class="dashboard-container">
         {{-- ========== SIDEBAR ========== --}}
-        <aside class="sidebar" :class="{'open': sidebarOpen}">
+        <aside id="main-sidebar" class="sidebar" :class="{'open': sidebarOpen}" :inert="!sidebarOpen && mobileViewport">
             <div class="sidebar-header">
                 <span class="sidebar-brand">PPMMIS</span>
             </div>
@@ -128,12 +128,14 @@
             </nav>
         </aside>
 
+        <div class="sidebar-backdrop" x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak aria-hidden="true"></div>
+
         {{-- ========== MAIN CONTENT ========== --}}
-        <main class="main-content">
+        <main class="main-content" :class="{ 'sidebar-active': sidebarOpen }">
             <header class="top-nav">
                 <div class="top-nav-container">
                     {{-- Mobile Menu Toggle --}}
-                    <button @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn">
+                    <button type="button" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn" aria-label="Toggle navigation" aria-controls="main-sidebar" :aria-expanded="sidebarOpen.toString()">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -193,8 +195,8 @@
             }
         });
     </script>
-    <script src="{{ asset('js/dashboard.js') }}"></script>
-    <script defer src="{{ asset('js/request-updates.js') }}"></script>
+    <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
+    <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
     @stack('scripts')
 </body>
 </html>

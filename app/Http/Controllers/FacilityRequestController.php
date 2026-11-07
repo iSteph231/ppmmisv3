@@ -8,6 +8,7 @@ use App\Http\Requests\StoreFacilityRequest;
 use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\FacilityImageStorage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FacilityRequestController extends Controller
 {
+    public function __construct(private FacilityImageStorage $images) {}
+
     public function availability(FacilityAvailabilityRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -94,7 +96,7 @@ class FacilityRequestController extends Controller
         $logoPath = public_path('images/inventory/convenience-outlet.png');
         $logo = is_file($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
         $photos = [];
-        $disk = Storage::disk('local');
+        $disk = $this->images;
         foreach (['before', 'after'] as $stage) {
             $path = $facilityRequest->{$stage.'_photo_path'};
             $photos[$stage] = $path && $disk->exists($path)
@@ -154,9 +156,9 @@ class FacilityRequestController extends Controller
     {
         abort_unless(Auth::user()->isAdmin() || $facilityRequest->user_id === Auth::id(), 403);
         $path = $facilityRequest->program_image_path;
-        abort_unless($path && Storage::disk('local')->exists($path), 404);
+        abort_unless($path && $this->images->exists($path), 404);
 
-        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
+        return $this->images->response($path);
     }
 
     public function photo(FacilityRequest $facilityRequest, string $stage): StreamedResponse
@@ -164,9 +166,9 @@ class FacilityRequestController extends Controller
         abort_unless(Auth::user()->isAdmin() || $facilityRequest->user_id === Auth::id(), 403);
         abort_unless(in_array($stage, ['before', 'after'], true), 404);
         $path = $facilityRequest->{$stage.'_photo_path'};
-        abort_unless($path && Storage::disk('local')->exists($path), 404);
+        abort_unless($path && $this->images->exists($path), 404);
 
-        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
+        return $this->images->response($path);
     }
 
     public function uploadPhotos(Request $request, FacilityRequest $facilityRequest): RedirectResponse
@@ -197,7 +199,7 @@ class FacilityRequestController extends Controller
                     if ($request->hasFile($stage.'_photo')) {
                         $photo = $request->file($stage.'_photo');
                         $filename = $facilityRequest->request_number.'-'.$stage.'.'.$photo->extension();
-                        $path = $photo->storeAs($facilityRequest->photoDirectory(), $filename, 'local');
+                        $path = $this->images->store($photo, $facilityRequest->photoDirectory(), $filename);
                         if (! $path) {
                             throw new \RuntimeException('Unable to store the facility photo.');
                         }
@@ -208,7 +210,7 @@ class FacilityRequestController extends Controller
                 $facilityRequest->save();
             });
         } catch (\Throwable $exception) {
-            Storage::disk('local')->delete($storedPaths);
+            $this->images->delete($storedPaths);
             throw $exception;
         }
 
@@ -259,7 +261,7 @@ class FacilityRequestController extends Controller
                 $nextNumber = $lastRequest ? ((int) substr($lastRequest->request_number, -4)) + 1 : 1;
 
                 if ($request->hasFile('program_image')) {
-                    $storedPath = $request->file('program_image')->store('facility-requests/programs', 'local');
+                    $storedPath = $this->images->store($request->file('program_image'), 'facility-requests/programs');
                     if (! $storedPath) {
                         throw new \RuntimeException('Unable to store the program or event planner image.');
                     }
@@ -304,7 +306,7 @@ class FacilityRequestController extends Controller
             throw ValidationException::withMessages(['facility' => 'Availability is being updated. Please try submitting your request again.']);
         } catch (\Throwable $exception) {
             if ($storedPath) {
-                Storage::disk('local')->delete($storedPath);
+                $this->images->delete($storedPath);
             }
             throw $exception;
         } finally {

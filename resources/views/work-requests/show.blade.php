@@ -12,7 +12,7 @@
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="padding: 1.5rem;">
             {{-- Request Information Grid --}}
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="responsive-grid-two" style="display: grid; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Request #:</strong>
                     <p style="margin-top: 0.25rem; font-size: 1rem; font-family: monospace;">{{ $workRequest->request_number ?? 'N/A' }}</p>
@@ -85,7 +85,7 @@
             <div style="margin-bottom: 1.5rem;">
                 <strong style="color: #6b7280; font-size: 0.875rem; display: block; margin-bottom: 0.75rem;">Location Information:</strong>
                 <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="responsive-grid-two" style="display: grid; gap: 1rem;">
                         <div>
                             <strong style="color: #6b7280; font-size: 0.75rem;">Department:</strong>
                             <p style="margin-top: 0.25rem; font-size: 0.875rem;">{{ $workRequest->department ?? 'Not specified' }}</p>

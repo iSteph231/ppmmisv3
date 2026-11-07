@@ -6,6 +6,7 @@ use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -15,6 +16,13 @@ class FacilityRequestProgramImageTest extends TestCase
     {
         parent::setUp();
         Storage::fake('local');
+        config(['services.google_drive' => ['folder_id' => 'folder', 'client_id' => 'client', 'client_secret' => 'secret', 'refresh_token' => 'refresh']]);
+        Http::preventStrayRequests();
+        Http::fake([
+            'oauth2.googleapis.com/token' => Http::response(['access_token' => 'token']),
+            'www.googleapis.com/upload/drive/*' => Http::response(['id' => 'program123']),
+            'www.googleapis.com/drive/v3/files/*' => Http::response(['id' => 'program123', 'mimeType' => 'image/png', 'trashed' => false]),
+        ]);
         foreach ([
             '0001_01_01_000000_create_users_table.php',
             '2026_04_24_061654_add_role_and_active_to_users_table.php',
@@ -61,7 +69,7 @@ class FacilityRequestProgramImageTest extends TestCase
         $facility = FacilityRequest::sole();
         $this->assertSame('pending', $facility->status);
         $this->assertNull($facility->decline_reason);
-        Storage::disk('local')->assertExists($facility->program_image_path);
+        $this->assertSame('gdrive:program123', $facility->program_image_path);
         $this->assertNotSame('event-program.png', basename($facility->program_image_path));
         $this->assertSame($admin->id, Notification::sole()->user_id);
         $url = route('request-facility.program-image', $facility);
