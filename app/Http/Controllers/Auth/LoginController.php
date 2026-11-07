@@ -51,7 +51,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             // Check if user is active
-            if (Auth::user()->is_active != true) {
+            if (! Auth::user()->is_active && ! Auth::user()->must_change_password) {
                 Auth::logout();
 
                 return back()->with('error', '⚠️ Your account is deactivated. Please contact the administrator.')

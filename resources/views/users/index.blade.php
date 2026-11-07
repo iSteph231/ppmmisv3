@@ -19,6 +19,41 @@
         <div role="alert" class="mb-4 rounded-lg bg-red-50 p-4 text-red-800">{{ $errors->first() }}</div>
     @endif
 
+    <section class="table-container mb-6" aria-labelledby="account-requests-title">
+        <div class="table-header"><h2 id="account-requests-title" class="table-title">Account Requests ({{ $accountRequests->total() }})</h2></div>
+        <div class="data-table overflow-x-auto">
+            <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Review request</th></tr></thead>
+                <tbody>
+                    @forelse($accountRequests as $accountRequest)
+                        <tr>
+                            <td>{{ $accountRequest->name }}</td><td>{{ $accountRequest->email }}</td>
+                            <td>{{ $accountRequest->department ?? 'Not specified' }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('account-requests.approve', $accountRequest) }}" class="flex flex-wrap items-center gap-2">
+                                    @csrf
+                                    <label for="request-role-{{ $accountRequest->id }}" class="sr-only">Role for {{ $accountRequest->name }}</label>
+                                    <select id="request-role-{{ $accountRequest->id }}" name="role" required class="rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+                                        <option value="user">User</option><option value="engineer">Engineer</option>
+                                    </select>
+                                    <button type="submit" class="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">Approve and email link</button>
+                                </form>
+                                <form method="POST" action="{{ route('account-requests.decline', $accountRequest) }}" class="mt-2">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="rounded-lg border border-red-700 px-4 py-2 font-semibold text-red-800">Decline request</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4">No pending account requests.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4">{{ $accountRequests->withQueryString()->links() }}</div>
+    </section>
+
     <div class="table-container">
         <div class="table-header flex flex-wrap items-center justify-between gap-3">
             <h2 class="table-title">All Users</h2>
@@ -62,8 +97,8 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge {{ $user->is_active ? 'badge-completed' : 'badge-pending' }}">
-                                {{ $user->is_active ? 'Active' : 'Inactive' }}
+                            <span class="badge {{ $user->isAccountActive() ? 'badge-completed' : 'badge-pending' }}">
+                                {{ $user->isAccountActive() ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
                         <td>

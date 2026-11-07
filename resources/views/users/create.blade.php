@@ -27,7 +27,7 @@
                 </select>
                 @error('role')<p class="mt-2 text-red-700">{{ $message }}</p>@enderror
             </div>
-            <p class="text-gray-600">A random password will be generated and emailed with the login details to the account email address.</p>
+            <p class="text-gray-600">The user will receive an email link to set their password and activate their account.</p>
             <div class="flex flex-wrap gap-3">
                 <button type="submit" class="rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800">Create account</button>
                 <a href="{{ route('users.index') }}" class="rounded-lg border border-gray-400 px-5 py-3 font-semibold">Cancel</a>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ApproveAccountRequestRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use App\Mail\AccountCreated;
+use App\Models\AccountRequest;
 use App\Models\User;
 use App\Models\WorkRequest;
 use Illuminate\Database\QueryException;
@@ -43,7 +45,9 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(15)->withQueryString();
 
-        return view('users.index', compact('users'));
+        $accountRequests = AccountRequest::oldest()->paginate(10, ['*'], 'requests_page');
+
+        return view('users.index', compact('users', 'accountRequests'));
     }
 
     public function updateRole(UpdateUserRoleRequest $request, User $user): RedirectResponse|JsonResponse
@@ -76,31 +80,70 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $generatedPassword = Str::password(length: 8, symbols: false);
+        $user = $this->createPendingAccount($request->validated());
+        AccountRequest::where('email', $user->email)->delete();
+
+        return $this->sendAccountSetupLink($user);
+    }
+
+    /** @param array{name: string, email: string, role: string, department?: ?string} $data */
+    private function createPendingAccount(array $data): User
+    {
         $user = new User([
-            ...$request->validated(),
-            'password' => Hash::make($generatedPassword),
-            'is_active' => true,
+            ...$data,
+            'password' => Hash::make(Str::random(64)),
+            'is_active' => false,
             'is_verified' => false,
         ]);
         $user->must_change_password = true;
         $user->save();
 
+        return $user;
+    }
+
+    public function approveAccountRequest(ApproveAccountRequestRequest $request, AccountRequest $accountRequest): RedirectResponse
+    {
+        $user = DB::transaction(function () use ($request, $accountRequest): User {
+            $pendingRequest = AccountRequest::lockForUpdate()->findOrFail($accountRequest->id);
+            if (User::where('email', $pendingRequest->email)->exists()) {
+                throw ValidationException::withMessages(['email' => 'An account already exists for this email address.']);
+            }
+            $user = $this->createPendingAccount([
+                ...$pendingRequest->only(['name', 'email', 'department']),
+                'role' => $request->validated('role'),
+            ]);
+            $pendingRequest->delete();
+
+            return $user;
+        });
+
+        return $this->sendAccountSetupLink($user);
+    }
+
+    public function declineAccountRequest(AccountRequest $accountRequest): RedirectResponse
+    {
+        $accountRequest->delete();
+
+        return redirect()->route('users.index')->with('success', 'Account request declined.');
+    }
+
+    private function sendAccountSetupLink(User $user): RedirectResponse
+    {
         $changePasswordUrl = route('password.reset', [
             'token' => Password::broker()->createToken($user), 'email' => $user->email,
         ]);
 
         try {
             Mail::to($user->email)->send(new AccountCreated(
-                $user->name, $user->email, $generatedPassword, $user->role, $changePasswordUrl,
+                $user->name, $user->email, $user->role, $changePasswordUrl,
             ));
         } catch (TransportExceptionInterface $exception) {
             return redirect()->route('users.index')->with('error',
-                'Account created, but the login details email could not be sent. The user can use Forgot Password to set a password.');
+                'Account created, but the password setup email could not be sent. The user can use Forgot Password to set a password.');
         }
 
         return redirect()->route('users.index')
-            ->with('success', 'Account created. Login details have been emailed to '.$user->email.'.');
+            ->with('success', 'Account created. A password setup link has been emailed to '.$user->email.'.');
     }
 
     /**

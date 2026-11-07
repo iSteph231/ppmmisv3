@@ -531,8 +531,8 @@ overflow-wrap:anywhere;
 
 <!-- REGISTER -->
 <div class="register-section">
-    <p>Don't have an account?</p>
-    <a href="{{ route('register') }}" class="register-btn">Register</a>
+    <p>Need an account?</p>
+    <a href="{{ route('register') }}" class="register-btn">Request an Account</a>
 </div>
 
 </form>

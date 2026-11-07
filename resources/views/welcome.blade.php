@@ -261,7 +261,7 @@ h1 {
         </div>
         <nav class="nav-actions" aria-label="Primary">
             <a href="{{ route('login') }}" class="nav-link">Log in</a>
-            <a href="{{ route('register') }}" class="nav-link">Register</a>
+            <a href="{{ route('register') }}" class="nav-link">Request an Account</a>
         </nav>
     </header>
 
@@ -274,7 +274,7 @@ h1 {
                 <p class="description">A simple system for tracking work requests, inspections, and maintenance activities.</p>
                 <div class="actions">
                     <a href="{{ route('login') }}" class="btn btn-primary">Log in</a>
-                    <a href="{{ route('register') }}" class="btn btn-secondary">Create account</a>
+                    <a href="{{ route('register') }}" class="btn btn-secondary">Request an Account</a>
                 </div>
             </div>
             <div class="hero-visual" aria-hidden="true">

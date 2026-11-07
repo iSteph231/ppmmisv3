@@ -19,6 +19,7 @@ class UserRolesTest extends TestCase
         foreach ([
             '0001_01_01_000000_create_users_table.php',
             '2026_04_24_061654_add_role_and_active_to_users_table.php',
+            '2026_11_07_140405_create_account_requests_table.php',
         ] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
@@ -95,24 +96,18 @@ class UserRolesTest extends TestCase
         (require database_path('migrations/2026_11_03_141756_add_engineer_to_user_roles.php'))->up();
         Mail::fake();
 
-        $this->get('/register')->assertOk()->assertDontSee('Engineer');
-        $this->post('/register', [
+        $this->get(route('register'))->assertOk()->assertDontSee('Engineer');
+        $this->post(route('register'), [
             'name' => 'New Registrant',
             'email' => 'registrant@psu.edu.ph',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'engineer',
-        ])->assertRedirect(route('otp.verification.form'));
+        ])->assertRedirect(route('register'));
 
-        $pendingRegistration = session('pending_registration');
-        $this->assertArrayNotHasKey('role', $pendingRegistration);
-
-        $this->postJson(route('otp.verify'), [
-            'otp' => $pendingRegistration['otp'],
-            'role' => 'engineer',
-        ])->assertOk()->assertJson(['success' => true]);
-
-        $this->assertSame('user', User::where('email', 'registrant@psu.edu.ph')->firstOrFail()->role);
+        $this->assertSame(0, User::count());
+        $this->assertDatabaseHas('account_requests', ['email' => 'registrant@psu.edu.ph']);
+        Mail::assertNothingSent();
     }
 
     public function test_regular_users_cannot_access_maintenance(): void

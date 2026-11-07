@@ -23,6 +23,7 @@ class UserManagementTest extends TestCase
             '2026_11_03_141756_add_engineer_to_user_roles.php',
             '2026_05_13_205842_add_otp_fields_to_users_table.php',
             '2026_11_07_135137_add_must_change_password_to_users_table.php',
+            '2026_11_07_140405_create_account_requests_table.php',
             '2026_04_24_062233_create_work_requests_table.php',
             '2026_04_28_080517_add_user_id_to_work_requests_table.php',
             '2026_09_24_000000_create_facility_requests_table.php',
@@ -121,17 +122,16 @@ class UserManagementTest extends TestCase
             $this->assertSame($role, $created->role);
             $this->assertFalse(Hash::check('password123', $created->password));
             $this->assertNull($created->phone_number);
-            $this->assertTrue($created->is_active);
+            $this->assertFalse($created->is_active);
+            $this->assertFalse($created->isAccountActive());
             $this->assertFalse($created->is_verified);
             $this->assertTrue($created->must_change_password);
             $this->assertNull($created->email_verified_at);
             Mail::assertSent(AccountCreated::class, function (AccountCreated $mail) use ($created): bool {
-                $this->assertMatchesRegularExpression('/\A[A-Za-z0-9]{8}\z/', $mail->generatedPassword);
-
                 return $mail->hasTo($created->email)
                     && $mail->email === $created->email
                     && $mail->role === $created->role
-                    && Hash::check($mail->generatedPassword, $created->password);
+                    && str_contains($mail->changePasswordUrl, '/reset-password/');
             });
         }
     }
@@ -164,13 +164,13 @@ class UserManagementTest extends TestCase
 
     public function test_credentials_email_matches_the_existing_template_and_escapes_content(): void
     {
-        $mail = new AccountCreated('Jane <User>', '22as1345_ms@psu.edu.ph', 'Random<Password>123!', 'engineer', route('password.reset', ['token' => 'test-token', 'email' => '22as1345_ms@psu.edu.ph']));
-        $mail->assertHasSubject('Your PPMMIS Account Login Details');
+        $mail = new AccountCreated('Jane <User>', '22as1345_ms@psu.edu.ph', 'engineer', route('password.reset', ['token' => 'test-token', 'email' => '22as1345_ms@psu.edu.ph']));
+        $mail->assertHasSubject('Set Up Your PPMMIS Account');
         $mail->assertSeeInHtml('Pangasinan State University');
         $mail->assertSeeInHtml('22as1345_ms@psu.edu.ph');
-        $mail->assertSeeInHtml('Random<Password>123!');
+        $mail->assertDontSeeInHtml('Password:</strong>', false);
         $mail->assertSeeInHtml('Jane <User>');
-        $mail->assertSeeInHtml('Sign In to PPMMIS');
+        $mail->assertSeeInHtml('Set Password and Activate Account');
         $mail->assertSeeInHtml('Engineer');
     }
 

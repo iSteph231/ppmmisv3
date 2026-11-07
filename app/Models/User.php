@@ -88,6 +88,11 @@ class User extends Authenticatable
         return $this->role === 'engineer';
     }
 
+    public function isAccountActive(): bool
+    {
+        return $this->is_active && $this->hasVerifiedEmail() && ! $this->must_change_password;
+    }
+
     /**
      * Check if user has specific role
      */

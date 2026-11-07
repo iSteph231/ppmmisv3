@@ -72,11 +72,12 @@ class ResetPasswordController extends Controller
             function (User $user, string $password): void {
                 if ($user->must_change_password && Hash::check($password, $user->password)) {
                     throw ValidationException::withMessages([
-                        'password' => 'Choose a new password different from your generated password.',
+                        'password' => 'Choose a new password different from your current password.',
                     ]);
                 }
                 $user->forceFill([
                     'password' => Hash::make($password),
+                    'is_active' => $user->must_change_password || ! $user->is_verified || $user->is_active,
                     'must_change_password' => false,
                     'is_verified' => true,
                     'email_verified_at' => $user->email_verified_at ?? now(),

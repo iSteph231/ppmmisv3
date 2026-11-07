@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Account Login Details - PPMMIS</title>
+    <title>Set Up Your Account - PPMMIS</title>
 </head>
 <body style="margin: 0; padding: 0; background: #f2f5fb; font-family: Arial, Helvetica, sans-serif; color: #243044;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f2f5fb; padding: 28px 12px;">
@@ -24,7 +24,7 @@
                             <p style="margin: 0 0 8px; color: #64748b; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">New Account</p>
                             <h2 style="margin: 0 0 18px; color: #071a3f; font-size: 24px; line-height: 1.25;">Welcome to PPMMIS</h2>
                             <p style="margin: 0 0 14px; font-size: 15px; line-height: 1.7;">Hello {{ $name }},</p>
-                            <p style="margin: 0; font-size: 15px; line-height: 1.7;">An administrator has created your PPMMIS account. Use the login details below to sign in.</p>
+                            <p style="margin: 0; font-size: 15px; line-height: 1.7;">Your PPMMIS account has been approved. Use the button below to choose your password.</p>
                         </td>
                     </tr>
 
@@ -33,7 +33,6 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #e8efff; border: 1px solid #cbdaf5; border-bottom: 4px solid #f5a800; border-radius: 10px;">
                                 <tr><td style="padding: 18px; font-size: 15px; line-height: 1.8; word-break: break-word;">
                                     <strong>Email:</strong><br>{{ $email }}<br>
-                                    <strong>Password:</strong><br><span style="font-family: monospace; font-size: 18px; color: #003087;">{{ $generatedPassword }}</span><br>
                                     <strong>Role:</strong> {{ ucfirst($role) }}
                                 </td></tr>
                             </table>
@@ -43,7 +42,7 @@
                     <tr>
                         <td align="center" style="padding: 18px 34px 24px;">
                             <a href="{{ $changePasswordUrl }}" style="display: inline-block; background: linear-gradient(135deg, #f5a800 0%, #ffd467 100%); color: #071a3f; padding: 14px 30px; border-radius: 999px; font-size: 15px; font-weight: 800; text-decoration: none; box-shadow: 0 12px 24px rgba(184, 117, 0, 0.22);">
-                                Sign In to PPMMIS
+                                Set Password and Activate Account
                             </a>
                         </td>
                     </tr>
@@ -51,8 +50,8 @@
                     <tr>
                         <td style="padding: 0 34px 28px;">
                             <div style="background: #e8efff; border-left: 4px solid #003087; border-radius: 10px; padding: 16px 18px;">
-                                <p style="margin: 0 0 8px; color: #071a3f; font-size: 14px; line-height: 1.6;"><strong>You must change your generated password before using PPMMIS.</strong></p>
-                                <p style="margin: 0; color: #475569; font-size: 13px; line-height: 1.6;">Keep these login details private. Use the button above to set your own password and confirm your email. If the link has expired, select Forgot Password on the login page.</p>
+                                <p style="margin: 0 0 8px; color: #071a3f; font-size: 14px; line-height: 1.6;"><strong>Set your password to confirm your email and activate your account.</strong></p>
+                                <p style="margin: 0; color: #475569; font-size: 13px; line-height: 1.6;">Keep this setup link private. Use the button above to set your own password and confirm your email. If the link has expired, select Forgot Password on the login page.</p>
                             </div>
                         </td>
                     </tr>

@@ -19,6 +19,7 @@ class RequiredPasswordChangeTest extends TestCase
             '2026_04_24_061654_add_role_and_active_to_users_table.php',
             '2026_05_13_205842_add_otp_fields_to_users_table.php',
             '2026_11_07_135137_add_must_change_password_to_users_table.php',
+            '2026_11_07_140405_create_account_requests_table.php',
         ] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
@@ -26,7 +27,7 @@ class RequiredPasswordChangeTest extends TestCase
 
     private function pendingUser(): User
     {
-        $user = User::factory()->create(['email' => 'new@psu.edu.ph', 'password' => 'Temp1234', 'is_verified' => false]);
+        $user = User::factory()->create(['email' => 'new@psu.edu.ph', 'password' => 'Temp1234', 'is_verified' => false, 'is_active' => false]);
         $user->forceFill(['must_change_password' => true, 'email_verified_at' => null])->save();
 
         return $user;
@@ -75,9 +76,39 @@ class RequiredPasswordChangeTest extends TestCase
         $this->assertTrue(Hash::check('MyNewPassword123', $user->password));
         $this->assertFalse($user->must_change_password);
         $this->assertTrue($user->is_verified);
+        $this->assertTrue($user->is_active);
+        $this->assertTrue($user->isAccountActive());
         $this->assertNotNull($user->email_verified_at);
         $this->assertFalse(Password::broker()->tokenExists($user, $token));
         $this->actingAs($user)->get(route('password.setup'))->assertRedirect(route('dashboard'));
+    }
+
+    public function test_status_stays_inactive_until_email_is_verified_and_password_change_is_complete(): void
+    {
+        foreach ([
+            [true, false, false, false],
+            [true, true, true, false],
+            [false, true, false, false],
+            [true, true, false, true],
+        ] as [$isActive, $isVerified, $mustChangePassword, $expected]) {
+            $user = User::factory()->make(['is_active' => $isActive, 'is_verified' => $isVerified]);
+            $user->must_change_password = $mustChangePassword;
+            $this->assertSame($expected, $user->isAccountActive());
+        }
+    }
+
+    public function test_password_reset_does_not_reactivate_a_previously_verified_disabled_account(): void
+    {
+        $user = User::factory()->create(['email' => 'disabled@psu.edu.ph', 'is_active' => false, 'is_verified' => true]);
+        $token = Password::broker()->createToken($user);
+        $this->post(route('password.update'), [
+            'email' => $user->email, 'token' => $token,
+            'password' => 'MyNewPassword123', 'password_confirmation' => 'MyNewPassword123',
+        ])->assertRedirect(route('login'));
+        $this->assertFalse($user->fresh()->is_active);
+        $this->post(route('login'), ['email' => $user->email, 'password' => 'MyNewPassword123'])
+            ->assertSessionHas('error');
+        $this->assertGuest();
     }
 
     public function test_invalid_token_or_reusing_generated_password_does_not_confirm_email(): void
@@ -95,6 +126,7 @@ class RequiredPasswordChangeTest extends TestCase
         $user->refresh();
         $this->assertTrue($user->must_change_password);
         $this->assertFalse($user->is_verified);
+        $this->assertFalse($user->is_active);
         $this->assertNull($user->email_verified_at);
     }
 }
