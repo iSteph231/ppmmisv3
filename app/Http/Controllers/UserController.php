@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -80,14 +81,18 @@ class UserController extends Controller
             ...$request->validated(),
             'password' => Hash::make($generatedPassword),
             'is_active' => true,
-            'is_verified' => true,
+            'is_verified' => false,
         ]);
-        $user->email_verified_at = now();
+        $user->must_change_password = true;
         $user->save();
+
+        $changePasswordUrl = route('password.reset', [
+            'token' => Password::broker()->createToken($user), 'email' => $user->email,
+        ]);
 
         try {
             Mail::to($user->email)->send(new AccountCreated(
-                $user->name, $user->email, $generatedPassword, $user->role,
+                $user->name, $user->email, $generatedPassword, $user->role, $changePasswordUrl,
             ));
         } catch (TransportExceptionInterface $exception) {
             return redirect()->route('users.index')->with('error',

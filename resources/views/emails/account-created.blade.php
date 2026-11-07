@@ -42,7 +42,7 @@
 
                     <tr>
                         <td align="center" style="padding: 18px 34px 24px;">
-                            <a href="{{ route('login') }}" style="display: inline-block; background: linear-gradient(135deg, #f5a800 0%, #ffd467 100%); color: #071a3f; padding: 14px 30px; border-radius: 999px; font-size: 15px; font-weight: 800; text-decoration: none; box-shadow: 0 12px 24px rgba(184, 117, 0, 0.22);">
+                            <a href="{{ $changePasswordUrl }}" style="display: inline-block; background: linear-gradient(135deg, #f5a800 0%, #ffd467 100%); color: #071a3f; padding: 14px 30px; border-radius: 999px; font-size: 15px; font-weight: 800; text-decoration: none; box-shadow: 0 12px 24px rgba(184, 117, 0, 0.22);">
                                 Sign In to PPMMIS
                             </a>
                         </td>
@@ -51,8 +51,8 @@
                     <tr>
                         <td style="padding: 0 34px 28px;">
                             <div style="background: #e8efff; border-left: 4px solid #003087; border-radius: 10px; padding: 16px 18px;">
-                                <p style="margin: 0 0 8px; color: #071a3f; font-size: 14px; line-height: 1.6;"><strong>Please change your password after signing in.</strong></p>
-                                <p style="margin: 0; color: #475569; font-size: 13px; line-height: 1.6;">Keep these login details private. You can update your password in Settings after signing in.</p>
+                                <p style="margin: 0 0 8px; color: #071a3f; font-size: 14px; line-height: 1.6;"><strong>You must change your generated password before using PPMMIS.</strong></p>
+                                <p style="margin: 0; color: #475569; font-size: 13px; line-height: 1.6;">Keep these login details private. Use the button above to set your own password and confirm your email. If the link has expired, select Forgot Password on the login page.</p>
                             </div>
                         </td>
                     </tr>
@@ -60,7 +60,7 @@
                     <tr>
                         <td style="padding: 22px 34px 30px; background: #f8fbff; border-top: 1px solid #e5edf9;">
                             <p style="margin: 0; color: #64748b; font-size: 12px; line-height: 1.6;">If the button does not work, copy and paste this link into your browser:</p>
-                            <p style="margin: 8px 0 18px; color: #003087; font-size: 12px; line-height: 1.6; word-break: break-all;">{{ route('login') }}</p>
+                            <p style="margin: 8px 0 18px; color: #003087; font-size: 12px; line-height: 1.6; word-break: break-all;">{{ $changePasswordUrl }}</p>
                             <p style="margin: 0; color: #94a3b8; font-size: 12px;">&copy; {{ date('Y') }} PPMMIS. Pangasinan State University.</p>
                         </td>
                     </tr>

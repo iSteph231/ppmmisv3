@@ -58,6 +58,10 @@ class LoginController extends Controller
                     ->withInput($request->only('email', 'remember'));
             }
 
+            if (Auth::user()->must_change_password) {
+                return redirect()->route('password.setup');
+            }
+
             // Redirect based on role
             if (Auth::user()->role === 'admin') {
                 return redirect()->intended('/dashboard')->with('success', 'Welcome back, '.Auth::user()->name.'!');

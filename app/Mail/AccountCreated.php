@@ -13,6 +13,7 @@ class AccountCreated extends Mailable
         public string $email,
         public string $generatedPassword,
         public string $role,
+        public string $changePasswordUrl,
     ) {}
 
     public function envelope(): Envelope
