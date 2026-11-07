@@ -1,14 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-role-autosave]').forEach((form) => {
+    document.querySelectorAll('[data-role-form]').forEach((form) => {
         const select = form.querySelector('select[name="role"]');
         const status = form.querySelector('[data-role-status]');
-        let savedRole = select.value;
+        const button = form.querySelector('button[type="submit"]');
+        let saving = false;
 
-        form.addEventListener('submit', (event) => event.preventDefault());
-        select.addEventListener('change', async () => {
+        select.addEventListener('change', () => {
+            status.textContent = 'Unsaved changes';
+            status.className = 'text-sm text-gray-600';
+        });
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (saving) {
+                return;
+            }
+            saving = true;
+            button.disabled = true;
             const body = new FormData(form);
             select.disabled = true;
-            status.textContent = 'Saving?';
+            status.textContent = 'Saving...';
             status.className = 'text-sm text-gray-600';
 
             try {
@@ -25,16 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) {
                     throw new Error(result.errors?.role?.[0] ?? result.message ?? 'Could not save. Try again.');
                 }
-                savedRole = result.role;
-                select.value = savedRole;
+                select.value = result.role;
                 status.textContent = 'Saved';
                 status.className = 'text-sm text-green-700';
             } catch (error) {
-                select.value = savedRole;
                 status.textContent = error.message || 'Could not confirm saving. Refresh before trying again.';
                 status.className = 'text-sm text-red-700';
             } finally {
                 select.disabled = false;
+                button.disabled = false;
+                saving = false;
             }
         });
     });

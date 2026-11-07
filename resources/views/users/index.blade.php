@@ -6,7 +6,7 @@
 <div class="content-wrapper">
     <div class="greeting-section">
         <h1 class="greeting-title">Users</h1>
-        <p class="greeting-subtitle">View registered users and assign their roles. Changes save automatically.</p>
+        <p class="greeting-subtitle">Choose a role, then click Save to apply changes.</p>
     </div>
 
     @if(session('success'))
@@ -42,7 +42,7 @@
                             @if($user->is(auth()->user()))
                                 <span class="badge">Admin (you)</span>
                             @else
-                                <form method="POST" action="{{ route('users.role.update', $user) }}" class="flex items-center gap-2" data-role-autosave>
+                                <form method="POST" action="{{ route('users.role.update', $user) }}" class="flex items-center gap-2" data-role-form>
                                     @csrf
                                     @method('PATCH')
                                     <label for="role-{{ $user->id }}" class="sr-only">Role for {{ $user->name }}</label>
@@ -51,6 +51,7 @@
                                             <option value="{{ $role }}" @selected($user->role === $role)>{{ $label }}</option>
                                         @endforeach
                                     </select>
+                                    <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">Save<span class="sr-only"> role for {{ $user->name }}</span></button>
                                     <span data-role-status role="status" aria-live="polite" class="text-sm text-gray-600"></span>
                                 </form>
                             @endif
