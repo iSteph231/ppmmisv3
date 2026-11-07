@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use App\Mail\AccountCreated;
 use App\Models\User;
+use App\Models\WorkRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -74,7 +75,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $generatedPassword = Str::password(20);
+        $generatedPassword = Str::password(length: 8, symbols: false);
         $user = new User([
             ...$request->validated(),
             'password' => Hash::make($generatedPassword),
@@ -159,15 +160,29 @@ class UserController extends Controller
             return back()->with('error', 'You cannot remove your own account.');
         }
 
-        if (DB::table('work_requests')->where('user_id', $user->id)
-            ->orWhere('requester_id', $user->id)->orWhere('assigned_to', $user->id)->exists()
-            || DB::table('facility_requests')->where('user_id', $user->id)->exists()
+        if (DB::table('facility_requests')->where('user_id', $user->id)->exists()
             || DB::table('inventory_entries')->where('user_id', $user->id)->exists()) {
-            return back()->with('error', 'This account has linked requests or inventory records and cannot be removed.');
+            return back()->with('error', 'This account has linked facility requests or inventory records and cannot be removed.');
         }
 
         try {
             DB::transaction(function () use ($user): void {
+                WorkRequest::withTrashed()->where(function ($query) use ($user): void {
+                    $query->where('user_id', $user->id)
+                        ->orWhere(function ($query) use ($user): void {
+                            $query->whereNull('user_id')->where('requester_id', $user->id);
+                        });
+                })->lockForUpdate()->get()->each(function (WorkRequest $workRequest) use ($user): void {
+                    $workRequest->requester_snapshot = $user->only(['name', 'email', 'department', 'phone_number']);
+                    $workRequest->requester_name = $user->name;
+                    $workRequest->user_id = null;
+                    if ($workRequest->requester_id === $user->id) {
+                        $workRequest->requester_id = null;
+                    }
+                    $workRequest->save();
+                });
+                DB::table('work_requests')->where('requester_id', $user->id)->update(['requester_id' => null]);
+                DB::table('work_requests')->where('assigned_to', $user->id)->update(['assigned_to' => null]);
                 DB::table('sessions')->where('user_id', $user->id)->delete();
                 DB::table('password_reset_tokens')->where('email', $user->email)->delete();
                 $user->delete();

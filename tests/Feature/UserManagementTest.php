@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\AccountCreated;
 use App\Models\User;
+use App\Models\WorkRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -25,9 +26,12 @@ class UserManagementTest extends TestCase
             '2026_04_28_080517_add_user_id_to_work_requests_table.php',
             '2026_09_24_000000_create_facility_requests_table.php',
             '2026_10_08_105045_create_inventory_entries_table.php',
+            '2026_11_07_122817_add_requester_snapshot_to_work_requests_table.php',
         ] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
+        require_once database_path('migrations/2026_05_04_142741_create_inspection_reports_table.php');
+        (new \CreateInspectionReportsTable)->up();
     }
 
     public function test_admin_can_list_users_with_role_controls_and_pagination(): void
@@ -120,6 +124,8 @@ class UserManagementTest extends TestCase
             $this->assertTrue($created->is_verified);
             $this->assertNotNull($created->email_verified_at);
             Mail::assertSent(AccountCreated::class, function (AccountCreated $mail) use ($created): bool {
+                $this->assertMatchesRegularExpression('/\A[A-Za-z0-9]{8}\z/', $mail->generatedPassword);
+
                 return $mail->hasTo($created->email)
                     && $mail->email === $created->email
                     && $mail->role === $created->role
@@ -204,18 +210,67 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseHas('facility_requests', ['user_id' => $target->id]);
     }
 
-    public function test_work_and_inventory_links_prevent_account_removal(): void
+    public function test_work_requests_keep_requester_details_after_account_removal(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $target = User::factory()->create(['department' => 'Engineering', 'phone_number' => '09123456789']);
+        foreach ([false, true] as $deleted) {
+            DB::table('work_requests')->insert([
+                'user_id' => $target->id, 'requester_id' => $target->id, 'assigned_to' => $target->id,
+                'title' => 'Repair', 'description' => 'Retain this description',
+                'department' => 'Original department', 'request_number' => 'WR-'.(int) $deleted,
+                'deleted_at' => $deleted ? now() : null,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        $this->actingAs($admin)->delete(route('users.destroy', $target))
+            ->assertRedirect(route('users.index'))->assertSessionHas('success');
+        $this->assertModelMissing($target);
+        $requests = WorkRequest::withTrashed()->get();
+        $this->assertCount(2, $requests);
+        foreach ($requests as $request) {
+            $this->assertNull($request->user_id);
+            $this->assertNull($request->requester_id);
+            $this->assertNull($request->assigned_to);
+            $this->assertNull($request->user);
+            $this->assertSame($target->name, $request->requester_display_name);
+            $this->assertSame($target->email, $request->requester_snapshot['email']);
+            $this->assertSame('Engineering', $request->requester_snapshot['department']);
+            $this->assertSame('09123456789', $request->requester_snapshot['phone_number']);
+            $this->assertSame('Original department', $request->department);
+            $this->assertSame('Retain this description', $request->description);
+        }
+        $this->get(route('work-requests.index'))->assertOk()->assertSee($target->name);
+        $this->get(route('work-requests.index', ['search' => $target->name]))
+            ->assertOk()->assertSee('WR-0');
+    }
+
+    public function test_legacy_requester_and_assignment_links_are_disconnected_without_changing_another_owner(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
-        foreach (['user_id', 'requester_id', 'assigned_to'] as $column) {
-            $target = User::factory()->create();
-            DB::table('work_requests')->insert([
-                $column => $target->id, 'title' => 'Repair', 'description' => 'Repair request',
-                'request_number' => 'WR-'.$column,
-            ]);
-            $this->delete(route('users.destroy', $target))->assertSessionHas('error');
-            $this->assertModelExists($target);
-        }
+        $target = User::factory()->create();
+        $otherOwner = User::factory()->create();
+        DB::table('work_requests')->insert([
+            'requester_id' => $target->id, 'title' => 'Legacy', 'description' => 'Legacy request', 'request_number' => 'WR-LEGACY',
+        ]);
+        DB::table('work_requests')->insert([
+            'user_id' => $otherOwner->id, 'requester_id' => $target->id, 'assigned_to' => $target->id,
+            'title' => 'Other', 'description' => 'Other request', 'request_number' => 'WR-OTHER',
+        ]);
+        $this->delete(route('users.destroy', $target))->assertSessionHas('success');
+        $this->assertModelMissing($target);
+        $legacy = WorkRequest::where('request_number', 'WR-LEGACY')->firstOrFail();
+        $this->assertSame($target->email, $legacy->requester_snapshot['email']);
+        $other = WorkRequest::where('request_number', 'WR-OTHER')->firstOrFail();
+        $this->assertSame($otherOwner->id, $other->user_id);
+        $this->assertNull($other->requester_snapshot);
+        $this->assertNull($other->requester_id);
+        $this->assertNull($other->assigned_to);
+    }
+
+    public function test_inventory_records_still_prevent_account_removal(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
         $target = User::factory()->create();
         DB::table('inventory_entries')->insert(['user_id' => $target->id, 'form' => 'test', 'data' => '{}']);
         $this->delete(route('users.destroy', $target))->assertSessionHas('error');

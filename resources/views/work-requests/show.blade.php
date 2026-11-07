@@ -54,7 +54,12 @@
                 </div>
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Process Owner:</strong>
-                    <p style="margin-top: 0.25rem; font-size: 1rem;">{{ $workRequest->user->name ?? 'N/A' }}</p>
+                    <p style="margin-top: 0.25rem; font-size: 1rem;">{{ $workRequest->requester_display_name }}</p>
+                    @if($workRequest->user_id === null && $workRequest->requester_snapshot)
+                        <p class="mt-2 text-sm text-gray-600">{{ $workRequest->requester_snapshot['email'] ?? '' }}</p>
+                        <p class="text-sm text-gray-600">{{ $workRequest->requester_snapshot['department'] ?? '' }}</p>
+                        <p class="text-sm text-gray-600">{{ $workRequest->requester_snapshot['phone_number'] ?? '' }}</p>
+                    @endif
                 </div>
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Date Submitted:</strong>

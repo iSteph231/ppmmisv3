@@ -88,7 +88,7 @@
     <div class="mt-4">{{ $users->links() }}</div>
     <dialog id="account-removal" aria-labelledby="account-removal-title" aria-describedby="account-removal-description" class="m-auto w-full max-w-lg rounded-xl bg-white p-6 text-gray-900 shadow-xl">
         <h2 id="account-removal-title" class="text-2xl font-bold">Remove account?</h2>
-        <p id="account-removal-description" class="mt-2 text-lg">This permanently removes the account. This action cannot be undone.</p>
+        <p id="account-removal-description" class="mt-2 text-lg">This permanently removes the account. Work requests and a saved copy of the requester’s details will be retained. This action cannot be undone.</p>
         <dl class="mt-5 grid gap-4 rounded-lg bg-gray-50 p-4 text-lg">
             <div><dt class="font-semibold">Name</dt><dd data-remove-name class="break-words"></dd></div>
             <div><dt class="font-semibold">Email</dt><dd data-remove-email class="break-words"></dd></div>

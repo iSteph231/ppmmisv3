@@ -100,7 +100,7 @@
                         <td style="padding: 1rem;">#{{ $request->id }}</td>
                         <td style="padding: 1rem;">{{ $request->title ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">{{ ucfirst(str_replace('_', ' ', $request->work_type ?? 'N/A')) }}</td>
-                        <td style="padding: 1rem;">{{ $request->user->name ?? 'N/A' }}</td>
+                        <td style="padding: 1rem;">{{ $request->requester_display_name }}</td>
                         <td style="padding: 1rem;">
                             @if($request->status == 'pending')
                                 <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Pending</span>

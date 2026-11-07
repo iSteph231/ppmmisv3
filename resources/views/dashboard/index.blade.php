@@ -193,7 +193,7 @@
                         <td data-label="ID">#{{ $request->id }}</td>
                         <td class="mobile-summary-field" data-label="Request #">{{ $request->request_number ?? 'N/A' }}</td>
                         <td data-label="Title">{{ $request->title }}</td>
-                        <td class="mobile-summary-field" data-label="Requester">{{ $request->user->name ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" data-label="Requester">{{ $request->requester_display_name }}</td>
                         <td data-label="Status">
                             @php
                                 $statusClass = match($request->status) {

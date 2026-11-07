@@ -319,8 +319,8 @@ class ReportController extends Controller
 
         // Get top requesters
         $topRequesters = WorkRequest::with('user')
-            ->selectRaw('user_id, count(*) as total')
-            ->groupBy('user_id')
+            ->selectRaw('user_id, requester_name, count(*) as total')
+            ->groupBy('user_id', 'requester_name')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get();

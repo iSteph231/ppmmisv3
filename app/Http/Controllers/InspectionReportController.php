@@ -201,13 +201,15 @@ class InspectionReportController extends Controller
                 'status' => 'approved',
             ]);
 
-            Notification::create([
-                'user_id' => $inspectionReport->workRequest->user_id,
-                'title' => 'Work Request Approved',
-                'message' => "Your work request #{$inspectionReport->workRequest->id}: '{$inspectionReport->workRequest->title}' has been approved after inspection.",
-                'type' => 'success',
-                'is_read' => false,
-            ]);
+            if ($inspectionReport->workRequest->user_id !== null) {
+                Notification::create([
+                    'user_id' => $inspectionReport->workRequest->user_id,
+                    'title' => 'Work Request Approved',
+                    'message' => "Your work request #{$inspectionReport->workRequest->id}: '{$inspectionReport->workRequest->title}' has been approved after inspection.",
+                    'type' => 'success',
+                    'is_read' => false,
+                ]);
+            }
 
             return redirect()->route('inspections.show', $inspectionReport->id)
                 ->with('success', 'Inspection report approved and work request approved successfully.');

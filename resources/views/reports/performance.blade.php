@@ -56,7 +56,7 @@
                     <tbody>
                         @forelse($topRequesters ?? [] as $requester)
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.75rem;">{{ $requester->user->name ?? 'N/A' }}</td>
+                            <td style="padding: 0.75rem;">{{ $requester->requester_display_name }}</td>
                             <td style="padding: 0.75rem; text-align: center;">{{ $requester->total }}</td>
                         </tr>
                         @empty
