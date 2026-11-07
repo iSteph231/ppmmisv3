@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('role-confirmation');
+
+    function confirmRoleChange(form, select) {
+        dialog.querySelector('[data-confirm-name]').textContent = form.dataset.userName;
+        dialog.querySelector('[data-confirm-email]').textContent = form.dataset.userEmail;
+        dialog.querySelector('[data-confirm-role]').textContent = select.selectedOptions[0].textContent;
+        dialog.returnValue = '';
+
+        return new Promise((resolve) => {
+            dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
+            dialog.showModal();
+        });
+    }
+
     document.querySelectorAll('[data-role-form]').forEach((form) => {
         const select = form.querySelector('select[name="role"]');
         const status = form.querySelector('[data-role-status]');
@@ -6,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let saving = false;
 
         select.addEventListener('change', () => {
-            status.textContent = 'Unsaved changes';
-            status.className = 'text-sm text-gray-600';
+            status.textContent = '';
+            delete status.dataset.state;
         });
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -15,10 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             saving = true;
+            const confirmed = await confirmRoleChange(form, select);
+            if (!confirmed) {
+                saving = false;
+                return;
+            }
             button.disabled = true;
             const body = new FormData(form);
             select.disabled = true;
             status.textContent = 'Saving...';
+            status.dataset.state = 'saving';
             status.className = 'text-sm text-gray-600';
 
             try {
@@ -37,8 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 select.value = result.role;
                 status.textContent = 'Saved';
+                status.dataset.state = 'saved';
                 status.className = 'text-sm text-green-700';
             } catch (error) {
+                status.dataset.state = 'error';
                 status.textContent = error.message || 'Could not confirm saving. Refresh before trying again.';
                 status.className = 'text-sm text-red-700';
             } finally {

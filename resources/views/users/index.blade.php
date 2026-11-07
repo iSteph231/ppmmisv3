@@ -3,7 +3,7 @@
 @section('title', 'Users')
 
 @section('content')
-<div class="content-wrapper">
+<div class="content-wrapper users-page">
     <div class="greeting-section">
         <h1 class="greeting-title">Users</h1>
         <p class="greeting-subtitle">Choose a role, then click Save to apply changes.</p>
@@ -28,7 +28,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Role</th>
+                        <th class="users-role-column">Role</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -42,7 +42,7 @@
                             @if($user->is(auth()->user()))
                                 <span class="badge">Admin (you)</span>
                             @else
-                                <form method="POST" action="{{ route('users.role.update', $user) }}" class="flex items-center gap-2" data-role-form>
+                                <form method="POST" action="{{ route('users.role.update', $user) }}" class="grid items-center gap-2" data-role-form data-user-name="{{ $user->name }}" data-user-email="{{ $user->email }}">
                                     @csrf
                                     @method('PATCH')
                                     <label for="role-{{ $user->id }}" class="sr-only">Role for {{ $user->name }}</label>
@@ -72,6 +72,19 @@
         </div>
     </div>
     <div class="mt-4">{{ $users->links() }}</div>
+    <dialog id="role-confirmation" aria-labelledby="role-confirmation-title" aria-describedby="role-confirmation-description" class="m-auto w-full max-w-lg rounded-xl bg-white p-6 text-gray-900 shadow-xl">
+        <h2 id="role-confirmation-title" class="text-2xl font-bold">Confirm role change</h2>
+        <p id="role-confirmation-description" class="mt-2 text-lg">Save the new role for this account?</p>
+        <dl class="mt-5 grid gap-4 rounded-lg bg-gray-50 p-4 text-lg">
+            <div><dt class="font-semibold">Name</dt><dd data-confirm-name class="break-words"></dd></div>
+            <div><dt class="font-semibold">Email</dt><dd data-confirm-email class="break-words"></dd></div>
+            <div><dt class="font-semibold">New role</dt><dd data-confirm-role></dd></div>
+        </dl>
+        <form method="dialog" class="mt-6 flex flex-wrap justify-end gap-3">
+            <button type="submit" value="cancel" autofocus class="rounded-lg border border-gray-400 px-5 py-3 text-lg font-semibold">Cancel</button>
+            <button type="submit" value="confirm" class="rounded-lg bg-blue-700 px-5 py-3 text-lg font-semibold text-white hover:bg-blue-800">Confirm and save</button>
+        </form>
+    </dialog>
 </div>
 @endsection
 

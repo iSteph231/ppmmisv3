@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PPMMIS Login</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,7 +18,9 @@ font-family:Segoe UI, sans-serif;
 
 /* BODY */
 body{
-height:100vh;
+min-height:100vh;
+min-height:100svh;
+padding:24px;
 background:#e6edf6;
 display:flex;
 align-items:center;
@@ -26,8 +29,10 @@ justify-content:center;
 
 /* CONTAINER */
 .container{
-width:900px;
-height:500px;
+width:100%;
+max-width:900px;
+min-height:500px;
+margin:auto;
 display:flex;
 border-radius:15px;
 overflow:hidden;
@@ -37,6 +42,8 @@ box-shadow:0 15px 40px rgba(0,0,0,0.2);
 /* LEFT PANEL */
 .left-panel{
 flex:1;
+min-width:0;
+padding:32px 24px;
 background:linear-gradient(135deg,#5576E6,#56B3C9);
 color:white;
 display:flex;
@@ -53,8 +60,8 @@ z-index:1;
 }
 
 .left-content h1{
-font-size:64px;
-letter-spacing:8px;
+font-size:clamp(32px, 5vw, 64px);
+letter-spacing:clamp(2px, 0.6vw, 8px);
 margin-bottom:20px;
 }
 
@@ -66,6 +73,8 @@ line-height:1.6;
 /* RIGHT PANEL */
 .right-panel{
 flex:1;
+min-width:0;
+padding:32px;
 background:#e6edf6;
 display:flex;
 align-items:center;
@@ -74,7 +83,8 @@ justify-content:center;
 
 /* LOGIN BOX */
 .login-box{
-width:350px;
+width:100%;
+max-width:350px;
 }
 
 .login-box h2{
@@ -165,7 +175,7 @@ width:100%;
 padding:18px 45px 12px 14px;
 border-radius:12px;
 border:1px solid #ddd;
-font-size:14px;
+font-size:16px;
 background:#f9fbff;
 outline:none;
 transition:0.3s;
@@ -234,6 +244,8 @@ display:none !important;
 /* OPTIONS */
 .options{
 display:flex;
+flex-wrap:wrap;
+gap:12px;
 justify-content:space-between;
 align-items:center;
 margin-bottom:25px;
@@ -367,19 +379,59 @@ margin:0 auto 20px auto;
 /* RESPONSIVE */
 @media(max-width:768px){
 
+body{
+padding:16px;
+}
+
 .container{
 flex-direction:column;
-width:90%;
-height:auto;
+max-width:480px;
+min-height:0;
 }
 
 .left-panel{
-height:200px;
+flex:none;
+padding:24px 20px;
+}
+
+.left-content h1{
+font-size:clamp(32px, 8vw, 44px);
+letter-spacing:4px;
+margin-bottom:8px;
+}
+
+.left-content p{
+font-size:16px;
+}
+
+.psu-logo{
+width:80px;
+margin-bottom:12px;
+}
+
+.right-panel{
+flex:none;
+padding:28px 24px;
 }
 
 .login-box{
-width:90%;
-padding:20px;
+max-width:none;
+}
+
+.login-box h2{
+font-size:28px;
+margin-bottom:24px;
+}
+
+.remember, .forgot{
+min-height:44px;
+display:inline-flex;
+align-items:center;
+}
+
+.alert > span:not(.close-alert){
+min-width:0;
+overflow-wrap:anywhere;
 }
 
 }
@@ -454,13 +506,13 @@ padding:20px;
 <!-- EMAIL -->
 <div class="input-group">
     <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
-    <label>Email (@psu.edu.ph)</label>
+    <label for="email">Email (@psu.edu.ph)</label>
 </div>
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
     <input type="password" name="password" id="password" required placeholder=" ">
-    <label>Password</label>
+    <label for="password">Password</label>
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
 </div>
 
