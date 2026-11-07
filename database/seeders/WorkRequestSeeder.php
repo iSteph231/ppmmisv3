@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\WorkRequest;
 use App\Models\User;
+use App\Models\WorkRequest;
 use Illuminate\Database\Seeder;
 
 class WorkRequestSeeder extends Seeder
@@ -13,17 +13,18 @@ class WorkRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get all regular users (not admins or personnel)
+        // Get all regular users (not admins)
         $users = User::where('role', 'user')->get();
-        
+
         if ($users->isEmpty()) {
             $this->command->warn('No users found. Please run UserSeeder first.');
+
             return;
         }
-        
+
         $statuses = ['pending', 'approved', 'completed'];
         $priorities = ['Low', 'Medium', 'High'];
-        
+
         $titles = [
             'AC Repair Needed',
             'Plumbing Issue',
@@ -34,9 +35,9 @@ class WorkRequestSeeder extends Seeder
             'Floor Repair',
             'Window Replacement',
             'Door Lock Repair',
-            'Ceiling Leak Fix'
+            'Ceiling Leak Fix',
         ];
-        
+
         $descriptions = [
             'The air conditioning unit is not cooling properly. Please check immediately.',
             'Water leaking from the ceiling in room 205. Need urgent assistance.',
@@ -47,9 +48,9 @@ class WorkRequestSeeder extends Seeder
             'Broken tiles on the third floor corridor creating a hazard.',
             'Cracked window in office 304 needs replacement before rainy season.',
             'Main entrance door lock is jammed and difficult to open.',
-            'Water stain growing on ceiling tile in office 105.'
+            'Water stain growing on ceiling tile in office 105.',
         ];
-        
+
         $locations = [
             'Building A, Floor 2',
             'Building B, Floor 1',
@@ -60,15 +61,15 @@ class WorkRequestSeeder extends Seeder
             'Parking Garage Level 2',
             'Conference Room A',
             'Executive Suite',
-            'Cafeteria Area'
+            'Cafeteria Area',
         ];
-        
+
         // Create 50 sample work requests
         for ($i = 1; $i <= 50; $i++) {
             $userId = $users->random()->id;
             $status = $statuses[array_rand($statuses)];
             $createdAt = now()->subDays(rand(1, 90));
-            
+
             WorkRequest::create([
                 'user_id' => $userId,
                 'request_number' => $this->generateRequestNumber($i),
@@ -84,10 +85,10 @@ class WorkRequestSeeder extends Seeder
                 'updated_at' => $createdAt,
             ]);
         }
-        
+
         $this->command->info('Work requests seeded successfully!');
     }
-    
+
     /**
      * Generate unique request number
      */
@@ -97,7 +98,7 @@ class WorkRequestSeeder extends Seeder
         $year = date('Y');
         $month = date('m');
         $number = str_pad($counter, 4, '0', STR_PAD_LEFT);
-        
+
         return "{$prefix}-{$year}{$month}-{$number}";
     }
 }

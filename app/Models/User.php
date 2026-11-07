@@ -3,8 +3,8 @@
 namespace App\Models;
 
 // Correct namespace for Authenticatable
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -20,7 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',          // admin, user, personnel
+        'role',          // admin, user, engineer
         'is_active',
         'department',
         'phone_number',
@@ -82,12 +82,9 @@ class User extends Authenticatable
         return $this->role === 'user';
     }
 
-    /**
-     * Check if user is personnel (handles maintenance work)
-     */
-    public function isPersonnel()
+    public function isEngineer(): bool
     {
-        return $this->role === 'personnel';
+        return $this->role === 'engineer';
     }
 
     /**
@@ -125,12 +122,12 @@ class User extends Authenticatable
     public function generateOTP()
     {
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        
+
         $this->update([
             'otp' => $otp,
-            'otp_expires_at' => now()->addMinutes(10)
+            'otp_expires_at' => now()->addMinutes(10),
         ]);
-        
+
         return $otp;
     }
 
@@ -139,8 +136,8 @@ class User extends Authenticatable
      */
     public function verifyOTP($otp)
     {
-        return $this->otp === $otp && 
-               $this->otp_expires_at && 
+        return $this->otp === $otp &&
+               $this->otp_expires_at &&
                $this->otp_expires_at->isFuture();
     }
 
@@ -196,14 +193,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Scope for personnel
-     */
-    public function scopePersonnel($query)
-    {
-        return $query->where('role', 'personnel');
-    }
-
-    /**
      * Scope for regular users (requesters)
      */
     public function scopeUsers($query)
@@ -225,7 +214,7 @@ class User extends Authenticatable
     protected static function boot()
     {
         parent::boot();
-        
+
         // Auto-clear expired OTPs when retrieving user
         static::retrieved(function ($user) {
             if ($user->otp && $user->isOTPExpired()) {

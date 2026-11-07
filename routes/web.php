@@ -115,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
     // Users (Admin only)
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class)->except(['create', 'store', 'edit', 'update']);
+        Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role.update');
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     });

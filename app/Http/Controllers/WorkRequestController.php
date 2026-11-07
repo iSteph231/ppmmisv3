@@ -30,10 +30,6 @@ class WorkRequestController extends Controller
             // Admin sees ALL work requests
             // No filter needed
 
-        } elseif ($user->isPersonnel()) {
-            // Personnel sees ONLY their own work requests
-            $query->where('user_id', $user->id);
-
         } else {
             // Regular user sees ONLY their own work requests
             $query->where('user_id', $user->id);

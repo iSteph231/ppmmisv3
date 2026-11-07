@@ -212,12 +212,12 @@ function updateStatCards(stats) {
         const totalCard = document.querySelector('.stat-card-green .stat-value');
         const pendingCard = document.querySelector('.stat-card-yellow .stat-value');
         const completedCard = document.querySelector('.stat-card-blue .stat-value');
-        const personnelCard = document.querySelector('.stat-card-indigo .stat-value');
+        const usersCard = document.querySelector('.stat-card-indigo .stat-value');
         
         if (totalCard) totalCard.textContent = stats.totalRequests;
         if (pendingCard) pendingCard.textContent = stats.pendingRequests;
         if (completedCard) completedCard.textContent = stats.completedRequests;
-        if (personnelCard && stats.activePersonnel) personnelCard.textContent = stats.activePersonnel;
+        if (usersCard && stats.activeUsers !== undefined) usersCard.textContent = stats.activeUsers;
     }
     // For user dashboard
     else if (stats.myRequests !== undefined) {
