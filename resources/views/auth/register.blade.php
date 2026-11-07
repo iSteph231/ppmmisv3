@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PPMMIS Register</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -297,10 +298,11 @@ font-size:12px;
     margin-top: 5px;
 }
 </style>
+<link rel="stylesheet" href="{{ asset('css/auth-responsive.css').'?v='.substr(hash_file('sha256', public_path('css/auth-responsive.css')), 0, 16) }}">
 
 </head>
 
-<body>
+<body class="auth-register">
 
 <div class="container">
 
@@ -332,8 +334,8 @@ font-size:12px;
 
 <!-- FULL NAME -->
 <div class="input-group">
-    <input type="text" name="name" id="name" required placeholder=" " value="{{ old('name') }}">
-    <label>Full Name</label>
+    <input type="text" name="name" id="name" required autocomplete="name" placeholder=" " value="{{ old('name') }}">
+    <label for="name">Full Name</label>
 </div>
 @error('name')
     <small class="error-message">{{ $message }}</small>
@@ -341,8 +343,8 @@ font-size:12px;
 
 <!-- EMAIL -->
 <div class="input-group">
-    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
-    <label>Email (@psu.edu.ph)</label>
+    <input type="email" name="email" id="email" required autocomplete="email" placeholder=" " value="{{ old('email') }}">
+    <label for="email">Email (@psu.edu.ph)</label>
 </div>
 <div class="email-error-container">
     <small class="email-error" id="emailError">❌ Only @psu.edu.ph email addresses are allowed</small>
@@ -354,7 +356,7 @@ font-size:12px;
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
     <input type="password" name="password" id="password" required minlength="8" autocomplete="new-password" placeholder=" ">
-    <label>Password</label>
+    <label for="password">Password</label>
     <small>Minimum 8 characters</small>
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
     <small id="strengthText"></small>
@@ -365,8 +367,8 @@ font-size:12px;
 
 <!-- CONFIRM PASSWORD -->
 <div class="input-group password-wrapper">
-    <input type="password" name="password_confirmation" id="confirmPassword" required placeholder=" ">
-    <label>Confirm Password</label>
+    <input type="password" name="password_confirmation" id="confirmPassword" required autocomplete="new-password" placeholder=" ">
+    <label for="confirmPassword">Confirm Password</label>
     <small id="matchText"></small>
 </div>
 

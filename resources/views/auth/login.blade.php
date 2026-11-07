@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PPMMIS Login</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -364,26 +365,8 @@ display:block;
 margin:0 auto 20px auto;
 }
 
-/* RESPONSIVE */
-@media(max-width:768px){
-
-.container{
-flex-direction:column;
-width:90%;
-height:auto;
-}
-
-.left-panel{
-height:200px;
-}
-
-.login-box{
-width:90%;
-padding:20px;
-}
-
-}
 </style>
+<link rel="stylesheet" href="{{ asset('css/auth-responsive.css').'?v='.substr(hash_file('sha256', public_path('css/auth-responsive.css')), 0, 16) }}">
 
 </head>
 
@@ -453,14 +436,14 @@ padding:20px;
 
 <!-- EMAIL -->
 <div class="input-group">
-    <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
-    <label>Email (@psu.edu.ph)</label>
+    <input type="email" name="email" id="email" required autocomplete="username" placeholder=" " value="{{ old('email') }}">
+    <label for="email">Email (@psu.edu.ph)</label>
 </div>
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
-    <input type="password" name="password" id="password" required placeholder=" ">
-    <label>Password</label>
+    <input type="password" name="password" id="password" required autocomplete="current-password" placeholder=" ">
+    <label for="password">Password</label>
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
 </div>
 

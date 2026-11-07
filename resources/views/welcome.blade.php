@@ -24,25 +24,32 @@
 
 body {
     min-height: 100vh;
+    min-height: 100svh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     color: var(--text);
     background:
-        radial-gradient(circle at top right, rgba(245, 168, 0, 0.18), transparent 30rem),
+        radial-gradient(circle at top right, rgba(245, 168, 0, 0.09), transparent 30rem),
         linear-gradient(135deg, #f8fbff 0%, #f2f5fb 45%, #edf3ff 100%);
 }
 
 .page {
     min-height: 100vh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
 }
 
 .topbar {
     width: 100%;
-    padding: 20px clamp(20px, 5vw, 72px);
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 24px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
 }
 
 .brand {
@@ -52,6 +59,7 @@ body {
     color: var(--psu-blue-deep);
     font-weight: 800;
     letter-spacing: 0.06em;
+    flex-shrink: 0;
 }
 
 .brand img {
@@ -63,48 +71,65 @@ body {
 .nav-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
     color: var(--psu-blue);
     font-weight: 700;
     text-decoration: none;
     padding: 10px 16px;
     border-radius: 999px;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
     background: var(--psu-blue-soft);
 }
 
+.nav-register {
+    border: 1px solid #cbdaf5;
+    background: #ffffff;
+}
+
+a:focus-visible {
+    outline: 3px solid var(--psu-blue);
+    outline-offset: 4px;
+}
+
 .hero {
     flex: 1;
     display: grid;
     place-items: center;
-    padding: 24px clamp(20px, 5vw, 72px) 56px;
+    padding: 32px 32px 48px;
 }
 
 .hero-panel {
     width: min(100%, 1060px);
     display: grid;
-    grid-template-columns: 1.08fr 0.92fr;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
     overflow: hidden;
-    border-radius: 18px;
+    border-radius: 24px;
     background: #ffffff;
     border: 1px solid rgba(15, 23, 42, 0.09);
-    box-shadow: 0 24px 60px rgba(0, 31, 91, 0.18);
+    box-shadow: 0 20px 48px rgba(0, 31, 91, 0.09);
 }
 
 .hero-content {
     padding: clamp(34px, 6vw, 64px);
+    min-width: 0;
 }
 
 .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     color: var(--psu-blue);
     font-size: 0.78rem;
     font-weight: 800;
@@ -118,6 +143,7 @@ body {
     height: 3px;
     border-radius: 999px;
     background: var(--psu-gold);
+    flex-shrink: 0;
 }
 
 h1 {
@@ -134,6 +160,7 @@ h1 {
     color: var(--psu-blue);
     font-size: clamp(1rem, 2vw, 1.2rem);
     font-weight: 700;
+    line-height: 1.5;
 }
 
 .description {
@@ -161,6 +188,8 @@ h1 {
     font-weight: 800;
     text-decoration: none;
     transition: all 0.2s ease;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .btn-primary {
@@ -189,10 +218,8 @@ h1 {
     min-height: 420px;
     display: grid;
     place-items: center;
-    background:
-        linear-gradient(135deg, rgba(0, 48, 135, 0.94), rgba(0, 31, 91, 0.98)),
-        url('{{ asset('images/logo.png') }}') center / 260px no-repeat;
-    border-left: 5px solid var(--psu-gold);
+    background: linear-gradient(145deg, var(--psu-blue), var(--psu-blue-dark));
+    border-left: 3px solid var(--psu-gold);
     overflow: hidden;
 }
 
@@ -200,54 +227,138 @@ h1 {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(245, 168, 0, 0.22), transparent 48%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 60%);
 }
 
 .seal {
     position: relative;
     width: min(58%, 230px);
     aspect-ratio: 1;
+    height: auto;
+    object-fit: contain;
     border-radius: 50%;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.26);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
 }
 
 .footer {
-    padding: 18px 24px 26px;
-    color: #94a3b8;
+    padding: 16px 24px 24px;
+    color: #64748b;
     font-size: 0.8rem;
+    line-height: 1.6;
     text-align: center;
 }
 
 @media (max-width: 820px) {
     .topbar {
-        align-items: flex-start;
-        gap: 16px;
+        padding: 20px 24px;
     }
 
     .hero-panel {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 560px;
     }
 
     .hero-visual {
-        min-height: 260px;
+        min-height: 190px;
+        padding: 24px;
         border-left: 0;
-        border-top: 5px solid var(--psu-gold);
+        border-top: 3px solid var(--psu-gold);
+    }
+
+    .seal {
+        width: 140px;
+        max-width: 100%;
     }
 }
 
 @media (max-width: 520px) {
     .topbar {
-        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
     }
 
-    .nav-actions,
+    .brand {
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .brand img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nav-actions {
+        gap: 4px;
+    }
+
+    .nav-link {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .hero {
+        padding: 20px 16px 28px;
+    }
+
+    .hero-panel {
+        border-radius: 20px;
+    }
+
+    .hero-content {
+        padding: 28px;
+    }
+
+    .eyebrow {
+        font-size: 0.65rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 18px;
+    }
+
+    .eyebrow::before {
+        width: 24px;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 10vw, 3rem);
+        line-height: 1.1;
+    }
+
+    .subtitle {
+        margin-top: 14px;
+        font-size: 1rem;
+    }
+
+    .description {
+        margin-top: 14px;
+        font-size: 0.875rem;
+    }
+
     .actions {
-        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 24px;
     }
 
-    .nav-link,
     .btn {
-        flex: 1;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .footer {
+        padding: 12px 24px 20px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-content {
+        padding: 24px;
+    }
+
+    .actions {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 </style>
@@ -261,15 +372,15 @@ h1 {
         </div>
         <nav class="nav-actions" aria-label="Primary">
             <a href="{{ route('login') }}" class="nav-link">Log in</a>
-            <a href="{{ route('register') }}" class="nav-link">Register</a>
+            <a href="{{ route('register') }}" class="nav-link nav-register">Register</a>
         </nav>
     </header>
 
     <main class="hero">
-        <section class="hero-panel">
+        <section class="hero-panel" aria-labelledby="hero-title">
             <div class="hero-content">
                 <p class="eyebrow">Pangasinan State University</p>
-                <h1>PPMMIS</h1>
+                <h1 id="hero-title">PPMMIS</h1>
                 <p class="subtitle">Physical Plant Maintenance and Management Information System</p>
                 <p class="description">A simple system for tracking work requests, inspections, and maintenance activities.</p>
                 <div class="actions">

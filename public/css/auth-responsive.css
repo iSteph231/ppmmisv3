@@ -1,0 +1,166 @@
+body {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 24px;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    min-height: 500px;
+    flex-shrink: 0;
+}
+
+.auth-register .container {
+    min-height: 580px;
+}
+
+.left-panel,
+.right-panel {
+    min-width: 0;
+    padding: 40px 24px;
+}
+
+.right-panel {
+    padding: 40px;
+    overflow: visible;
+}
+
+.left-content {
+    width: 100%;
+}
+
+.left-content h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    letter-spacing: 0.1em;
+}
+
+.left-content p {
+    overflow-wrap: anywhere;
+}
+
+.login-box,
+.register-box {
+    width: 100%;
+    max-width: 350px;
+    min-width: 0;
+    padding: 0;
+}
+
+.register-box {
+    max-width: 360px;
+}
+
+.input-group input {
+    min-width: 0;
+    min-height: 52px;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.input-group label {
+    top: 26px;
+    max-width: calc(100% - 32px);
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+    top: 0;
+}
+
+.toggle {
+    top: 26px;
+    right: 4px;
+    width: 44px;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+}
+
+.options {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.remember {
+    min-height: 24px;
+}
+
+.alert {
+    align-items: flex-start;
+}
+
+.alert > span:not(.close-alert) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.alert i,
+.close-alert {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+    }
+
+    .container,
+    .auth-register .container {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .left-panel,
+    .right-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        padding: 28px 24px;
+    }
+
+    .left-content {
+        max-width: 360px;
+    }
+
+    .psu-logo {
+        width: 88px;
+        max-width: 100%;
+        margin-bottom: 12px;
+    }
+
+    .left-content h1 {
+        font-size: clamp(30px, 8vw, 42px);
+        margin-bottom: 10px;
+    }
+
+    .left-content p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .right-panel {
+        padding: 32px 24px;
+    }
+
+    .login-box h2,
+    .register-box h2 {
+        font-size: 28px;
+        margin-bottom: 24px;
+    }
+}
+
+@media (max-width: 360px) {
+    .left-panel,
+    .right-panel {
+        padding: 24px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bubbles span {
+        animation: none;
+    }
+}
