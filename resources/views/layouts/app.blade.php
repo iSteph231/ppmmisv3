@@ -73,7 +73,7 @@
 
                 {{-- Maintenance Records Link - Only visible to ADMIN and PERSONNEL --}}
                 @auth
-                    @if(Auth::user()->isAdmin() || Auth::user()->role === 'personnel')
+                    @if(Auth::user()->isAdmin())
                     <a href="{{ route('maintenance.index') }}" class="nav-item {{ request()->routeIs('maintenance.*') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -85,7 +85,7 @@
 
                 {{-- Reports Link - Only visible to ADMIN and PERSONNEL --}}
                 @auth
-                    @if(Auth::user()->isAdmin() || Auth::user()->role === 'personnel')
+                    @if(Auth::user()->isAdmin())
                     <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*', 'inventory.*') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -94,6 +94,15 @@
                     </a>
                     @endif
                 @endauth
+
+                @if(Auth::user()->isAdmin())
+                <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H2v-2a4 4 0 017-3.87M16 7a4 4 0 11-8 0 4 4 0 018 0zM6 20v-2a6 6 0 0112 0v2H6z"/>
+                    </svg>
+                    <span class="nav-text">Users</span>
+                </a>
+                @endif
 
                 {{-- Settings Link - Visible to all authenticated users --}}
                 <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">

@@ -30,10 +30,6 @@ class WorkRequestController extends Controller
             // Admin sees ALL work requests
             // No filter needed
 
-        } elseif ($user->isPersonnel()) {
-            // Personnel sees ONLY their own work requests
-            $query->where('user_id', $user->id);
-
         } else {
             // Regular user sees ONLY their own work requests
             $query->where('user_id', $user->id);
@@ -61,6 +57,7 @@ class WorkRequestController extends Controller
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('request_number', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('requester_name', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($userQuery) use ($search) {
                         $userQuery->where('name', 'like', "%{$search}%");
                     });
@@ -339,13 +336,15 @@ class WorkRequestController extends Controller
             ]);
 
             // Create notification for the requester
-            Notification::create([
-                'user_id' => $workRequest->user_id,
-                'title' => 'Inspection Scheduled',
-                'message' => "Your work request #{$workRequest->id}: '{$workRequest->title}' has been scheduled for inspection on ".Carbon::parse($validated['scheduled_date'])->format('F d, Y h:i A').". Inspection Report #{$inspectionReport->report_number} has been created and is pending completion.",
-                'type' => 'info',
-                'is_read' => false,
-            ]);
+            if ($workRequest->user_id !== null) {
+                Notification::create([
+                    'user_id' => $workRequest->user_id,
+                    'title' => 'Inspection Scheduled',
+                    'message' => "Your work request #{$workRequest->id}: '{$workRequest->title}' has been scheduled for inspection on ".Carbon::parse($validated['scheduled_date'])->format('F d, Y h:i A').". Inspection Report #{$inspectionReport->report_number} has been created and is pending completion.",
+                    'type' => 'info',
+                    'is_read' => false,
+                ]);
+            }
 
             // Also notify all admins about the schedule
             $admins = User::where('role', 'admin')->get();

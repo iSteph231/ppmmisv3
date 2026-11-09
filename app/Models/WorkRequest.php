@@ -35,6 +35,7 @@ class WorkRequest extends Model
     ];
 
     protected $casts = [
+        'requester_snapshot' => 'array',
         'completed_at' => 'datetime',
         'scheduled_date' => 'datetime',
         'created_at' => 'datetime',
@@ -43,7 +44,9 @@ class WorkRequest extends Model
 
     // Status constants
     const STATUS_PENDING = 'pending';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_COMPLETED = 'completed';
 
     /**
@@ -52,6 +55,11 @@ class WorkRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function getRequesterDisplayNameAttribute(): string
+    {
+        return $this->user?->name ?? $this->requester_snapshot['name'] ?? $this->requester_name ?? 'N/A';
     }
 
     /**
@@ -76,8 +84,8 @@ class WorkRequest extends Model
         ];
 
         $label = $typeLabels[$this->work_type] ?? ucfirst($this->work_type);
-        
-        $detailsField = match($this->work_type) {
+
+        $detailsField = match ($this->work_type) {
             'ocular_inspection' => 'ocular_details',
             'installation' => 'installation_details',
             'repair' => 'repair_details',
@@ -85,10 +93,10 @@ class WorkRequest extends Model
             'others' => 'others_details',
             default => null,
         };
-        
+
         $details = $detailsField && $this->$detailsField ? $this->$detailsField : 'No details';
 
-        return $label . ': ' . $details;
+        return $label.': '.$details;
     }
 
     /**
@@ -110,7 +118,7 @@ class WorkRequest extends Model
      */
     public function getStatusBadgeClassAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'badge-warning',
             'approved' => 'badge-info',
             'completed' => 'badge-success',
@@ -123,7 +131,7 @@ class WorkRequest extends Model
      */
     public function isInspectionScheduled()
     {
-        return !is_null($this->scheduled_date);
+        return ! is_null($this->scheduled_date);
     }
 
     /**
@@ -134,6 +142,7 @@ class WorkRequest extends Model
         if ($this->scheduled_date) {
             return $this->scheduled_date->format('F d, Y h:i A');
         }
+
         return null;
     }
 
@@ -190,9 +199,9 @@ class WorkRequest extends Model
         return $this->hasOne(InspectionReport::class);
     }
 
-/**
- * Check if inspection report exists and is pending
- */
+    /**
+     * Check if inspection report exists and is pending
+     */
     public function hasPendingInspectionReport()
     {
         return $this->inspectionReport && $this->inspectionReport->status === 'pending';

@@ -27,6 +27,7 @@ class ReportController extends Controller
 
         return view('reports.facility-requests', compact('facilityRequests'));
     }
+
     public function index()
     {
         $user = Auth::user();
@@ -85,7 +86,7 @@ class ReportController extends Controller
         $upcomingMaintenance = MaintenanceSchedule::where('scheduled_date', '>', now())->count();
 
         // Personnel Statistics
-        $activePersonnel = User::where('role', 'personnel')->where('is_active', true)->count();
+        $activeUsers = User::where('role', 'user')->where('is_active', true)->count();
 
         // Completion Rate
         $completionRate = $totalWorkRequests > 0 ? round(($completedRequests / $totalWorkRequests) * 100) : 0;
@@ -102,7 +103,7 @@ class ReportController extends Controller
             'totalMaintenance',
             'completedMaintenance',
             'upcomingMaintenance',
-            'activePersonnel',
+            'activeUsers',
             'completionRate'
         ));
     }
@@ -313,13 +314,13 @@ class ReportController extends Controller
                 return $request->created_at->diffInDays($request->completed_at);
             }) ?? 0;
 
-        // Active personnel
-        $activePersonnel = User::where('role', 'personnel')->where('is_active', true)->count();
+        // Active users
+        $activeUsers = User::where('role', 'user')->where('is_active', true)->count();
 
         // Get top requesters
         $topRequesters = WorkRequest::with('user')
-            ->selectRaw('user_id, count(*) as total')
-            ->groupBy('user_id')
+            ->selectRaw('user_id, requester_name, count(*) as total')
+            ->groupBy('user_id', 'requester_name')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get();
@@ -337,7 +338,7 @@ class ReportController extends Controller
             'approvedRequests',
             'completionRate',
             'avgCompletionTime',
-            'activePersonnel',
+            'activeUsers',
             'topRequesters'
         ));
     }

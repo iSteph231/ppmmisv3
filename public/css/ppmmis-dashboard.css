@@ -1406,3 +1406,91 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+
+.dashboard-content .users-page table {
+    table-layout: auto;
+}
+
+.users-page .users-role-column {
+    width: 15rem;
+    min-width: 14rem;
+}
+
+.users-page [data-role-form] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.dashboard-content .users-page [data-role-form] select {
+    width: 100%;
+    min-width: 8rem;
+}
+
+.dashboard-content .users-page [data-role-form] button {
+    min-width: 4rem;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+.users-page [data-role-status] {
+    grid-column: 1 / -1;
+    overflow-wrap: break-word;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+#role-confirmation, #account-removal {
+    width: min(32rem, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+}
+
+#role-confirmation::backdrop, #account-removal::backdrop {
+    background: rgb(15 23 42 / 65%);
+}
+
+.users-page [data-role-status]:empty {
+    display: none;
+}
+
+.users-page .request-review-actions,
+.users-page .request-review-approve {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.users-page .request-review-actions {
+    flex-wrap: wrap;
+}
+
+.users-page .request-review-approve,
+.users-page .request-review-decline {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.dashboard-content .users-page .request-review-actions :is(select, button) {
+    min-height: 44px;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+.dashboard-content .users-page .request-review-approve select {
+    min-width: 8rem;
+}
+
+@media (max-width: 640px) {
+    .users-page .request-review-approve {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .users-page .request-review-actions form,
+    .dashboard-content .users-page .request-review-actions :is(select, button) {
+        width: 100%;
+    }
+}

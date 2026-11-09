@@ -1,0 +1,14 @@
+.form-description {
+    margin-bottom: 24px;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.field-error {
+    margin: -12px 0 22px;
+    color: #991b1b;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}

@@ -20,8 +20,8 @@
             <p style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ number_format($avgCompletionTime ?? 0, 1) }} <span style="font-size: 1rem;">days</span></p>
         </div>
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Active Personnel</h3>
-            <p style="font-size: 2rem; font-weight: bold; color: #8b5cf6;">{{ $activePersonnel ?? 0 }}</p>
+            <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Active Users</h3>
+            <p style="font-size: 2rem; font-weight: bold; color: #8b5cf6;">{{ $activeUsers ?? 0 }}</p>
         </div>
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Total Work Requests</h3>
@@ -56,7 +56,7 @@
                     <tbody>
                         @forelse($topRequesters ?? [] as $requester)
                         <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.75rem;">{{ $requester->user->name ?? 'N/A' }}</td>
+                            <td style="padding: 0.75rem;">{{ $requester->requester_display_name }}</td>
                             <td style="padding: 0.75rem; text-align: center;">{{ $requester->total }}</td>
                         </tr>
                         @empty

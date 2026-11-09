@@ -9,11 +9,11 @@ class EnsureEmailIsVerified
 {
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->check() && !auth()->user()->is_verified) {
-            return redirect()->route('otp.verification.form')
-                           ->with('error', 'Please verify your email address first.');
+        if (auth()->check() && ! auth()->user()->is_verified) {
+            return redirect()->route(auth()->user()->must_change_password ? 'password.setup' : 'password.request')
+                ->with('error', 'Please use your password setup link to confirm your email address.');
         }
-        
+
         return $next($request);
     }
 }

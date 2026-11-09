@@ -60,58 +60,12 @@
             <div class="stat-card">
                 <div class="stat-card-content">
                     <div>
-                        <p class="stat-label">Active Personnel</p>
-                        <p class="stat-value">{{ $activePersonnel ?? 0 }}</p>
+                        <p class="stat-label">Active Users</p>
+                        <p class="stat-value">{{ $activeUsers ?? 0 }}</p>
                     </div>
                     <div class="stat-icon stat-icon-indigo">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    @elseif(Auth::user()->isPersonnel())
-        {{-- Personnel Cards --}}
-        <div data-request-updates="dashboard-stats" class="stats-grid user-stats">
-            <div class="stat-card">
-                <div class="stat-card-content">
-                    <div>
-                        <p class="stat-label">Total Requests</p>
-                        <p class="stat-value">{{ $totalRequests ?? 0 }}</p>
-                    </div>
-                    <div class="stat-icon stat-icon-blue">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-card-content">
-                    <div>
-                        <p class="stat-label">Pending Requests</p>
-                        <p class="stat-value">{{ $pendingRequests ?? 0 }}</p>
-                    </div>
-                    <div class="stat-icon stat-icon-yellow">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-card-content">
-                    <div>
-                        <p class="stat-label">Completed Requests</p>
-                        <p class="stat-value">{{ $completedRequests ?? 0 }}</p>
-                    </div>
-                    <div class="stat-icon stat-icon-green">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
                 </div>
@@ -239,7 +193,7 @@
                         <td data-label="ID">#{{ $request->id }}</td>
                         <td class="mobile-summary-field" data-label="Request #">{{ $request->request_number ?? 'N/A' }}</td>
                         <td data-label="Title">{{ $request->title }}</td>
-                        <td class="mobile-summary-field" data-label="Requester">{{ $request->user->name ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" data-label="Requester">{{ $request->requester_display_name }}</td>
                         <td data-label="Status">
                             @php
                                 $statusClass = match($request->status) {

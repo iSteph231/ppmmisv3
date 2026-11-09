@@ -100,7 +100,7 @@
                             {{ $request->request_number ?? 'N/A' }}
                         </td>
                         <td style="padding: 0.875rem 1rem;">{{ $request->title }}</td>
-                        <td class="mobile-summary-field" style="padding: 0.875rem 1rem;">{{ $request->user->name ?? 'N/A' }}</td>
+                        <td class="mobile-summary-field" style="padding: 0.875rem 1rem;">{{ $request->requester_display_name }}</td>
                         <td style="padding: 0.875rem 1rem;">
                             @php
                                 $statusStyles = [

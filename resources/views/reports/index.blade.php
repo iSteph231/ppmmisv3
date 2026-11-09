@@ -139,7 +139,7 @@
             <div style="background: #f8fafc; padding: 0.75rem 1rem; border-top: 1px solid #e5e7eb;">
                 <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
                     <span>Completion Rate: {{ $completionRate ?? 0 }}%</span>
-                    <span>Active Personnel: {{ $activePersonnel ?? 0 }}</span>
+                    <span>Active Users: {{ $activeUsers ?? 0 }}</span>
                 </div>
             </div>
         </div>

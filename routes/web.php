@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\OTPVerificationController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
@@ -35,9 +34,14 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::get('/change-password', [ResetPasswordController::class, 'showRequiredResetForm'])
+    ->middleware('auth')->name('password.setup');
+
 // Register Routes (ADD THESE)
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/request-account', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/request-account', [RegisterController::class, 'register'])->middleware('throttle:5,1');
+Route::redirect('/register', '/request-account');
+Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 
 // ==================== PROTECTED ROUTES ====================
 Route::middleware(['auth'])->group(function () {
@@ -114,7 +118,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Users (Admin only)
     Route::middleware(['role:admin'])->group(function () {
-        Route::resource('users', UserController::class)->except(['create', 'store', 'edit', 'update']);
+        Route::post('/account-requests/{accountRequest}/approve', [UserController::class, 'approveAccountRequest'])->name('account-requests.approve');
+        Route::delete('/account-requests/{accountRequest}', [UserController::class, 'declineAccountRequest'])->name('account-requests.decline');
+        Route::resource('users', UserController::class)->except(['edit', 'update']);
+        Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role.update');
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     });
@@ -185,8 +192,5 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-// OTP Verification Routes
-Route::get('/verify-otp', [OTPVerificationController::class, 'showVerificationForm'])->name('otp.verification.form');
-Route::post('/send-otp', [OTPVerificationController::class, 'sendOTP'])->name('otp.send');
-Route::post('/verify-otp', [OTPVerificationController::class, 'verifyOTP'])->name('otp.verify');
-Route::post('/resend-otp', [OTPVerificationController::class, 'resendOTP'])->name('otp.resend');
+// Registration is now handled through admin-approved account requests.
+Route::redirect('/verify-otp', '/request-account');

@@ -16,10 +16,10 @@ class MaintenanceController extends Controller
      */
     public function index(Request $request)
     {
-        // Check if user is admin or personnel
+        // Check if user is admin
         $user = Auth::user();
-        if (! $user || ! in_array($user->role, ['admin', 'personnel'])) {
-            abort(403, 'Unauthorized access. Only Admin and Personnel can access maintenance schedules.');
+        if (! $user || ! $user->isAdmin()) {
+            abort(403, 'Unauthorized access. Only administrators can access maintenance schedules.');
         }
 
         $query = $this->filteredMaintenanceSchedules($request);
@@ -87,13 +87,13 @@ class MaintenanceController extends Controller
             ]);
         }
 
-        // Also notify personnel users if specified
+        // Also notify assigned users if specified
         if (! empty($validated['maintenance_in_charge'])) {
-            $personnel = User::where('role', 'personnel')
+            $assignedUsers = User::where('role', 'user')
                 ->where('name', 'like', '%'.$validated['maintenance_in_charge'].'%')
                 ->get();
 
-            foreach ($personnel as $p) {
+            foreach ($assignedUsers as $p) {
                 Notification::create([
                     'user_id' => $p->id,
                     'title' => 'Maintenance Task Assigned',
@@ -189,11 +189,11 @@ class MaintenanceController extends Controller
 
         // Notify the new maintenance in-charge
         if (! empty($validated['maintenance_in_charge']) && ($oldData['maintenance_in_charge'] ?? '') != $validated['maintenance_in_charge']) {
-            $personnel = User::where('role', 'personnel')
+            $assignedUsers = User::where('role', 'user')
                 ->where('name', 'like', '%'.$validated['maintenance_in_charge'].'%')
                 ->get();
 
-            foreach ($personnel as $p) {
+            foreach ($assignedUsers as $p) {
                 Notification::create([
                     'user_id' => $p->id,
                     'title' => 'Maintenance Task Reassigned',
@@ -249,21 +249,15 @@ class MaintenanceController extends Controller
 
     /**
      * Mark maintenance as completed.
-     * Both Admin and assigned Personnel can mark as completed.
+     * Only administrators can mark as completed.
      */
     public function complete($id, Request $request)
     {
         $schedule = MaintenanceSchedule::findOrFail($id);
         $user = Auth::user();
 
-        // Check if user is admin OR the assigned maintenance in-charge
-        $isAuthorized = ($user->role === 'admin') ||
-                        ($user->role === 'personnel' &&
-                         $schedule->maintenance_in_charge &&
-                         stripos($schedule->maintenance_in_charge, $user->name) !== false);
-
-        if (! $isAuthorized) {
-            abort(403, 'Unauthorized. Only Administrators or the assigned Maintenance In-Charge can mark this as completed.');
+        if (! $user->isAdmin()) {
+            abort(403, 'Unauthorized. Only Administrators can mark this as completed.');
         }
 
         // Validate the request
@@ -297,12 +291,12 @@ class MaintenanceController extends Controller
         }
 
         // Notify the maintenance in-charge (if different from completer)
-        if (! empty($schedule->maintenance_in_charge) && $user->role !== 'personnel') {
-            $personnel = User::where('role', 'personnel')
+        if (! empty($schedule->maintenance_in_charge) && $user->role !== 'user') {
+            $assignedUsers = User::where('role', 'user')
                 ->where('name', 'like', '%'.$schedule->maintenance_in_charge.'%')
                 ->get();
 
-            foreach ($personnel as $p) {
+            foreach ($assignedUsers as $p) {
                 Notification::create([
                     'user_id' => $p->id,
                     'title' => 'Task Completed',
