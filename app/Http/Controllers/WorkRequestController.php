@@ -6,16 +6,18 @@ use App\Models\InspectionReport;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\WorkRequest;
+use App\Services\FacilityImageStorage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WorkRequestController extends Controller
 {
+    public function __construct(private FacilityImageStorage $images) {}
+
     /**
      * Display a listing of the work requests.
      */
@@ -84,9 +86,6 @@ class WorkRequestController extends Controller
      */
     public function store(Request $request)
     {
-        // Log the incoming request for debugging
-        Log::info('Store request data:', $request->all());
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'department' => 'nullable|string|max:255',
@@ -147,7 +146,9 @@ class WorkRequestController extends Controller
 
         try {
             if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('work-request-photos', 'local');
+                $photoPath = config('services.google_drive.folder_id')
+                    ? $this->images->store($request->file('photo'), 'work-request-photos')
+                    : $request->file('photo')->store('work-request-photos', 'local');
                 if ($photoPath === false) {
                     throw new \RuntimeException('Unable to store the request photo.');
                 }
@@ -186,7 +187,7 @@ class WorkRequestController extends Controller
                 ->with('success', 'Work request created successfully.');
         } catch (\Exception $e) {
             if ($photoPath && ! isset($workRequest)) {
-                Storage::disk('local')->delete($photoPath);
+                $this->images->delete($photoPath);
             }
             Log::error('Error creating work request: '.$e->getMessage());
 
@@ -197,15 +198,12 @@ class WorkRequestController extends Controller
     /**
      * Display the specified work request.
      */
-    public function photo(WorkRequest $workRequest): BinaryFileResponse
+    public function photo(WorkRequest $workRequest): StreamedResponse
     {
         abort_unless(Auth::user()->isAdmin() || Auth::id() === $workRequest->user_id, 403);
-        abort_unless($workRequest->photo_path && Storage::disk('local')->exists($workRequest->photo_path), 404);
+        abort_unless($workRequest->photo_path && $this->images->exists($workRequest->photo_path), 404);
 
-        return response()->file(Storage::disk('local')->path($workRequest->photo_path), [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return $this->images->response($workRequest->photo_path);
     }
 
     public function show(WorkRequest $workRequest)

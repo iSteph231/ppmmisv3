@@ -10,6 +10,20 @@
     </div>
 
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+        @if(session('error'))
+            <div role="alert" class="m-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">{{ session('error') }}</div>
+        @endif
+        @if($errors->any())
+            <div role="alert" class="m-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+                <p>Please correct the following before submitting your request:</p>
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <p>Please select your image again before resubmitting.</p>
+            </div>
+        @endif
         <form method="POST" action="{{ route('work-requests.store') }}" enctype="multipart/form-data" style="padding: 1.5rem;" id="workRequestForm">
             @csrf
 

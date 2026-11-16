@@ -109,10 +109,8 @@
             
             @if($workRequest->photo_path)
                 <div style="margin-bottom: 1.5rem;">
-                    <strong>Request Photo</strong>
-                    <a href="{{ route('work-requests.photo', $workRequest) }}" target="_blank" rel="noopener">
-                        <img src="{{ route('work-requests.photo', $workRequest) }}" alt="Photo attached to work request {{ $workRequest->request_number }}" style="display: block; max-width: 100%; max-height: 400px; margin-top: 0.5rem; object-fit: contain;">
-                    </a>
+                    <strong>{{ Auth::user()->isAdmin() ? 'Photo Attached' : 'Request Photo' }}</strong>
+                    <img src="{{ route('work-requests.photo', $workRequest) }}" alt="Photo attached to work request {{ $workRequest->request_number }}" style="display: block; max-width: 100%; max-height: 400px; margin-top: 0.5rem; object-fit: contain;">
                 </div>
             @endif
 

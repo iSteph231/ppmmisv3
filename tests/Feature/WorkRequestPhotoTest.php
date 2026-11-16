@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\WorkRequest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -27,6 +28,7 @@ class WorkRequestPhotoTest extends TestCase
             (require database_path('migrations/'.$migration))->up();
         }
         Storage::fake('local');
+        config(['services.google_drive.folder_id' => null]);
         $this->actingAs(User::factory()->create());
     }
 
@@ -55,6 +57,38 @@ class WorkRequestPhotoTest extends TestCase
         $this->post(route('work-requests.store'), $this->requestData())->assertSessionHasErrors('photo');
         $this->assertSame(0, WorkRequest::count());
         $this->assertSame([], Storage::disk('local')->allFiles());
+    }
+
+    public function test_configured_drive_storage_is_used_for_upload_and_display(): void
+    {
+        config(['services.google_drive' => ['folder_id' => 'folder', 'client_id' => 'client', 'client_secret' => 'secret', 'refresh_token' => 'refresh']]);
+        Http::preventStrayRequests();
+        Http::fake([
+            'oauth2.googleapis.com/token' => Http::response(['access_token' => 'token']),
+            'www.googleapis.com/upload/drive/*' => Http::response(['id' => 'work-photo']),
+            'www.googleapis.com/drive/v3/files/*' => Http::response(['id' => 'work-photo', 'trashed' => false, 'mimeType' => 'image/jpeg']),
+        ]);
+        $this->post(route('work-requests.store'), $this->requestData() + ['photo' => UploadedFile::fake()->image('issue.jpg')])
+            ->assertSessionHasNoErrors()->assertSessionHas('success');
+        $workRequest = WorkRequest::firstOrFail();
+        $this->assertSame('gdrive:work-photo', $workRequest->photo_path);
+        $this->assertSame([], Storage::disk('local')->allFiles());
+        $this->get(route('work-requests.photo', $workRequest))->assertOk();
+    }
+
+    public function test_submission_errors_are_visible_on_the_form(): void
+    {
+        $this->withSession(['error' => 'Unable to store the request photo.'])
+            ->get(route('work-requests.create'))->assertOk()->assertSee('Unable to store the request photo.');
+    }
+
+    public function test_validation_errors_are_visible_on_the_form(): void
+    {
+        $this->from(route('work-requests.create'))->post(route('work-requests.store'), $this->requestData())
+            ->assertSessionHasErrors('photo');
+        $errors = session('errors');
+        $this->view('work-requests.create', ['errors' => $errors])
+            ->assertSee('Please correct the following')->assertSee('Please select your image again');
     }
 
     public function test_small_viewports_require_a_photo(): void
