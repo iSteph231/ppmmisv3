@@ -59,6 +59,21 @@ class WorkRequestPhotoTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
+    public function test_submitted_work_request_cannot_be_edited_by_its_owner(): void
+    {
+        $this->post(route('work-requests.store'), $this->requestData() + ['photo' => UploadedFile::fake()->image('issue.jpg')])
+            ->assertSessionHas('success');
+        $workRequest = WorkRequest::firstOrFail();
+        $originalAttributes = $workRequest->getAttributes();
+
+        $this->get(route('work-requests.edit', $workRequest))->assertForbidden();
+        foreach (['put', 'patch'] as $method) {
+            $this->{$method}(route('work-requests.update', $workRequest), array_replace($this->requestData(), ['title' => 'Changed title']))
+                ->assertForbidden();
+        }
+        $this->assertSame($originalAttributes, $workRequest->fresh()->getAttributes());
+    }
+
     public function test_configured_drive_storage_is_used_for_upload_and_display(): void
     {
         config(['services.google_drive' => ['folder_id' => 'folder', 'client_id' => 'client', 'client_secret' => 'secret', 'refresh_token' => 'refresh']]);

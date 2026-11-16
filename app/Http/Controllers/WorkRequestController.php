@@ -229,71 +229,17 @@ class WorkRequestController extends Controller
     /**
      * Show the form for editing the specified work request.
      */
-    public function edit(WorkRequest $workRequest)
+    public function edit(WorkRequest $workRequest): never
     {
-        $user = Auth::user();
-
-        if (! $user->isUser() || $user->id !== $workRequest->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        return view('work-requests.edit', compact('workRequest'));
+        abort(403, 'Submitted work requests cannot be edited.');
     }
 
     /**
-     * Update the specified work request in storage.
+     * Submitted work requests cannot be changed.
      */
-    public function update(Request $request, WorkRequest $workRequest)
+    public function update(Request $request, WorkRequest $workRequest): never
     {
-        $user = Auth::user();
-
-        if (! $user->isUser() || $user->id !== $workRequest->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'building_name' => 'nullable|string|max:255',
-            'office_room' => 'nullable|string|max:255',
-            'request_type' => ['required', 'string', Rule::in(['ocular_inspection', 'installation', 'repair', 'replacement', 'others'])],
-            'ocular_location' => 'required_if:request_type,ocular_inspection|nullable|string',
-            'installation_item' => 'required_if:request_type,installation|nullable|string',
-            'repair_item' => 'required_if:request_type,repair|nullable|string',
-            'replacement_item' => 'required_if:request_type,replacement|nullable|string',
-            'others_specify' => 'required_if:request_type,others|nullable|string',
-        ]);
-
-        $data = [
-            'title' => $validated['title'],
-            'description' => null,
-            'department' => $validated['department'] ?? null,
-            'building_name' => $validated['building_name'] ?? null,
-            'office_room' => $validated['office_room'] ?? null,
-            'work_type' => $validated['request_type'],
-            'ocular_details' => null,
-            'installation_details' => null,
-            'repair_details' => null,
-            'replacement_details' => null,
-            'others_details' => null,
-        ];
-
-        if ($validated['request_type'] === 'ocular_inspection') {
-            $data['ocular_details'] = $validated['ocular_location'] ?? null;
-        } elseif ($validated['request_type'] === 'installation') {
-            $data['installation_details'] = $validated['installation_item'] ?? null;
-        } elseif ($validated['request_type'] === 'repair') {
-            $data['repair_details'] = $validated['repair_item'] ?? null;
-        } elseif ($validated['request_type'] === 'replacement') {
-            $data['replacement_details'] = $validated['replacement_item'] ?? null;
-        } elseif ($validated['request_type'] === 'others') {
-            $data['others_details'] = $validated['others_specify'] ?? null;
-        }
-
-        $workRequest->update($data);
-
-        return redirect()->route('work-requests.show', $workRequest)
-            ->with('success', 'Work request updated successfully.');
+        abort(403, 'Submitted work requests cannot be edited.');
     }
 
     /**

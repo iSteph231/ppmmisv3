@@ -143,6 +143,7 @@
             line-height: 1.1;
         }
     </style>
+    @include('layouts.pdf-typography')
 </head>
 <body>
     @php

@@ -27,6 +27,7 @@
         .usage-photo { page-break-inside: avoid; margin-bottom: 20px; text-align: center; }
         .usage-photo img { max-width: 100%; max-height: 280px; }
     </style>
+    @include('layouts.pdf-typography')
 </head>
 <body>
     @include('facility-requests.evaluation-pdf')

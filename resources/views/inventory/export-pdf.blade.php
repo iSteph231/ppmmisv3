@@ -28,6 +28,7 @@
         .data-table thead { display: table-header-group; }
         .page-number { text-align: right; font-size: 7px; margin: 4px 0; }
     </style>
+    @include('layouts.pdf-typography')
 </head>
 <body>
     @foreach (($entries->isEmpty() ? collect([collect()]) : $entries->chunk($layout['rows'])) as $pageEntries)
