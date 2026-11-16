@@ -66,7 +66,13 @@ class WorkRequestController extends Controller
 
         $workRequests = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('work-requests.index', compact('workRequests'));
+        $newRequestIds = $user->isAdmin()
+            ? Notification::where('user_id', $user->id)->unread()
+                ->where('related_type', WorkRequest::class)->where('title', 'New Work Request')
+                ->whereIn('related_id', $workRequests->modelKeys())->pluck('related_id')->all()
+            : [];
+
+        return view('work-requests.index', compact('workRequests', 'newRequestIds'));
     }
 
     /**
@@ -163,6 +169,8 @@ class WorkRequestController extends Controller
                 Notification::create([
                     'user_id' => $admin->id,
                     'title' => 'New Work Request',
+                    'related_type' => WorkRequest::class,
+                    'related_id' => $workRequest->id,
                     'message' => "New work request #{$workRequest->id}: '{$workRequest->title}' from ".Auth::user()->name,
                     'type' => 'info',
                     'is_read' => false,
@@ -190,6 +198,10 @@ class WorkRequestController extends Controller
 
         // Admin can see any request
         if ($user->isAdmin()) {
+            Notification::where('user_id', $user->id)->unread()
+                ->where('related_type', WorkRequest::class)->where('related_id', $workRequest->id)
+                ->where('title', 'New Work Request')->update(['is_read' => true]);
+
             return view('work-requests.show', compact('workRequest'));
         }
 

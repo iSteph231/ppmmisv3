@@ -238,6 +238,53 @@ h1 {
 @media (max-width: 520px) {
     .topbar {
         flex-direction: column;
+        align-items: center;
+        padding: 20px 16px;
+    }
+
+    .nav-actions {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+
+    .hero {
+        padding: 16px 16px 32px;
+    }
+
+    .hero-content {
+        min-width: 0;
+        padding: 32px 24px;
+        text-align: center;
+    }
+
+    .eyebrow {
+        display: flex;
+        justify-content: center;
+        font-size: 0.7rem;
+        line-height: 1.5;
+    }
+
+    .eyebrow::before {
+        width: 24px;
+        flex-shrink: 0;
+    }
+
+    .subtitle {
+        line-height: 1.5;
+    }
+
+    .actions {
+        flex-direction: column;
+        margin-top: 28px;
     }
 
     .nav-actions,
@@ -248,6 +295,11 @@ h1 {
     .nav-link,
     .btn {
         flex: 1;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        text-align: center;
     }
 }
 </style>

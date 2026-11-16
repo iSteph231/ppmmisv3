@@ -27,7 +27,7 @@
                 <tbody>
                     @forelse($accountRequests as $accountRequest)
                         <tr>
-                            <td>{{ $accountRequest->name }}</td><td>{{ $accountRequest->email }}</td>
+                            <td>{{ $accountRequest->name }} <x-new-request-dot /></td><td>{{ $accountRequest->email }}</td>
                             <td>{{ $accountRequest->department ?? 'Not specified' }}</td>
                             <td>
                                 <div class="request-review-actions">

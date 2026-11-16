@@ -70,17 +70,28 @@ class FacilityRequestController extends Controller
             });
         }
         $facilityRequests = $query->paginate(10)->withQueryString();
+        $newRequestIds = $user->isAdmin()
+            ? Notification::where('user_id', $user->id)->unread()
+                ->where('related_type', FacilityRequest::class)->where('title', 'New Facility Request')
+                ->whereIn('related_id', $facilityRequests->modelKeys())->pluck('related_id')->all()
+            : [];
 
         $outstandingRequest = $user->isUser()
             ? FacilityRequest::where('user_id', $user->id)->where('status', 'approved')->first()
             : null;
 
-        return view('request-facility', compact('facilityRequests', 'summary', 'outstandingRequest'));
+        return view('request-facility', compact('facilityRequests', 'summary', 'outstandingRequest', 'newRequestIds'));
     }
 
     public function show(FacilityRequest $facilityRequest): View
     {
         abort_unless(Auth::user()->isAdmin() || $facilityRequest->user_id === Auth::id(), 403);
+
+        if (Auth::user()->isAdmin()) {
+            Notification::where('user_id', Auth::id())->unread()
+                ->where('related_type', FacilityRequest::class)->where('related_id', $facilityRequest->id)
+                ->where('title', 'New Facility Request')->update(['is_read' => true]);
+        }
 
         $facilityRequest->load('user');
 

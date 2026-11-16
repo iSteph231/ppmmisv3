@@ -98,6 +98,9 @@
                         <td style="padding: 0.875rem 1rem;">#{{ $request->id }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem; font-family: monospace;">
                             {{ $request->request_number ?? 'N/A' }}
+                            @if(Auth::user()->isAdmin() && in_array($request->id, $newRequestIds ?? []))
+                                <x-new-request-dot />
+                            @endif
                         </td>
                         <td style="padding: 0.875rem 1rem;">{{ $request->title }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem;">{{ $request->requester_display_name }}</td>
