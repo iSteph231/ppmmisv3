@@ -98,7 +98,7 @@
                     @forelse($workRequests as $request)
                     <tr style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 1rem;">#{{ $request->id }}</td>
-                        <td style="padding: 1rem;"><x-new-request-dot :created-at="$request->created_at">{{ $request->title ?? 'N/A' }}</x-new-request-dot></td>
+                        <td style="padding: 1rem;"><x-new-request-dot :created-at="$request->created_at" :eligible="$request->status === 'pending' && $request->scheduled_date === null">{{ $request->title ?? 'N/A' }}</x-new-request-dot></td>
                         <td style="padding: 1rem;">{{ ucfirst(str_replace('_', ' ', $request->work_type ?? 'N/A')) }}</td>
                         <td style="padding: 1rem;">{{ $request->requester_display_name }}</td>
                         <td style="padding: 1rem;">

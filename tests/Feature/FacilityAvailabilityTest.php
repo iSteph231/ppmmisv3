@@ -28,7 +28,7 @@ class FacilityAvailabilityTest extends TestCase
         }
     }
 
-    public function test_availability_returns_only_reserved_facility_names_for_the_exact_slot(): void
+    public function test_availability_returns_reserved_facilities_for_the_entire_day(): void
     {
         $owner = User::factory()->create(['role' => 'user']);
         foreach (['pending' => 'Room 1', 'approved' => 'Room 2', 'finished' => 'Room 3', 'declined' => 'Room 4'] as $status => $facility) {
@@ -38,7 +38,7 @@ class FacilityAvailabilityTest extends TestCase
         $this->booking($owner, ['facility' => 'Room 6 (Speech Lab)', 'requested_date' => now()->addDays(2)->toDateString()]);
         $this->actingAs(User::factory()->create(['role' => 'user']))
             ->getJson(route('request-facility.availability', $this->slot()))
-            ->assertOk()->assertExactJson(['unavailable' => ['Room 1', 'Room 2']])
+            ->assertOk()->assertExactJson(['unavailable' => ['Room 1', 'Room 2', 'Room 3', 'Room 5']])
             ->assertHeader('Cache-Control', 'no-store, private');
     }
 
@@ -46,9 +46,11 @@ class FacilityAvailabilityTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'user']);
         $requester = User::factory()->create(['role' => 'user']);
-        foreach (['pending', 'approved'] as $status) {
+        foreach (['pending', 'approved', 'finished'] as $status) {
             $booking = $this->booking($owner, ['status' => $status]);
             $this->actingAs($requester)->post(route('request-facility.store'), $this->submission())
+                ->assertSessionHasErrors('facility');
+            $this->post(route('request-facility.store'), array_replace($this->submission(), ['requested_time' => '14:00']))
                 ->assertSessionHasErrors('facility');
             $booking->delete();
         }
@@ -57,16 +59,16 @@ class FacilityAvailabilityTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
-    public function test_other_facilities_dates_and_times_can_be_requested(): void
+    public function test_other_facilities_and_next_day_can_be_requested(): void
     {
         $owner = User::factory()->create(['role' => 'user']);
         $this->booking($owner);
         $this->actingAs(User::factory()->create(['role' => 'user']));
-        foreach ([['facility' => 'Room 2'], ['requested_time' => '10:30'], ['requested_date' => now()->addDays(2)->toDateString()]] as $changes) {
+        foreach ([['facility' => 'Room 2'], ['requested_date' => now()->addDays(2)->toDateString()]] as $changes) {
             $this->post(route('request-facility.store'), array_replace($this->submission(), $changes))
                 ->assertSessionHasNoErrors()->assertRedirect(route('request-facility.index'));
         }
-        $this->assertDatabaseCount('facility_requests', 4);
+        $this->assertDatabaseCount('facility_requests', 3);
     }
 
     public function test_declined_requests_do_not_block_a_slot_and_new_requests_update_availability(): void
@@ -95,7 +97,7 @@ class FacilityAvailabilityTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors(['requested_date', 'requested_time']);
     }
 
-    public function test_completing_photos_and_evaluation_releases_the_facility_for_another_user(): void
+    public function test_completing_photos_and_evaluation_keeps_the_facility_reserved_for_the_day(): void
     {
         $owner = User::factory()->create(['role' => 'user']);
         $otherUser = User::factory()->create(['role' => 'user']);
@@ -124,8 +126,13 @@ class FacilityAvailabilityTest extends TestCase
         $this->assertSame('finished', $booking->fresh()->status);
 
         $this->actingAs($otherUser)->getJson(route('request-facility.availability', $this->slot()))
-            ->assertOk()->assertExactJson(['unavailable' => []]);
+            ->assertOk()->assertExactJson(['unavailable' => ['Room 1']]);
         $this->post(route('request-facility.store'), $this->submission())
+            ->assertSessionHasErrors('facility');
+        $nextDay = ['requested_date' => now()->addDays(2)->toDateString()];
+        $this->getJson(route('request-facility.availability', array_replace($this->slot(), $nextDay)))
+            ->assertOk()->assertExactJson(['unavailable' => []]);
+        $this->post(route('request-facility.store'), array_replace($this->submission(), $nextDay))
             ->assertSessionHasNoErrors()->assertRedirect(route('request-facility.index'));
         $this->assertDatabaseHas('facility_requests', [
             'user_id' => $otherUser->id,

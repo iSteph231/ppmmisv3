@@ -13,13 +13,13 @@
             @csrf
             @foreach(['name' => 'Full name', 'email' => 'Email address', 'department' => 'Department (optional)'] as $field => $label)
                 <div>
-                    <label for="{{ $field }}" class="mb-2 block font-semibold">{{ $label }}</label>
+                    <label for="{{ $field }}" class="mb-2 block font-semibold">{{ $label }} @if(in_array($field, ['name', 'email']))<span style="color: #dc2626;" aria-hidden="true">*</span>@endif</label>
                     <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'email' ? 'email' : 'text' }}" value="{{ old($field) }}" maxlength="255" @required(in_array($field, ['name', 'email'])) class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base" @error($field) aria-invalid="true" aria-describedby="{{ $field }}-error" @enderror>
                     @error($field)<p id="{{ $field }}-error" class="mt-2 text-red-700">{{ $message }}</p>@enderror
                 </div>
             @endforeach
             <div>
-                <label for="role" class="mb-2 block font-semibold">Role</label>
+                <label for="role" class="mb-2 block font-semibold">Role <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                 <select id="role" name="role" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base">
                     @foreach(['user' => 'User', 'engineer' => 'Engineer'] as $role => $label)
                         <option value="{{ $role }}" @selected(old('role', 'user') === $role)>{{ $label }}</option>

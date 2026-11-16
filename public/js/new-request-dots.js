@@ -1,5 +1,6 @@
 (() => {
     let activeDots = [];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     function refreshRequestDots() {
         const now = Date.now();
@@ -11,7 +12,7 @@
 
     function animateRequestDots() {
         const now = Date.now();
-        const breath = (1 - Math.cos((now % 2200) / 2200 * Math.PI * 2)) / 2;
+        const breath = reducedMotion.matches ? 0 : (1 - Math.cos((now % 2200) / 2200 * Math.PI * 2)) / 2;
 
         if (!document.hidden) {
             activeDots.forEach(dot => {

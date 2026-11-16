@@ -225,8 +225,7 @@
                 <div class="form-group">
                     <label for="password">
                         <i class="fas fa-lock"></i>
-                        New Password
-                    </label>
+                        New Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <input type="password" class="form-control @error('password') is-invalid @enderror" 
                            id="password" name="password" required minlength="8" autocomplete="new-password">
                     <small class="text-muted">Minimum 8 characters</small>
@@ -242,8 +241,7 @@
                 <div class="form-group">
                     <label for="password_confirmation">
                         <i class="fas fa-check-circle"></i>
-                        Confirm Password
-                    </label>
+                        Confirm Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <input type="password" class="form-control" 
                            id="password_confirmation" name="password_confirmation" 
                            required autocomplete="new-password">

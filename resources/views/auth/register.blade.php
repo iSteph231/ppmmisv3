@@ -41,7 +41,7 @@
                 @foreach(['name' => 'Full name', 'email' => 'Email (@psu.edu.ph)', 'department' => 'Designation'] as $field => $label)
                     <div class="input-group">
                         <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'email' ? 'email' : 'text' }}" value="{{ old($field) }}" placeholder=" " maxlength="255" required @error($field) aria-invalid="true" aria-describedby="{{ $field }}-error" @enderror>
-                        <label for="{{ $field }}">{{ $label }}</label>
+                        <label for="{{ $field }}">{{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     </div>
                     @error($field)<p id="{{ $field }}-error" class="field-error">{{ $message }}</p>@enderror
                 @endforeach

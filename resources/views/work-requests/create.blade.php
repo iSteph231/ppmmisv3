@@ -124,7 +124,7 @@
             </div>
 
             <div style="margin-bottom: 1.5rem;">
-                <label for="photo">Image (required)</label>
+                <label for="photo">Image (required) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                 <input type="file" name="photo" id="photo" class="search-input" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-status" required>
                 <input type="file" id="camera-photo" class="search-input" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="Take a photo" aria-describedby="photo-help photo-status" hidden>
                 <div id="photo-source-buttons" hidden>

@@ -88,7 +88,7 @@
                 <tbody>
                     @forelse($facilityRequests as $facilityRequest)
                         <tr data-request-url="{{ route('request-facility.show', $facilityRequest) }}">
-                            <td class="facility-request-number mobile-summary-field">{{ $facilityRequest->request_number }}</td>
+                            <td class="facility-request-number mobile-summary-field"><x-new-request-dot :created-at="$facilityRequest->created_at" :eligible="$facilityRequest->status === 'pending'">{{ $facilityRequest->request_number }}</x-new-request-dot></td>
                             <td @class(['mobile-summary-field', 'mobile-only-cell' => !Auth::user()->isAdmin()])>{{ $facilityRequest->user->name }}</td>
                             <td>{{ $facilityRequest->facility }}</td>
                             <td>{{ $facilityRequest->category }}</td>

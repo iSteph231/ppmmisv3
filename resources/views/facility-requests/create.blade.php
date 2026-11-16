@@ -31,11 +31,11 @@
                 </div>
             @endif
             <div class="facility-form-grid">
-                @foreach(['facility' => 'Facility Requested', 'requested_date' => 'Date of Use', 'requested_time' => 'Time of Use', 'lead_person' => 'Lead / Focal Person', 'contact_number' => 'Contact Number'] as $field => $label)
+                @foreach(['requested_date' => 'Date of Use', 'requested_time' => 'Time of Use', 'facility' => 'Facility Requested', 'lead_person' => 'Lead / Focal Person', 'contact_number' => 'Contact Number'] as $field => $label)
                     <div class="facility-field {{ $field === 'facility' ? 'facility-field-wide' : '' }}">
-                        <label for="{{ $field }}" class="facility-label">{{ $label }}</label>
+                        <label for="{{ $field }}" class="facility-label">{{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                         @if($field === 'facility')
-                            <select id="facility" name="facility" class="facility-input" data-availability-url="{{ route('request-facility.availability') }}" required aria-invalid="{{ $errors->has('facility') ? 'true' : 'false' }}" aria-describedby="facility-availability @error('facility') facility-error @enderror">
+                            <select id="facility" name="facility" class="facility-input disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500" data-availability-url="{{ route('request-facility.availability') }}" disabled required aria-invalid="{{ $errors->has('facility') ? 'true' : 'false' }}" aria-describedby="facility-availability @error('facility') facility-error @enderror">
                                 <option value="" disabled @selected(!old('facility'))>Select a facility</option>
                                 @foreach(config('facilities.options') as $facility)
                                     <option value="{{ $facility }}" @selected(old('facility') === $facility)>{{ $loop->iteration }}. {{ $facility }}</option>
@@ -55,12 +55,12 @@
                     @error('program_image')<p id="program-image-error" class="facility-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="facility-field facility-field-wide">
-                    <label for="purpose" class="facility-label">Purpose of Use</label>
+                    <label for="purpose" class="facility-label">Purpose of Use <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <textarea id="purpose" name="purpose" rows="4" class="facility-input" maxlength="2000" required aria-invalid="{{ $errors->has('purpose') ? 'true' : 'false' }}" @error('purpose') aria-describedby="purpose-error" @enderror>{{ old('purpose') }}</textarea>
                     @error('purpose')<p id="purpose-error" class="facility-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="facility-field facility-field-wide">
-                    <label for="participants" class="facility-label">List of Participants (Name and Affiliation)</label>
+                    <label for="participants" class="facility-label">List of Participants (Name and Affiliation) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <p id="participants-help" class="facility-result-count">Enter one participant per line, including their name and affiliation.</p>
                     <textarea id="participants" name="participants" rows="7" class="facility-input" maxlength="10000" required placeholder="Juan Dela Cruz — College of Information Technology" aria-describedby="participants-help @error('participants') participants-error @enderror" aria-invalid="{{ $errors->has('participants') ? 'true' : 'false' }}">{{ old('participants') }}</textarea>
                     @error('participants')<p id="participants-error" class="facility-error">{{ $message }}</p>@enderror
@@ -68,7 +68,7 @@
             </div>
             <div class="grid gap-8 border-t border-slate-200 pt-6 mt-6 sm:grid-cols-2">
                 <div class="facility-field">
-                    <label for="requested_by" class="facility-label">Requested by</label>
+                    <label for="requested_by" class="facility-label">Requested by <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <input id="requested_by" name="requested_by" class="facility-input" value="{{ old('requested_by', Auth::user()->name) }}" maxlength="255" required aria-invalid="{{ $errors->has('requested_by') ? 'true' : 'false' }}" @error('requested_by') aria-describedby="requested_by-error" @enderror>
                     <p class="facility-result-count">Requestor's printed name</p>
                     @error('requested_by')<p id="requested_by-error" class="facility-error">{{ $message }}</p>@enderror

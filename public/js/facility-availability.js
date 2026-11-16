@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const wasBooked = unavailable.has(facility.value);
             options.forEach((option) => {
                 option.disabled = unavailable.has(option.value);
-                option.textContent = option.dataset.label + (option.disabled ? ' — Unavailable' : '');
+                option.textContent = option.dataset.label + (option.disabled ? ' - Reserved for this day' : '');
             });
             if (wasBooked) {
                 facility.value = '';
@@ -67,10 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
             facility.disabled = allBooked;
             submit.disabled = allBooked;
             message.textContent = allBooked
-                ? 'No facilities are available at this date and time. Choose another date or time.'
+                ? 'No facilities are available on this date. Choose another date.'
                 : wasBooked
-                    ? 'Your selected facility is already requested at this time. Select another available facility.'
-                    : 'Unavailable facilities are disabled for the selected date and time.';
+                    ? 'Your selected facility is reserved for this entire day. Choose another date or facility.'
+                    : 'Facilities reserved for the selected day are disabled, regardless of time.';
         } catch {
             if (!current.signal.aborted) {
                 facility.disabled = true;
@@ -85,9 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     date.addEventListener('input', () => checkAvailability(true));
+    date.addEventListener('change', () => checkAvailability(true));
     time.addEventListener('input', () => checkAvailability(true));
+    time.addEventListener('change', () => checkAvailability(true));
+    facility.addEventListener('focus', () => checkAvailability());
+    window.addEventListener('focus', () => checkAvailability(true));
     document.addEventListener('visibilitychange', () => checkAvailability(true));
     window.addEventListener('online', () => checkAvailability(true));
     checkAvailability(true);
-    window.setInterval(() => checkAvailability(), 3000);
+    window.setInterval(() => checkAvailability(), 1000);
 });

@@ -124,12 +124,37 @@ class FacilityRequestNotificationTest extends TestCase
             'related_id' => $facilityRequest->id,
             'is_read' => false,
         ]);
-        $this->patch(route('request-facility.approve', $facilityRequest))->assertStatus(409);
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->patch(route('request-facility.approve', $facilityRequest))
+                ->assertRedirect(route('request-facility.show', $facilityRequest))
+                ->assertSessionHas('error', 'This request has already been reviewed.');
+        }
         $this->assertDatabaseCount('notifications', 1);
         $this->get(route('request-facility.show', $facilityRequest))
             ->assertOk()->assertDontSee('Approve Request')->assertSee('Approved');
         $this->actingAs($owner)->get(route('request-facility.show', $facilityRequest))
             ->assertOk()->assertSee('Approved')->assertDontSee('Approve Request');
+    }
+
+    public function test_reviewed_requests_are_not_approved_again(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        foreach (['declined', 'finished'] as $status) {
+            $facilityRequest = $this->createFacilityRequest($owner, 'FR-REVIEWED-'.$status);
+            $facilityRequest->update(['status' => $status]);
+
+            $this->patch(route('request-facility.approve', $facilityRequest))
+                ->assertRedirect(route('request-facility.show', $facilityRequest))
+                ->assertSessionHas('error', 'This request has already been reviewed.');
+            $this->assertSame($status, $facilityRequest->fresh()->status);
+            $this->get(route('request-facility.show', $facilityRequest))
+                ->assertOk()->assertSeeText('This request has already been reviewed.');
+        }
+
+        $this->assertDatabaseCount('notifications', 0);
     }
 
     public function test_users_see_only_their_requests_and_cannot_approve_any_request(): void

@@ -9,6 +9,21 @@ use Tests\TestCase;
 
 class FacilityRequestAccessTest extends TestCase
 {
+    public function test_facility_request_list_loads_for_admins_and_users(): void
+    {
+        foreach (['0001_01_01_000000_create_users_table.php', '2026_09_24_000000_create_facility_requests_table.php'] as $migration) {
+            $this->artisan('migrate', ['--path' => 'database/migrations/'.$migration, '--no-interaction' => true])->assertExitCode(0);
+        }
+
+        foreach (['admin', 'user'] as $role) {
+            $this->actingAs(User::factory()->make(['id' => 1, 'role' => $role]))
+                ->get(route('request-facility.index'))
+                ->assertOk()
+                ->assertViewIs('request-facility')
+                ->assertViewHasAll(['facilityRequests', 'summary', 'outstandingRequest']);
+        }
+    }
+
     public function test_only_users_see_facility_request_creation_links(): void
     {
         foreach (['admin', 'personnel', 'user'] as $role) {
