@@ -53,22 +53,18 @@ class FacilityImageStorageTest extends TestCase
         (new FacilityImageStorage)->get('gdrive:file');
     }
 
-    public function test_upload_read_and_delete_use_private_drive_files(): void
+    public function test_upload_read_and_delete_use_private_local_files(): void
     {
-        config(['services.google_drive' => ['folder_id' => 'folder', 'client_id' => 'client', 'client_secret' => 'secret', 'refresh_token' => 'refresh']]);
-        Http::preventStrayRequests();
-        Http::fake([
-            'oauth2.googleapis.com/token' => Http::response(['access_token' => 'token']),
-            'www.googleapis.com/upload/drive/*' => Http::response(['id' => 'file123']),
-            'www.googleapis.com/drive/v3/files/*' => Http::response('image-bytes', 200),
-        ]);
+        Storage::fake('local');
+        Http::fake();
+        config(['services.google_drive' => ['folder_id' => 'configured-folder']]);
         $storage = new FacilityImageStorage;
-        $path = $storage->store(UploadedFile::fake()->create('photo.png', 1, 'image/png'), 'photos', 'before.png');
-        $this->assertSame('gdrive:file123', $path);
+        $path = $storage->store(UploadedFile::fake()->createWithContent('before.png', 'image-bytes'), 'photos', 'before.png');
+        $this->assertSame('photos/before.png', $path);
         $this->assertSame('image-bytes', $storage->get($path));
         $storage->delete($path);
-        Http::assertSent(fn ($request) => $request->method() === 'POST' && str_contains($request->url(), '/upload/') && str_contains($request->body(), '"parents":["folder"]') && str_contains($request->body(), 'before.png'));
-        Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), 'file123'));
+        Storage::disk('local')->assertMissing($path);
+        Http::assertNothingSent();
     }
 
     public function test_old_local_images_remain_readable(): void
@@ -80,12 +76,14 @@ class FacilityImageStorageTest extends TestCase
         $this->assertSame('old-image', $storage->get('old.png'));
     }
 
-    public function test_missing_credentials_stop_uploads(): void
+    public function test_upload_does_not_require_drive_credentials(): void
     {
-        config(['services.google_drive' => ['folder_id' => 'folder']]);
-        Http::preventStrayRequests();
-        $this->expectException(\RuntimeException::class);
-        (new FacilityImageStorage)->store(UploadedFile::fake()->create('photo.png'), 'photos');
+        Storage::fake('local');
+        config(['services.google_drive' => []]);
+        Http::fake();
+        $path = (new FacilityImageStorage)->store(UploadedFile::fake()->image('photo.png'), 'photos');
+        Storage::disk('local')->assertExists($path);
+        Http::assertNothingSent();
     }
 
     public function test_missing_drive_file_returns_false_and_api_errors_are_not_hidden(): void

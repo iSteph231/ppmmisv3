@@ -191,12 +191,7 @@
                     @forelse($workRequests ?? [] as $request)
                     <tr data-request-url="{{ route('work-requests.show', $request->id) }}">
                         <td data-label="ID">#{{ $request->id }}</td>
-                        <td class="mobile-summary-field" data-label="Request #">
-                            {{ $request->request_number ?? 'N/A' }}
-                            @if(Auth::user()->isAdmin() && in_array($request->id, $newRequestIds ?? []))
-                                <x-new-request-dot />
-                            @endif
-                        </td>
+                        <td class="mobile-summary-field" data-label="Request #">{{ $request->request_number ?? 'N/A' }}</td>
                         <td data-label="Title">{{ $request->title }}</td>
                         <td class="mobile-summary-field" data-label="Requester">{{ $request->requester_display_name }}</td>
                         <td data-label="Status">

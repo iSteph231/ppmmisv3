@@ -11,7 +11,7 @@
     <div class="greeting-section facility-page-header">
         <div>
             <h1 class="greeting-title">Facility Request Details</h1>
-            <p class="greeting-subtitle">{{ $facilityRequest->request_number }}</p>
+            <p class="greeting-subtitle"><x-new-request-dot :created-at="$facilityRequest->created_at" :eligible="$facilityRequest->status === 'pending'">{{ $facilityRequest->request_number }}</x-new-request-dot></p>
         </div>
         <div class="facility-export-actions">
             @if(Auth::user()->isAdmin() && $facilityRequest->status === 'finished')

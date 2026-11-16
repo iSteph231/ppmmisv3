@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class FacilityRequestProgramImageTest extends TestCase
@@ -69,7 +70,8 @@ class FacilityRequestProgramImageTest extends TestCase
         $facility = FacilityRequest::sole();
         $this->assertSame('pending', $facility->status);
         $this->assertNull($facility->decline_reason);
-        $this->assertSame('gdrive:program123', $facility->program_image_path);
+        $this->assertStringStartsWith('facility-requests/programs/', $facility->program_image_path);
+        Storage::disk('local')->assertExists($facility->program_image_path);
         $this->assertNotSame('event-program.png', basename($facility->program_image_path));
         $this->assertSame($admin->id, Notification::sole()->user_id);
         $url = route('request-facility.program-image', $facility);
@@ -136,6 +138,19 @@ class FacilityRequestProgramImageTest extends TestCase
     }
 
     /** @return array<string, string> */
+    public function test_repeated_submissions_create_only_one_facility_request(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'user']));
+        $token = (string) Str::uuid();
+        for ($attempt = 0; $attempt < 4; $attempt++) {
+            $this->post(route('request-facility.store'), $this->submission() + [
+                'submission_token' => $token, 'program_image' => UploadedFile::fake()->image('program.png'),
+            ])->assertRedirect(route('request-facility.index'));
+        }
+        $this->assertDatabaseCount('facility_requests', 1);
+        $this->assertCount(1, Storage::disk('local')->allFiles());
+    }
+
     private function submission(): array
     {
         return [

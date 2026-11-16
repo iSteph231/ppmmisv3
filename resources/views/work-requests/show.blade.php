@@ -15,7 +15,7 @@
             <div class="responsive-grid-two" style="display: grid; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Request #:</strong>
-                    <p style="margin-top: 0.25rem; font-size: 1rem; font-family: monospace;">{{ $workRequest->request_number ?? 'N/A' }}</p>
+                    <p style="margin-top: 0.25rem; font-size: 1rem; font-family: monospace;"><x-new-request-dot :created-at="$workRequest->created_at">{{ $workRequest->request_number ?? 'N/A' }}</x-new-request-dot></p>
                 </div>
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Status:</strong>
@@ -107,6 +107,13 @@
                 </div>
             </div>
             
+            @if($workRequest->photo_path)
+                <div style="margin-bottom: 1.5rem;">
+                    <strong>{{ Auth::user()->isAdmin() ? 'Photo Attached' : 'Request Photo' }}</strong>
+                    <img src="{{ route('work-requests.photo', $workRequest) }}" alt="Photo attached to work request {{ $workRequest->request_number }}" style="display: block; max-width: 100%; max-height: 400px; margin-top: 0.5rem; object-fit: contain;">
+                </div>
+            @endif
+
             {{-- Work Type Details --}}
             <div style="margin-bottom: 1.5rem;">
                 <strong style="color: #6b7280; font-size: 0.875rem;">Request Details:</strong>
@@ -158,15 +165,6 @@
                     Back to List
                 </a>
 
-                @if(Auth::user()->isUser() && Auth::id() === $workRequest->user_id)
-                <a href="{{ route('work-requests.edit', $workRequest->id) }}" class="btn-create" style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; text-decoration: none; background: #3b82f6;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Edit Request
-                </a>
-                @endif
                 
                 {{-- Schedule Inspection Button - ADMIN ONLY --}}
                 @if(Auth::user()->isAdmin() && ! $workRequest->isInspectionScheduled())

@@ -17,6 +17,7 @@ class WorkRequest extends Model
         'request_number',
         'title',
         'description',
+        'photo_path',
         'department',      // Department is now available
         'building_name',   // Building name is now available
         'office_room',     // Office/room is now available

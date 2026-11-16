@@ -127,6 +127,7 @@
             width: 64mm;
         }
     </style>
+    @include('layouts.pdf-typography')
 </head>
 <body>
     @php

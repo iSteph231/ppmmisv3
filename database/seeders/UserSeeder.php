@@ -13,7 +13,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Admin User
         User::updateOrCreate(
             ['email' => 'admin@psu.edu.ph'],
             [
@@ -21,72 +20,44 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('Admin@123'),
                 'role' => 'admin',
                 'is_active' => true,
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
                 'department' => 'IT Department',
                 'phone_number' => '123-456-7890',
             ]
         );
 
-        // Create Regular Users
-        $users = [
+        User::updateOrCreate(
+            ['email' => 'user@psu.edu.ph'],
             [
-                'name' => 'John Doe',
-                'email' => 'johndoe@psu.edu.ph',
-                'password' => Hash::make('Password@123'),
+                'name' => 'Regular User',
+                'password' => Hash::make('User@123'),
                 'role' => 'user',
                 'is_active' => true,
-                'department' => 'Facilities',
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+                'department' => 'IT Department',
                 'phone_number' => '123-456-7891',
-            ],
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'engineer@psu.edu.ph'],
             [
-                'name' => 'Jane Smith',
-                'email' => 'jane@psu.edu.ph',
-                'password' => Hash::make('Password@123'),
-                'role' => 'user',
+                'name' => 'Maintenance Engineer',
+                'password' => Hash::make('Engineer@123'),
+                'role' => 'engineer',
                 'is_active' => true,
-                'department' => 'Operations',
-                'phone_number' => '123-456-7892',
-            ],
-            [
-                'name' => 'Mike Maintenance',
-                'email' => 'mike@psu.edu.ph',
-                'password' => Hash::make('Password@123'),
-                'role' => 'user',
-                'is_active' => true,
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
                 'department' => 'Maintenance',
-                'phone_number' => '123-456-7893',
-            ],
-            [
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah@psu.edu.ph',
-                'password' => Hash::make('Password@123'),
-                'role' => 'user',
-                'is_active' => true,
-                'department' => 'HR',
-                'phone_number' => '123-456-7894',
-            ],
-            [
-                'name' => 'Robert Chen',
-                'email' => 'robert@psu.edu.ph',
-                'password' => Hash::make('Password@123'),
-                'role' => 'user',
-                'is_active' => true,
-                'department' => 'Engineering',
-                'phone_number' => '123-456-7895',
-            ],
-        ];
+                'phone_number' => '123-456-7892',
+            ]
+        );
 
-        foreach ($users as $user) {
-            User::updateOrCreate(
-                ['email' => $user['email']],
-                $user
-            );
-        }
-
-        // Create 10 additional random users using factory (if factory exists)
-        if (method_exists(User::class, 'factory')) {
-            User::factory(10)->create();
-        }
-
-        $this->command->info('Users seeded successfully!');
+        $this->command->info('Admin, user, and engineer accounts seeded successfully!');
     }
 }

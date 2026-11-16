@@ -600,6 +600,71 @@ body {
 }
 
 /* Status Badges */
+.request-reference {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    column-gap: 0.5rem;
+    row-gap: 4px;
+    vertical-align: middle;
+}
+
+.request-reference-value {
+    grid-row: 2;
+    grid-column: 1;
+}
+
+.new-request-indicator {
+    display: contents;
+}
+
+.new-request-label {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 700;
+    color: #854d0e;
+    white-space: nowrap;
+}
+
+.new-request-indicator[hidden] {
+    display: none;
+}
+
+.new-request-dot {
+    grid-row: 2;
+    grid-column: 2;
+    position: relative;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 0;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    background-color: #facc15;
+    box-shadow: 0 0 0 2px #eab308, 0 0 8px rgba(250, 204, 21, 0.55);
+
+    box-sizing: content-box;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.new-request-ring {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid rgba(234, 179, 8, 0.65);
+    border-radius: 50%;
+    pointer-events: none;
+
+}
+
+.new-request-dot[hidden] {
+    display: none;
+}
+
 .badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;

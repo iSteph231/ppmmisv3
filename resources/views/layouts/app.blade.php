@@ -198,5 +198,7 @@
     <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
     <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
     @stack('scripts')
+    <script defer src="{{ asset('js/request-submission.js').'?v='.substr(hash_file('sha256', public_path('js/request-submission.js')), 0, 16) }}"></script>
+    <script defer src="{{ asset('js/new-request-dots.js').'?v='.substr(hash_file('sha256', public_path('js/new-request-dots.js')), 0, 16) }}"></script>
 </body>
 </html>
