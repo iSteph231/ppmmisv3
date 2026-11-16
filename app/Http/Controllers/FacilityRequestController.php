@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\PreventDuplicateRequestSubmission;
 use App\Http\Requests\FacilityAvailabilityRequest;
 use App\Http\Requests\StoreFacilityEvaluationRequest;
 use App\Http\Requests\StoreFacilityRequest;
@@ -15,6 +16,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +26,13 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class FacilityRequestController extends Controller
+class FacilityRequestController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [new Middleware(PreventDuplicateRequestSubmission::class.':request-facility.index', only: ['store'])];
+    }
+
     public function __construct(private FacilityImageStorage $images) {}
 
     public function availability(FacilityAvailabilityRequest $request): JsonResponse
@@ -45,7 +53,7 @@ class FacilityRequestController extends Controller
             'search' => ['nullable', 'string', 'max:255'],
         ]);
         $user = Auth::user();
-        $query = FacilityRequest::with('user')->latest();
+        $query = FacilityRequest::with('user');
 
         if (! $user->isAdmin()) {
             $query->where('user_id', $user->id);
@@ -69,7 +77,11 @@ class FacilityRequestController extends Controller
                     ->orWhere('facility', 'like', '%'.$search.'%');
             });
         }
-        $facilityRequests = $query->paginate(10)->withQueryString();
+        $facilityRequests = $query
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END', ['declined'])
+            ->latest()
+            ->latest('id')
+            ->paginate(10)->withQueryString();
 
         $outstandingRequest = $user->isUser()
             ? FacilityRequest::where('user_id', $user->id)->where('status', 'approved')->first()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\PreventDuplicateRequestSubmission;
 use App\Models\InspectionReport;
 use App\Models\Notification;
 use App\Models\User;
@@ -9,13 +10,20 @@ use App\Models\WorkRequest;
 use App\Services\FacilityImageStorage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class WorkRequestController extends Controller
+class WorkRequestController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [new Middleware(PreventDuplicateRequestSubmission::class.':work-requests.index', only: ['store'])];
+    }
+
     public function __construct(private FacilityImageStorage $images) {}
 
     /**
@@ -146,9 +154,7 @@ class WorkRequestController extends Controller
 
         try {
             if ($request->hasFile('photo')) {
-                $photoPath = config('services.google_drive.folder_id')
-                    ? $this->images->store($request->file('photo'), 'work-request-photos')
-                    : $request->file('photo')->store('work-request-photos', 'local');
+                $photoPath = $this->images->store($request->file('photo'), 'work-request-photos');
                 if ($photoPath === false) {
                     throw new \RuntimeException('Unable to store the request photo.');
                 }

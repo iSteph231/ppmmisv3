@@ -24,8 +24,9 @@
                 <p>Please select your image again before resubmitting.</p>
             </div>
         @endif
-        <form method="POST" action="{{ route('work-requests.store') }}" enctype="multipart/form-data" style="padding: 1.5rem;" id="workRequestForm">
+        <form method="POST" action="{{ route('work-requests.store') }}" enctype="multipart/form-data" style="padding: 1.5rem;" id="workRequestForm" data-prevent-duplicate-submit>
             @csrf
+            <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) \Illuminate\Support\Str::uuid()) }}">
 
             {{-- Hidden title field --}}
             <input type="hidden" name="title" id="title" value="{{ old('title') }}">

@@ -124,7 +124,7 @@
                     <tr data-request-url="{{ route('inspections.show', $inspection->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 0.875rem 1rem;">#{{ $inspection->id }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem; font-family: monospace;">
-                            {{ $inspection->workRequest->request_number ?? 'N/A' }}
+                            <x-new-request-dot :created-at="$inspection->workRequest?->created_at">{{ $inspection->workRequest->request_number ?? 'N/A' }}</x-new-request-dot>
                         </td>
                         <td style="padding: 0.875rem 1rem;">
                             {{ $inspection->workRequest->title ?? 'N/A' }}

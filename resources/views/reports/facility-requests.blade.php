@@ -18,7 +18,7 @@
             <article class="table-container">
                 <div class="table-header flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h2 class="table-title">{{ $facilityRequest->request_number }} — {{ $facilityRequest->facility }}</h2>
+                        <h2 class="table-title"><x-new-request-dot :created-at="$facilityRequest->created_at" :eligible="$facilityRequest->status === 'pending'">{{ $facilityRequest->request_number }} — {{ $facilityRequest->facility }}</x-new-request-dot></h2>
                         <p class="facility-card-subtitle">{{ $facilityRequest->user->name }} · {{ $facilityRequest->requested_date->format('M d, Y') }}</p>
                     </div>
                     <a href="{{ route('request-facility.export-pdf', $facilityRequest) }}" class="btn-create">Export PDF</a>

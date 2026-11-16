@@ -16,8 +16,9 @@
         <a href="{{ route('request-facility.index') }}" class="facility-btn-secondary">Back to Requests</a>
     </div>
     <div class="table-container">
-        <form method="POST" action="{{ route('request-facility.store') }}" enctype="multipart/form-data" class="facility-form">
+        <form method="POST" action="{{ route('request-facility.store') }}" enctype="multipart/form-data" class="facility-form" data-prevent-duplicate-submit>
             @csrf
+            <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) \Illuminate\Support\Str::uuid()) }}">
             <div class="mb-6 text-right">
                 <p class="facility-label">Date: <time id="facility-current-date" datetime="{{ now('Asia/Manila')->toIso8601String() }}">{{ now('Asia/Manila')->format('F d, Y h:i:s A') }}</time></p>
             </div>

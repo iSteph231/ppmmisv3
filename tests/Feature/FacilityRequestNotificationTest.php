@@ -220,6 +220,27 @@ class FacilityRequestNotificationTest extends TestCase
         $this->assertDatabaseCount('facility_requests', 0);
     }
 
+    public function test_declined_requests_sort_last_for_admins_and_requesters(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $pending = $this->createFacilityRequest($owner, 'FR-OLDER-PENDING');
+        $pending->update(['created_at' => now()->subDay()]);
+        $approved = $this->createFacilityRequest($owner, 'FR-APPROVED');
+        $approved->update(['status' => 'approved', 'created_at' => now()->subHour()]);
+        $declined = $this->createFacilityRequest($owner, 'FR-NEW-DECLINED');
+        $declined->update(['status' => 'declined']);
+
+        foreach ([$admin, $owner] as $viewer) {
+            $requests = $this->actingAs($viewer)->get(route('request-facility.index'))
+                ->assertOk()->viewData('facilityRequests');
+            $this->assertSame([$approved->id, $pending->id, $declined->id], $requests->pluck('id')->all());
+            $filtered = $this->get(route('request-facility.index', ['status' => 'declined']))
+                ->assertOk()->viewData('facilityRequests');
+            $this->assertSame([$declined->id], $filtered->pluck('id')->all());
+        }
+    }
+
     private function createFacilityRequest(User $owner, string $number): FacilityRequest
     {
         return FacilityRequest::create([

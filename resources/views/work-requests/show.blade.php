@@ -15,7 +15,7 @@
             <div class="responsive-grid-two" style="display: grid; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Request #:</strong>
-                    <p style="margin-top: 0.25rem; font-size: 1rem; font-family: monospace;">{{ $workRequest->request_number ?? 'N/A' }}</p>
+                    <p style="margin-top: 0.25rem; font-size: 1rem; font-family: monospace;"><x-new-request-dot :created-at="$workRequest->created_at">{{ $workRequest->request_number ?? 'N/A' }}</x-new-request-dot></p>
                 </div>
                 <div>
                     <strong style="color: #6b7280; font-size: 0.875rem;">Status:</strong>

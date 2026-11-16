@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\WorkRequest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class WorkRequestPhotoTest extends TestCase
@@ -35,6 +37,50 @@ class WorkRequestPhotoTest extends TestCase
     private function requestData(): array
     {
         return ['title' => 'Repair a chair', 'request_type' => 'repair', 'repair_item' => 'Broken chair'];
+    }
+
+    public function test_repeated_submissions_with_the_same_token_create_only_one_request(): void
+    {
+        $token = (string) Str::uuid();
+        for ($attempt = 0; $attempt < 4; $attempt++) {
+            $this->post(route('work-requests.store'), $this->requestData() + [
+                'submission_token' => $token, 'photo' => UploadedFile::fake()->image('issue.jpg'),
+            ])->assertRedirect(route('work-requests.index'));
+        }
+        $this->assertSame(1, WorkRequest::count());
+        $this->assertCount(1, Storage::disk('local')->allFiles());
+
+        $this->post(route('work-requests.store'), $this->requestData() + [
+            'submission_token' => (string) Str::uuid(), 'photo' => UploadedFile::fake()->image('issue.jpg'),
+        ])->assertSessionHas('success');
+        $this->assertSame(2, WorkRequest::count());
+    }
+
+    public function test_validation_failure_allows_retry_with_the_same_token(): void
+    {
+        $token = (string) Str::uuid();
+        $this->post(route('work-requests.store'), $this->requestData() + ['submission_token' => $token])
+            ->assertSessionHasErrors('photo');
+        $this->post(route('work-requests.store'), $this->requestData() + [
+            'submission_token' => $token, 'photo' => UploadedFile::fake()->image('issue.jpg'),
+        ])->assertSessionHas('success');
+        $this->assertSame(1, WorkRequest::count());
+    }
+
+    public function test_concurrent_submission_is_blocked_before_inserting(): void
+    {
+        $token = (string) Str::uuid();
+        $key = 'request-submission:'.hash('sha256', auth()->id().'|work-requests.index|'.$token);
+        $lock = Cache::lock($key.':lock', 300);
+        $this->assertTrue($lock->get());
+        try {
+            $this->post(route('work-requests.store'), $this->requestData() + [
+                'submission_token' => $token, 'photo' => UploadedFile::fake()->image('issue.jpg'),
+            ])->assertSessionHasErrors('submission');
+            $this->assertSame(0, WorkRequest::count());
+        } finally {
+            $lock->release();
+        }
     }
 
     public function test_request_can_include_a_private_photo(): void
@@ -74,7 +120,7 @@ class WorkRequestPhotoTest extends TestCase
         $this->assertSame($originalAttributes, $workRequest->fresh()->getAttributes());
     }
 
-    public function test_configured_drive_storage_is_used_for_upload_and_display(): void
+    public function test_photos_are_local_even_when_drive_is_configured(): void
     {
         config(['services.google_drive' => ['folder_id' => 'folder', 'client_id' => 'client', 'client_secret' => 'secret', 'refresh_token' => 'refresh']]);
         Http::preventStrayRequests();
@@ -86,9 +132,10 @@ class WorkRequestPhotoTest extends TestCase
         $this->post(route('work-requests.store'), $this->requestData() + ['photo' => UploadedFile::fake()->image('issue.jpg')])
             ->assertSessionHasNoErrors()->assertSessionHas('success');
         $workRequest = WorkRequest::firstOrFail();
-        $this->assertSame('gdrive:work-photo', $workRequest->photo_path);
-        $this->assertSame([], Storage::disk('local')->allFiles());
+        $this->assertStringStartsWith('work-request-photos/', $workRequest->photo_path);
+        Storage::disk('local')->assertExists($workRequest->photo_path);
         $this->get(route('work-requests.photo', $workRequest))->assertOk();
+        Http::assertNothingSent();
     }
 
     public function test_submission_errors_are_visible_on_the_form(): void

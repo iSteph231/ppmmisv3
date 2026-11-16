@@ -6,7 +6,6 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -16,23 +15,12 @@ class FacilityImageStorage
 
     public function store(UploadedFile $file, string $directory, ?string $filename = null): string
     {
-        $folder = config('services.google_drive.folder_id');
-        if (! $folder) {
-            throw new RuntimeException('GOOGLE_DRIVE_FOLDER_ID is required for image uploads.');
+        $path = $file->storeAs($directory, $filename ?? $file->hashName(), 'local');
+        if ($path === false) {
+            throw new RuntimeException('Unable to save the uploaded image to local storage.');
         }
 
-        $boundary = 'drive_'.Str::random(32);
-        $metadata = json_encode(['name' => $filename ?? $file->hashName(), 'parents' => [$folder]], JSON_THROW_ON_ERROR);
-        $body = "--{$boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n{$metadata}\r\n"
-            ."--{$boundary}\r\nContent-Type: {$file->getMimeType()}\r\n\r\n".$file->get()."\r\n--{$boundary}--\r\n";
-        $id = $this->client()->withBody($body, 'multipart/related; boundary='.$boundary)
-            ->post('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id&supportsAllDrives=true')
-            ->throw()->json('id');
-        if (! is_string($id) || $id === '') {
-            throw new RuntimeException('Google Drive did not return an uploaded file ID.');
-        }
-
-        return 'gdrive:'.$id;
+        return $path;
     }
 
     public function exists(string $path): bool

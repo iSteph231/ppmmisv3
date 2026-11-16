@@ -27,7 +27,7 @@
                 <tbody>
                     @forelse($accountRequests as $accountRequest)
                         <tr>
-                            <td>{{ $accountRequest->name }}</td><td>{{ $accountRequest->email }}</td>
+                            <td><x-new-request-dot :created-at="$accountRequest->created_at">{{ $accountRequest->name }}</x-new-request-dot></td><td>{{ $accountRequest->email }}</td>
                             <td>{{ $accountRequest->department ?? 'Not specified' }}</td>
                             <td>
                                 <div class="request-review-actions">
