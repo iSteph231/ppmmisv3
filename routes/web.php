@@ -153,6 +153,7 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // Work Requests Routes
+    Route::get('/work-requests/{workRequest}/photo', [WorkRequestController::class, 'photo'])->name('work-requests.photo');
     Route::resource('work-requests', WorkRequestController::class);
 });
 

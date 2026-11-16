@@ -28,6 +28,36 @@ class UserSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Admin account seeded successfully!');
+        User::updateOrCreate(
+            ['email' => 'user@psu.edu.ph'],
+            [
+                'name' => 'Regular User',
+                'password' => Hash::make('User@123'),
+                'role' => 'user',
+                'is_active' => true,
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+                'department' => 'IT Department',
+                'phone_number' => '123-456-7891',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'engineer@psu.edu.ph'],
+            [
+                'name' => 'Maintenance Engineer',
+                'password' => Hash::make('Engineer@123'),
+                'role' => 'engineer',
+                'is_active' => true,
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+                'department' => 'Maintenance',
+                'phone_number' => '123-456-7892',
+            ]
+        );
+
+        $this->command->info('Admin, user, and engineer accounts seeded successfully!');
     }
 }

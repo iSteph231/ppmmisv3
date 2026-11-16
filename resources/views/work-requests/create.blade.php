@@ -10,7 +10,7 @@
     </div>
 
     <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
-        <form method="POST" action="{{ route('work-requests.store') }}" style="padding: 1.5rem;" id="workRequestForm">
+        <form method="POST" action="{{ route('work-requests.store') }}" enctype="multipart/form-data" style="padding: 1.5rem;" id="workRequestForm">
             @csrf
 
             {{-- Hidden title field --}}
@@ -108,6 +108,24 @@
                 @enderror
             </div>
 
+            <div style="margin-bottom: 1.5rem;">
+                <label for="photo">Image (required)</label>
+                <input type="file" name="photo" id="photo" class="search-input" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-status" required>
+                <input type="file" id="camera-photo" class="search-input" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="Take a photo" aria-describedby="photo-help photo-status" hidden>
+                <div id="photo-source-buttons" hidden>
+                    <div class="flex flex-wrap gap-3 mt-2">
+                        <button type="button" id="take-photo" class="btn-create">Take Photo</button>
+                        <button type="button" id="choose-photo" class="btn-create">Choose from Gallery</button>
+                    </div>
+                </div>
+                <p id="photo-help">Attach an image of the issue. JPG, PNG, or WebP, up to 5 MB.</p>
+                <p id="photo-status" role="status" aria-live="polite">No image selected.</p>
+                <p id="photo-error" role="alert" hidden>Please take a photo or choose an image from your gallery.</p>
+                @error('photo')
+                    <p role="alert">{{ $message }}</p>
+                @enderror
+            </div>
+
             {{-- Form Buttons --}}
             <div style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                 <a href="{{ route('work-requests.index') }}" class="btn-create" style="background: #9ca3af; text-decoration: none;">
@@ -122,6 +140,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('js/work-request-photo.js') }}" defer></script>
 <script>
     const titleInput = document.getElementById('title');
     const radios = document.querySelectorAll('.request-radio');

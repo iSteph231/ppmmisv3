@@ -10,7 +10,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WorkRequestController extends Controller
 {
@@ -96,6 +98,7 @@ class WorkRequestController extends Controller
             'repair_item' => 'required_if:request_type,repair|nullable|string',
             'replacement_item' => 'required_if:request_type,replacement|nullable|string',
             'others_specify' => 'required_if:request_type,others|nullable|string',
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         // Generate request number
@@ -140,7 +143,17 @@ class WorkRequestController extends Controller
         // Log the data being inserted
         Log::info('Inserting work request:', $data);
 
+        $photoPath = null;
+
         try {
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('work-request-photos', 'local');
+                if ($photoPath === false) {
+                    throw new \RuntimeException('Unable to store the request photo.');
+                }
+                $data['photo_path'] = $photoPath;
+            }
+
             $workRequest = WorkRequest::create($data);
             Log::info('Work request created successfully with ID: '.$workRequest->id);
 
@@ -172,6 +185,9 @@ class WorkRequestController extends Controller
             return redirect()->route('work-requests.index')
                 ->with('success', 'Work request created successfully.');
         } catch (\Exception $e) {
+            if ($photoPath && ! isset($workRequest)) {
+                Storage::disk('local')->delete($photoPath);
+            }
             Log::error('Error creating work request: '.$e->getMessage());
 
             return back()->with('error', 'Failed to create work request: '.$e->getMessage())->withInput();
@@ -181,6 +197,17 @@ class WorkRequestController extends Controller
     /**
      * Display the specified work request.
      */
+    public function photo(WorkRequest $workRequest): BinaryFileResponse
+    {
+        abort_unless(Auth::user()->isAdmin() || Auth::id() === $workRequest->user_id, 403);
+        abort_unless($workRequest->photo_path && Storage::disk('local')->exists($workRequest->photo_path), 404);
+
+        return response()->file(Storage::disk('local')->path($workRequest->photo_path), [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     public function show(WorkRequest $workRequest)
     {
         $user = Auth::user();
