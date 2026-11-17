@@ -15,18 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 class ResetPasswordController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct()
-    {
-        // Ensure user is not logged in during password reset
-        // $this->middleware('guest');
-    }
+    public function __construct() {}
 
-    /**
-     * Show the password reset form.
-     */
     public function showResetForm(Request $request, $token = null)
     {
         return view('auth.reset-password', [
@@ -47,9 +37,6 @@ class ResetPasswordController extends Controller
         ]);
     }
 
-    /**
-     * Reset the given user's password.
-     */
     public function reset(Request $request)
     {
         $request->validate([
@@ -93,7 +80,6 @@ class ResetPasswordController extends Controller
             return redirect()->route('login')->with('success', '✅ Your password has been reset! Please login with your new password.');
         }
 
-        // Handle different error responses
         $errorMessages = [
             Password::INVALID_USER => 'No account found with this email address.',
             Password::INVALID_TOKEN => 'Invalid or expired password reset link. Please request a new one.',

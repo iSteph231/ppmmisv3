@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory of Water Tank</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Inventory of Water Tank</title>
+        <style>
         * {
             box-sizing: border-box;
             font-family: Arial, Helvetica, sans-serif;
@@ -24,7 +24,7 @@
             margin: 0 auto;
         }
 
-        /* Top Header */
+
         .header-table {
             width: 100%;
             border-collapse: collapse;
@@ -64,7 +64,7 @@
             line-height: 1.3;
         }
 
-        /* Table Design */
+
         .grid-table {
             width: 100%;
             border-collapse: collapse;
@@ -72,7 +72,7 @@
             font-size: 10px;
         }
 
-        .grid-table th, 
+        .grid-table th,
         .grid-table td {
             border: 1px solid #000;
             padding: 3px 2px;
@@ -85,7 +85,7 @@
             background-color: #ffffff;
         }
 
-        /* Responsive Print */
+
         @media print {
             body {
                 background: #fff;
@@ -96,75 +96,74 @@
             }
         }
     </style>
-</head>
-<body>
+    </head>
+    <body>
 
-<div class="inventory-card">
-    <!-- Header Section -->
-    <table class="header-table">
-        <tr>
-            <td class="logo-box">
-                <img src="{{ asset('images/psu-logo.jpg') }}" alt="PSU Logo">
-            </td>
-            <td class="title-box">
-                <h1>INVENTORY OF WATER TANK</h1>
-                <h2>PANGASINAN STATE UNIVERSITY<br>Asingan Campus</h2>
-            </td>
-        </tr>
-    </table>
+        <div class="inventory-card">
 
-    <!-- Main Table -->
-    <table class="grid-table">
-        <thead>
-            <!-- Header Row 1 -->
-            <tr>
-                <th colspan="2">LOCATION</th>
-                <th rowspan="2" style="width: 8%;">WATER TANK NO.</th>
-                <th colspan="2">INSPECTION</th>
-                <th colspan="2">MAINTENANCE</th>
-                <th rowspan="2" style="width: 10%;">INSPECTED BY</th>
-                <th colspan="2">INSPECTION</th>
-                <th colspan="2">MAINTENANCE</th>
-                <th rowspan="2" style="width: 10%;">INSPECTED BY</th>
-            </tr>
-            <!-- Header Row 2 -->
-            <tr>
-                <th style="width: 9%;">Bldg. Name</th>
-                <th style="width: 9%;">Room/Office</th>
-
-                <th style="width: 7%;">Date</th>
-                <th style="width: 8%;">Condition</th>
-                <th style="width: 7%;">Repaired</th>
-                <th style="width: 7%;">Replaced</th>
-
-                <th style="width: 7%;">Date</th>
-                <th style="width: 8%;">Condition</th>
-                <th style="width: 7%;">Repaired</th>
-                <th style="width: 7%;">Replaced</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- Blank rows --}}
-            @for ($i = 0; $i < 18; $i++)
+            <table class="header-table">
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="logo-box">
+                        <img src="{{ asset('images/psu-logo.jpg') }}" alt="PSU Logo">
+                    </td>
+                    <td class="title-box">
+                        <h1>INVENTORY OF WATER TANK</h1>
+                        <h2>PANGASINAN STATE UNIVERSITY<br>Asingan Campus</h2>
+                    </td>
                 </tr>
-            @endfor
-        </tbody>
-    </table>
-</div>
+            </table>
 
-</body>
+            <table class="grid-table">
+                <thead>
+
+                    <tr>
+                        <th colspan="2">LOCATION</th>
+                        <th rowspan="2" style="width: 8%;">WATER TANK NO.</th>
+                        <th colspan="2">INSPECTION</th>
+                        <th colspan="2">MAINTENANCE</th>
+                        <th rowspan="2" style="width: 10%;">INSPECTED BY</th>
+                        <th colspan="2">INSPECTION</th>
+                        <th colspan="2">MAINTENANCE</th>
+                        <th rowspan="2" style="width: 10%;">INSPECTED BY</th>
+                    </tr>
+
+                    <tr>
+                        <th style="width: 9%;">Bldg. Name</th>
+                        <th style="width: 9%;">Room/Office</th>
+
+                        <th style="width: 7%;">Date</th>
+                        <th style="width: 8%;">Condition</th>
+                        <th style="width: 7%;">Repaired</th>
+                        <th style="width: 7%;">Replaced</th>
+
+                        <th style="width: 7%;">Date</th>
+                        <th style="width: 8%;">Condition</th>
+                        <th style="width: 7%;">Repaired</th>
+                        <th style="width: 7%;">Replaced</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for ($i = 0; $i < 18; $i++)
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    @endfor
+                </tbody>
+            </table>
+        </div>
+
+    </body>
 </html>

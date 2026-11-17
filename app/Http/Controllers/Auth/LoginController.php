@@ -9,17 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct()
-    {
-        // $this->middleware('guest')->except('logout');
-    }
+    public function __construct() {}
 
-    /**
-     * Show the login form.
-     */
     public function showLoginForm()
     {
         if (Auth::check()) {
@@ -29,9 +20,6 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    /**
-     * Handle a login request.
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -39,7 +27,6 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        // Check if user exists
         $user = User::where('email', $request->email)->first();
 
         if (! $user) {
@@ -50,7 +37,6 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Check if user is active
             if (! Auth::user()->is_active && ! Auth::user()->must_change_password) {
                 Auth::logout();
 
@@ -62,7 +48,6 @@ class LoginController extends Controller
                 return redirect()->route('password.setup');
             }
 
-            // Redirect based on role
             if (Auth::user()->role === 'admin') {
                 return redirect()->intended('/dashboard')->with('success', 'Welcome back, '.Auth::user()->name.'!');
             }
@@ -70,14 +55,10 @@ class LoginController extends Controller
             return redirect()->intended('/dashboard')->with('success', 'Welcome back, '.Auth::user()->name.'!');
         }
 
-        // Login failed - incorrect password
         return back()->with('error', '❌ Incorrect password. Please try again.')
             ->withInput($request->only('email', 'remember'));
     }
 
-    /**
-     * Log the user out.
-     */
     public function logout(Request $request)
     {
         Auth::logout();

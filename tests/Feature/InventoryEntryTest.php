@@ -158,7 +158,6 @@ class InventoryEntryTest extends TestCase
         $this->assertDatabaseCount('inventory_entries', 0);
     }
 
-    /** @return array<string, mixed> */
     private function entryData(string $form): array
     {
         $data = [];

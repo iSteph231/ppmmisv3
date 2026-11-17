@@ -20,7 +20,7 @@ class CreateInspectionReportsTable extends Migration
             $table->dateTime('actual_inspection_date')->nullable();
             $table->unsignedBigInteger('inspected_by')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('work_request_id')->references('id')->on('work_requests')->onDelete('cascade');
             $table->foreign('inspected_by')->references('id')->on('users')->onDelete('set null');
         });

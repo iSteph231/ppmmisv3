@@ -28,43 +28,30 @@ class WorkRequestController extends Controller implements HasMiddleware
 
     public function __construct(private FacilityImageStorage $images) {}
 
-    /**
-     * Display a listing of the work requests.
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
         $query = WorkRequest::with('user', 'inspectionReport');
 
-        // ==============================================
-        // FILTER BASED ON USER ROLE
-        // ==============================================
-
         if ($user->isAdmin()) {
-            // Admin sees ALL work requests
-            // No filter needed
 
         } else {
-            // Regular user sees ONLY their own work requests
+
             $query->where('user_id', $user->id);
         }
 
-        // Apply status filter
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        // Apply date from filter
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
 
-        // Apply date to filter
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // Apply search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -89,17 +76,11 @@ class WorkRequestController extends Controller implements HasMiddleware
         return view('work-requests.index', compact('workRequests', 'newRequestIds'));
     }
 
-    /**
-     * Show the form for creating a new work request.
-     */
     public function create()
     {
         return view('work-requests.create');
     }
 
-    /**
-     * Store a newly created work request in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -116,7 +97,6 @@ class WorkRequestController extends Controller implements HasMiddleware
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        // Prepare data for insertion
         $data = [
             'user_id' => Auth::id(),
             'title' => $request->title,
@@ -128,7 +108,6 @@ class WorkRequestController extends Controller implements HasMiddleware
             'status' => 'pending',
         ];
 
-        // Add conditional fields if they exist in your table
         if ($request->request_type === 'ocular_inspection') {
             $data['ocular_details'] = $request->ocular_location;
         } elseif ($request->request_type === 'installation') {
@@ -141,7 +120,6 @@ class WorkRequestController extends Controller implements HasMiddleware
             $data['others_details'] = $request->others_specify;
         }
 
-        // Log the data being inserted
         Log::info('Inserting work request:', $data);
 
         $photoPath = null;
@@ -161,11 +139,6 @@ class WorkRequestController extends Controller implements HasMiddleware
                 $workRequest = WorkRequest::create($data);
                 Log::info('Work request created successfully with ID: '.$workRequest->id);
 
-                // ==============================================
-                // CREATE NOTIFICATIONS
-                // ==============================================
-
-                // 1. Create notification for the user who created the request
                 Notification::create([
                     'user_id' => Auth::id(),
                     'title' => 'Work Request Created',
@@ -174,17 +147,16 @@ class WorkRequestController extends Controller implements HasMiddleware
                     'is_read' => false,
                 ]);
 
-            // 2. Create notification for all admin users
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'New Work Request',
-                    'message' => "New work request #{$workRequest->id}: '{$workRequest->title}' from ".Auth::user()->name,
-                    'type' => 'info',
-                    'is_read' => false,
-                ]);
-            }
+                $admins = User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => 'New Work Request',
+                        'message' => "New work request #{$workRequest->id}: '{$workRequest->title}' from ".Auth::user()->name,
+                        'type' => 'info',
+                        'is_read' => false,
+                    ]);
+                }
 
             }, 5);
 
@@ -204,9 +176,6 @@ class WorkRequestController extends Controller implements HasMiddleware
         }
     }
 
-    /**
-     * Display the specified work request.
-     */
     public function photo(WorkRequest $workRequest): StreamedResponse
     {
         abort_unless(Auth::user()->isAdmin() || Auth::id() === $workRequest->user_id, 403);
@@ -219,10 +188,8 @@ class WorkRequestController extends Controller implements HasMiddleware
     {
         $user = Auth::user();
 
-        // Load the inspection report if it exists
         $workRequest->load('inspectionReport', 'user');
 
-        // Admin can see any request
         if ($user->isAdmin()) {
             Notification::where('user_id', $user->id)->unread()
                 ->where('related_type', WorkRequest::class)->where('related_id', $workRequest->id)
@@ -231,7 +198,6 @@ class WorkRequestController extends Controller implements HasMiddleware
             return view('work-requests.show', compact('workRequest'));
         }
 
-        // Regular user can only see their own requests
         if ($user->id === $workRequest->user_id) {
             return view('work-requests.show', compact('workRequest'));
         }
@@ -239,29 +205,19 @@ class WorkRequestController extends Controller implements HasMiddleware
         abort(403, 'Unauthorized action.');
     }
 
-    /**
-     * Show the form for editing the specified work request.
-     */
     public function edit(WorkRequest $workRequest): never
     {
         abort(403, 'Submitted work requests cannot be edited.');
     }
 
-    /**
-     * Submitted work requests cannot be changed.
-     */
     public function update(Request $request, WorkRequest $workRequest): never
     {
         abort(403, 'Submitted work requests cannot be edited.');
     }
 
-    /**
-     * Schedule inspection for the specified work request.
-     * This will automatically create an inspection report in pending status.
-     */
     public function schedule(Request $request, WorkRequest $workRequest)
     {
-        // Only admin can schedule inspection
+
         if (! Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
@@ -276,22 +232,15 @@ class WorkRequestController extends Controller implements HasMiddleware
                 return back()->with('error', 'This work request has already been scheduled for inspection.');
             }
 
-            // Check if inspection report already exists
             if ($workRequest->inspectionReport) {
                 return back()->with('error', 'An inspection report already exists for this work request. Cannot schedule another inspection.');
             }
 
-            // Update the work request with scheduled date and inspection notes
             $workRequest->update([
                 'scheduled_date' => $validated['scheduled_date'],
                 'inspection_notes' => $validated['inspection_notes'] ?? null,
             ]);
 
-            // ==============================================
-            // CREATE INSPECTION REPORT AUTOMATICALLY
-            // ==============================================
-
-            // Generate report number
             $yearMonth = now()->format('Ym');
             $lastReport = InspectionReport::where('report_number', 'like', "IR-{$yearMonth}-%")
                 ->orderBy('id', 'desc')
@@ -304,7 +253,6 @@ class WorkRequestController extends Controller implements HasMiddleware
                 $newNumber = '0001';
             }
 
-            // Create the inspection report with pending status
             $inspectionReport = InspectionReport::create([
                 'work_request_id' => $workRequest->id,
                 'report_number' => "IR-{$yearMonth}-{$newNumber}",
@@ -319,7 +267,6 @@ class WorkRequestController extends Controller implements HasMiddleware
                 'work_request_number' => $workRequest->request_number,
             ]);
 
-            // Create notification for the requester
             if ($workRequest->user_id !== null) {
                 Notification::create([
                     'user_id' => $workRequest->user_id,
@@ -330,7 +277,6 @@ class WorkRequestController extends Controller implements HasMiddleware
                 ]);
             }
 
-            // Also notify all admins about the schedule
             $admins = User::where('role', 'admin')->get();
             foreach ($admins as $admin) {
                 Notification::create([
@@ -352,9 +298,6 @@ class WorkRequestController extends Controller implements HasMiddleware
         }
     }
 
-    /**
-     * Remove the specified work request from storage.
-     */
     public function destroy(WorkRequest $workRequest)
     {
         if (! Auth::user()->isAdmin()) {

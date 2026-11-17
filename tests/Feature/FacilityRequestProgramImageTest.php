@@ -137,7 +137,6 @@ class FacilityRequestProgramImageTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
-    /** @return array<string, string> */
     public function test_repeated_submissions_create_only_one_facility_request(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'user']));

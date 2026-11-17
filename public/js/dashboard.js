@@ -1,69 +1,51 @@
-/**
- * PPMMIS Dashboard JavaScript - Complete Version
- */
-
-// Wait for DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function() {
     initResponsiveTables();
     initRequestNavigation();
-    console.log('Dashboard JS loaded');
-    
-    // Initialize chart if it exists
+    console.log("Dashboard JS loaded");
     initChart();
-    
-    // Initialize search functionality
     initSearch();
 });
-
 function initRequestNavigation() {
-    const content = document.querySelector('.dashboard-content');
+    const content = document.querySelector(".dashboard-content");
     if (!content) {
         return;
     }
-
-    const mobileViewport = window.matchMedia('(max-width: 1023px)');
+    const mobileViewport = window.matchMedia("(max-width: 1023px)");
     function openRequest(event) {
-        const row = event.target.closest('tr[data-request-url]');
-        if (!mobileViewport.matches || !row || event.target.closest('a, button, input, select, textarea')) {
+        const row = event.target.closest("tr[data-request-url]");
+        if (!mobileViewport.matches || !row || event.target.closest("a, button, input, select, textarea")) {
             return;
         }
-        if (event.type === 'keydown') {
-            if (!['Enter', ' '].includes(event.key) || event.repeat) {
+        if (event.type === "keydown") {
+            if (!["Enter", " "].includes(event.key) || event.repeat) {
                 return;
             }
             event.preventDefault();
         }
-
         if (row.dataset.requestUrl) {
             window.location.assign(row.dataset.requestUrl);
         }
     }
-
-    content.addEventListener('click', openRequest);
-    content.addEventListener('keydown', openRequest);
-    mobileViewport.addEventListener('change', () => updateResponsiveTables(content));
+    content.addEventListener("click", openRequest);
+    content.addEventListener("keydown", openRequest);
+    mobileViewport.addEventListener("change", () => updateResponsiveTables(content));
 }
-
-/**
- * Keep column labels available when tables stack on small screens, including
- * tables replaced by the live request updates.
- */
 function initResponsiveTables() {
-    const content = document.querySelector('.dashboard-content');
+    const content = document.querySelector(".dashboard-content");
     if (!content) {
         return;
     }
-
     updateResponsiveTables(content);
-    new MutationObserver(() => updateResponsiveTables(content)).observe(content, { childList: true, subtree: true });
+    new MutationObserver(() => updateResponsiveTables(content)).observe(content, {
+        childList: true,
+        subtree: true
+    });
 }
-
 function updateResponsiveTables(content) {
-    content.querySelectorAll('table').forEach((table) => {
+    content.querySelectorAll("table").forEach((table) => {
         if (!table.tHead) {
             return;
         }
-
         const columns = [];
         const headerGrid = [];
         Array.from(table.tHead.rows).forEach((row, rowIndex) => {
@@ -74,8 +56,8 @@ function updateResponsiveTables(content) {
                     columnIndex++;
                 }
                 const header = cell.cloneNode(true);
-                header.querySelectorAll('br').forEach((lineBreak) => lineBreak.replaceWith(' '));
-                const label = header.textContent.replace(/\s+/g, ' ').trim();
+                header.querySelectorAll("br").forEach((lineBreak) => lineBreak.replaceWith(" "));
+                const label = header.textContent.replace(/\s+/g, " ").trim();
                 for (let offset = 0; offset < cell.colSpan; offset++) {
                     (columns[columnIndex + offset] ??= []).push(label);
                     for (let depth = 0; depth < cell.rowSpan; depth++) {
@@ -83,40 +65,37 @@ function updateResponsiveTables(content) {
                         headerGrid[rowIndex + depth][columnIndex + offset] = true;
                     }
                 }
-                cell.setAttribute('role', 'columnheader');
+                cell.setAttribute("role", "columnheader");
                 columnIndex += cell.colSpan;
             });
-            row.setAttribute('role', 'row');
+            row.setAttribute("role", "row");
         });
-
-        table.dataset.responsiveTable = '';
-        table.setAttribute('role', 'table');
-        table.tHead.setAttribute('role', 'rowgroup');
-        if (!table.classList.contains('data-table')) {
-            table.parentElement.classList.add('responsive-table-container');
+        table.dataset.responsiveTable = "";
+        table.setAttribute("role", "table");
+        table.tHead.setAttribute("role", "rowgroup");
+        if (!table.classList.contains("data-table")) {
+            table.parentElement.classList.add("responsive-table-container");
         }
         Array.from(table.tBodies).forEach((body) => {
-            body.setAttribute('role', 'rowgroup');
+            body.setAttribute("role", "rowgroup");
             Array.from(body.rows).forEach((row) => {
-                row.setAttribute('role', 'row');
-                if (row.hasAttribute('data-request-url')) {
-                    if (window.matchMedia('(max-width: 1023px)').matches) {
-                        row.setAttribute('tabindex', '0');
-                        row.setAttribute('aria-label', `View details: ${row.querySelector('.mobile-summary-field')?.textContent.trim() ?? ''}`);
+                row.setAttribute("role", "row");
+                if (row.hasAttribute("data-request-url")) {
+                    if (window.matchMedia("(max-width: 1023px)").matches) {
+                        row.setAttribute("tabindex", "0");
+                        row.setAttribute("aria-label", `View details: ${row.querySelector(".mobile-summary-field")?.textContent.trim() ?? ""}`);
                     } else {
-                        row.removeAttribute('tabindex');
-                        row.removeAttribute('aria-label');
+                        row.removeAttribute("tabindex");
+                        row.removeAttribute("aria-label");
                     }
                 }
                 let columnIndex = 0;
                 Array.from(row.cells).forEach((cell) => {
-                    cell.setAttribute('role', 'cell');
+                    cell.setAttribute("role", "cell");
                     if (cell.colSpan === 1) {
-                        cell.dataset.label = (columns[columnIndex] ?? []).join(' / ')
-                            || cell.querySelector('input')?.getAttribute('aria-label')
-                            || `Column ${columnIndex + 1}`;
+                        cell.dataset.label = (columns[columnIndex] ?? []).join(" / ") || cell.querySelector("input")?.getAttribute("aria-label") || `Column ${columnIndex + 1}`;
                     } else {
-                        cell.removeAttribute('data-label');
+                        cell.removeAttribute("data-label");
                     }
                     columnIndex += cell.colSpan;
                 });
@@ -124,39 +103,56 @@ function updateResponsiveTables(content) {
         });
     });
 }
-
-/**
- * Initialize Chart.js
- */
 function initChart() {
-    const chartCanvas = document.getElementById('requestsChart');
-    
+    const chartCanvas = document.getElementById("requestsChart");
     if (!chartCanvas) {
-        console.log('Chart canvas not found - skipping chart initialization');
+        console.log("Chart canvas not found - skipping chart initialization");
         return;
     }
-    
-    // Check if Chart is available
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js library not loaded');
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js library not loaded");
         return;
     }
-    
     try {
-        const ctx = chartCanvas.getContext('2d');
-        
+        const ctx = chartCanvas.getContext("2d");
         new Chart(ctx, {
-            type: 'bar',
+            type: "bar",
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec"
+                ],
                 datasets: [{
-                    label: 'Maintenance Requests',
-                    data: [12, 19, 15, 17, 22, 24, 28, 26, 30, 32, 35, 38],
-                    backgroundColor: 'rgba(22, 163, 74, 0.8)',
-                    borderColor: 'rgb(22, 163, 74)',
+                    label: "Maintenance Requests",
+                    data: [
+                        12,
+                        19,
+                        15,
+                        17,
+                        22,
+                        24,
+                        28,
+                        26,
+                        30,
+                        32,
+                        35,
+                        38
+                    ],
+                    backgroundColor: "rgba(22, 163, 74, 0.8)",
+                    borderColor: "rgb(22, 163, 74)",
                     borderWidth: 1,
                     borderRadius: 8,
-                    hoverBackgroundColor: 'rgba(22, 163, 74, 1)'
+                    hoverBackgroundColor: "rgba(22, 163, 74, 1)"
                 }]
             },
             options: {
@@ -164,22 +160,20 @@ function initChart() {
                 maintainAspectRatio: true,
                 plugins: {
                     legend: {
-                        position: 'top',
-                        labels: {
-                            font: {
-                                family: 'Inter',
-                                size: 12
-                            }
-                        }
+                        position: "top",
+                        labels: { font: {
+                            family: "Inter",
+                            size: 12
+                        } }
                     },
                     tooltip: {
-                        backgroundColor: '#1f2937',
+                        backgroundColor: "#1f2937",
                         titleFont: {
-                            family: 'Inter',
+                            family: "Inter",
                             size: 13
                         },
                         bodyFont: {
-                            family: 'Inter',
+                            family: "Inter",
                             size: 12
                         }
                     }
@@ -187,77 +181,49 @@ function initChart() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: {
-                            color: '#e5e7eb'
-                        },
+                        grid: { color: "#e5e7eb" },
                         ticks: {
                             stepSize: 5,
-                            font: {
-                                family: 'Inter'
-                            }
+                            font: { family: "Inter" }
                         }
                     },
                     x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                family: 'Inter'
-                            }
-                        }
+                        grid: { display: false },
+                        ticks: { font: { family: "Inter" } }
                     }
                 }
             }
         });
-        
-        console.log('Chart initialized successfully');
+        console.log("Chart initialized successfully");
     } catch (error) {
-        console.error('Error initializing chart:', error);
+        console.error("Error initializing chart:", error);
     }
 }
-
-/**
- * Initialize search functionality
- */
 function initSearch() {
-    const searchInput = document.getElementById('tableSearch');
-    
+    const searchInput = document.getElementById("tableSearch");
     if (!searchInput) {
-        console.log('Search input not found');
+        console.log("Search input not found");
         return;
     }
-    
-    // Add event listener for search
-    searchInput.addEventListener('keyup', function() {
+    searchInput.addEventListener("keyup", function() {
         filterTable();
     });
-    
-    console.log('Search functionality initialized');
+    console.log("Search functionality initialized");
 }
-
-/**
- * Filter table rows based on search input
- */
 function filterTable() {
-    const input = document.getElementById('tableSearch');
+    const input = document.getElementById("tableSearch");
     if (!input) return;
-    
     const filter = input.value.toLowerCase().trim();
-    const table = document.querySelector('.data-table table');
-    
+    const table = document.querySelector(".data-table table");
     if (!table) {
-        console.log('Table not found');
+        console.log("Table not found");
         return;
     }
-    
-    const rows = table.getElementsByTagName('tr');
+    const rows = table.getElementsByTagName("tr");
     let visibleCount = 0;
-    
-    for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-        const cells = rows[i].getElementsByTagName('td');
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName("td");
         let found = false;
-        
         for (let j = 0; j < cells.length; j++) {
             const cellText = cells[j].textContent || cells[j].innerText;
             if (cellText.toLowerCase().indexOf(filter) > -1) {
@@ -265,24 +231,21 @@ function filterTable() {
                 break;
             }
         }
-        
-        rows[i].style.display = found ? '' : 'none';
+        rows[i].style.display = found ? "" : "none";
         if (found) visibleCount++;
     }
-    
-    // Show/hide "no results" message
-    const noResultsMsg = document.getElementById('noResultsMessage');
+    const noResultsMsg = document.getElementById("noResultsMessage");
     if (visibleCount === 0 && rows.length > 1) {
         if (!noResultsMsg) {
-            const tbody = table.querySelector('tbody') || table;
-            const tr = document.createElement('tr');
-            tr.id = 'noResultsMessage';
-            const td = document.createElement('td');
-            td.colSpan = document.querySelectorAll('.data-table th').length || 5;
-            td.textContent = 'No matching requests found';
-            td.className = 'text-center';
-            td.style.padding = '2rem';
-            td.style.color = '#6b7280';
+            const tbody = table.querySelector("tbody") || table;
+            const tr = document.createElement("tr");
+            tr.id = "noResultsMessage";
+            const td = document.createElement("td");
+            td.colSpan = document.querySelectorAll(".data-table th").length || 5;
+            td.textContent = "No matching requests found";
+            td.className = "text-center";
+            td.style.padding = "2rem";
+            td.style.color = "#6b7280";
             tr.appendChild(td);
             tbody.appendChild(tr);
         }
@@ -290,58 +253,36 @@ function filterTable() {
         noResultsMsg.remove();
     }
 }
-
-/**
- * Fetch and update dashboard statistics via AJAX
- */
 async function refreshStats() {
     try {
-        const response = await fetch('/api/dashboard/stats', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
-        
-        if (!response.ok) throw new Error('Network response was not ok');
-        
+        const response = await fetch("/api/dashboard/stats", { headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json"
+        } });
+        if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
-        
         if (data.success) {
             updateStatCards(data.data);
         }
     } catch (error) {
-        console.log('Error refreshing stats:', error);
+        console.log("Error refreshing stats:", error);
     }
 }
-
-/**
- * Update stat cards with new values
- */
 function updateStatCards(stats) {
-    // For admin dashboard
     if (stats.totalRequests !== undefined) {
-        const totalCard = document.querySelector('.stat-card-green .stat-value');
-        const pendingCard = document.querySelector('.stat-card-yellow .stat-value');
-        const completedCard = document.querySelector('.stat-card-blue .stat-value');
-        const usersCard = document.querySelector('.stat-card-indigo .stat-value');
-        
+        const totalCard = document.querySelector(".stat-card-green .stat-value");
+        const pendingCard = document.querySelector(".stat-card-yellow .stat-value");
+        const completedCard = document.querySelector(".stat-card-blue .stat-value");
+        const usersCard = document.querySelector(".stat-card-indigo .stat-value");
         if (totalCard) totalCard.textContent = stats.totalRequests;
         if (pendingCard) pendingCard.textContent = stats.pendingRequests;
         if (completedCard) completedCard.textContent = stats.completedRequests;
         if (usersCard && stats.activeUsers !== undefined) usersCard.textContent = stats.activeUsers;
-    }
-    // For user dashboard
-    else if (stats.myRequests !== undefined) {
-        const cards = document.querySelectorAll('.stat-card');
-        if (cards[0]) cards[0].querySelector('.stat-value').textContent = stats.myRequests;
-        if (cards[1]) cards[1].querySelector('.stat-value').textContent = stats.myPendingRequests;
-        if (cards[2]) cards[2].querySelector('.stat-value').textContent = stats.myCompletedRequests;
+    } else if (stats.myRequests !== undefined) {
+        const cards = document.querySelectorAll(".stat-card");
+        if (cards[0]) cards[0].querySelector(".stat-value").textContent = stats.myRequests;
+        if (cards[1]) cards[1].querySelector(".stat-value").textContent = stats.myPendingRequests;
+        if (cards[2]) cards[2].querySelector(".stat-value").textContent = stats.myCompletedRequests;
     }
 }
-
-// Make filterTable available globally
 window.filterTable = filterTable;
-
-// Optional: Auto-refresh stats every 30 seconds
-// setInterval(refreshStats, 30000);

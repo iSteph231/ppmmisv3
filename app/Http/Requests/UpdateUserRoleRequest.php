@@ -11,7 +11,6 @@ class UpdateUserRoleRequest extends FormRequest
         return $this->user()?->isAdmin() === true;
     }
 
-    /** @return array<string, array<int, string>> */
     public function rules(): array
     {
         return ['role' => ['required', 'string', 'in:admin,user,engineer']];

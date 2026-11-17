@@ -1,14 +1,13 @@
-{{-- resources/views/auth/forgot-password.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PPMMIS - Forgot Password</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>PPMMIS - Forgot Password</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
         * {
             margin: 0;
             padding: 0;
@@ -187,47 +186,47 @@
             to { transform: rotate(360deg); }
         }
     </style>
-</head>
-<body>
-    <div class="forgot-card">
-        <div class="card-header">
-            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
-            <h2>Forgot Password?</h2>
-            <p>Enter your email to reset your password</p>
+    </head>
+    <body>
+        <div class="forgot-card">
+            <div class="card-header">
+                <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
+                <h2>Forgot Password?</h2>
+                <p>Enter your email to reset your password</p>
+            </div>
+            <div class="card-body">
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+
+                <form method="POST" action="{{ route('password.email') }}">
+                    @csrf
+
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email Address (must be @psu.edu.ph) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                        id="email" name="email" value="{{ old('email') }}" required autofocus>
+                        @error('email')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> Send Reset Link
+                    </button>
+
+                    <div class="back-link">
+                        <a href="{{ route('login') }}">
+                            <i class="fas fa-arrow-left"></i> Back to Login
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
-
-            <form method="POST" action="{{ route('password.email') }}">
-                @csrf
-                
-                <div class="form-group">
-                    <label for="email">
-                        <i class="fas fa-envelope"></i>
-                        Email Address (must be @psu.edu.ph) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                           id="email" name="email" value="{{ old('email') }}" required autofocus>
-                    @error('email')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <button type="submit" class="btn-submit" id="submitBtn">
-                    <i class="fas fa-paper-plane"></i> Send Reset Link
-                </button>
-
-                <div class="back-link">
-                    <a href="{{ route('login') }}">
-                        <i class="fas fa-arrow-left"></i> Back to Login
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-</body>
+    </body>
 </html>

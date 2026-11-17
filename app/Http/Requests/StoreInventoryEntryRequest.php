@@ -12,7 +12,6 @@ class StoreInventoryEntryRequest extends FormRequest
         return $this->user()?->role === 'admin';
     }
 
-    /** @return array<string, array<int, string>> */
     public function rules(): array
     {
         $fields = array_merge(...array_values(InventoryForms::sections($this->route('form'))));
@@ -33,7 +32,6 @@ class StoreInventoryEntryRequest extends FormRequest
         return $rules;
     }
 
-    /** @return array<string, string> */
     public function attributes(): array
     {
         $attributes = [];

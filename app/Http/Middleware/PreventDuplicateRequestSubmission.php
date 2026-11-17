@@ -12,11 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PreventDuplicateRequestSubmission
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next, string $redirectRoute): Response
     {
         $request->validate(['submission_token' => ['sometimes', 'uuid']]);

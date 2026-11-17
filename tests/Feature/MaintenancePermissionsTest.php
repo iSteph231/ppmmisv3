@@ -96,12 +96,12 @@ class MaintenancePermissionsTest extends TestCase
             $originalAttributes = $schedule->fresh()->getAttributes();
             foreach (['admin', 'engineer', 'user'] as $role) {
                 $this->actingAs(User::factory()->create(['role' => $role]));
-                $this->get(route('maintenance.edit', $schedule->id))->assertForbidden();
-                $this->put(route('maintenance.update', $schedule->id), array_replace($this->scheduleData(), ['activity' => 'Changed activity']))->assertForbidden();
+                $this->get('/maintenance/'.$schedule->id.'/edit')->assertNotFound();
+                $this->put('/maintenance/'.$schedule->id, array_replace($this->scheduleData(), ['activity' => 'Changed activity']))->assertStatus(405);
                 $this->assertSame($originalAttributes, $schedule->fresh()->getAttributes());
                 if ($role !== 'user') {
                     $this->get(route('maintenance.index', ['month' => '2026-11']))->assertOk()
-                        ->assertDontSee(route('maintenance.edit', $schedule->id), false);
+                        ->assertDontSee('/maintenance/'.$schedule->id.'/edit', false);
                 }
             }
         }
@@ -276,6 +276,22 @@ class MaintenancePermissionsTest extends TestCase
         } finally {
             Event::forget('eloquent.creating: '.Notification::class);
         }
+    }
+
+    public function test_maintenance_requests_cannot_be_deleted_by_any_role(): void
+    {
+        $schedule = MaintenanceSchedule::create($this->scheduleData() + ['status' => 'pending', 'month_year' => '2026-11']);
+
+        foreach (['admin', 'engineer', 'user'] as $role) {
+            $this->actingAs(User::factory()->make(['id' => 1, 'role' => $role]));
+            if ($role !== 'user') {
+                $this->get(route('maintenance.index', ['month' => '2026-11']))->assertOk()
+                    ->assertDontSee('value="DELETE"', false);
+            }
+            $this->delete(route('maintenance.destroy', $schedule->id))->assertForbidden();
+            $this->assertModelExists($schedule);
+        }
+        $this->assertDatabaseCount('notifications', 0);
     }
 
     private function scheduleData(): array

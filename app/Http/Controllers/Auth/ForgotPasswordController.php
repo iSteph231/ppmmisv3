@@ -11,25 +11,13 @@ use Illuminate\Support\Facades\Validator;
 
 class ForgotPasswordController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct()
-    {
-        // $this->middleware('guest');
-    }
+    public function __construct() {}
 
-    /**
-     * Show the form to request a password reset link.
-     */
     public function showLinkRequestForm()
     {
         return view('auth.forgot-password');
     }
 
-    /**
-     * Send a reset link to the given user.
-     */
     public function sendResetLinkEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -48,7 +36,6 @@ class ForgotPasswordController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Find user
         $user = User::where('email', $request->email)->first();
 
         if (! $user) {
@@ -57,7 +44,6 @@ class ForgotPasswordController extends Controller
 
         $token = Password::broker()->createToken($user);
 
-        // Send custom email
         $resetLink = route('password.reset', ['token' => $token, 'email' => $request->email]);
 
         Mail::send('emails.password-reset', [

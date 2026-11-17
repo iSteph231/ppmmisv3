@@ -7,89 +7,90 @@
 @endpush
 
 @section('content')
-<div class="content-wrapper facility-page">
-    <div class="greeting-section facility-page-header">
-        <div>
-            <h1 class="greeting-title">Facility Use Request Form</h1>
-            <p class="greeting-subtitle">Complete the requestor information below to request a facility.</p>
+    <div class="content-wrapper facility-page">
+        <div class="greeting-section facility-page-header">
+            <div>
+                <h1 class="greeting-title">Facility Use Request Form</h1>
+                <p class="greeting-subtitle">Complete the requestor information below to request a facility.</p>
+            </div>
+            <a href="{{ route('request-facility.index') }}" class="facility-btn-secondary">Back to Requests</a>
         </div>
-        <a href="{{ route('request-facility.index') }}" class="facility-btn-secondary">Back to Requests</a>
-    </div>
-    <div class="table-container">
-        <form method="POST" action="{{ route('request-facility.store') }}" enctype="multipart/form-data" class="facility-form" data-prevent-duplicate-submit>
-            @csrf
-            <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) \Illuminate\Support\Str::uuid()) }}">
-            <div class="mb-6 text-right">
-                <p class="facility-label">Date: <time id="facility-current-date" datetime="{{ now('Asia/Manila')->toIso8601String() }}">{{ now('Asia/Manila')->format('F d, Y h:i:s A') }}</time></p>
-            </div>
-            @if($errors->any())
-                <div class="facility-error mb-6" role="alert">
-                    <p>Please correct the following fields:</p>
-                    <ul class="list-disc pl-5">
-                        @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-                    </ul>
+        <div class="table-container">
+            <form method="POST" action="{{ route('request-facility.store') }}" enctype="multipart/form-data" class="facility-form" data-prevent-duplicate-submit>
+                @csrf
+                <input type="hidden" name="submission_token" value="{{ old('submission_token', (string) \Illuminate\Support\Str::uuid()) }}">
+                <div class="mb-6 text-right">
+                    <p class="facility-label">Date: <time id="facility-current-date" datetime="{{ now('Asia/Manila')->toIso8601String() }}">{{ now('Asia/Manila')->format('F d, Y h:i:s A') }}</time></p>
                 </div>
-            @endif
-            <div class="facility-form-grid">
-                @foreach(['requested_date' => 'Date of Use', 'requested_time' => 'Time of Use', 'facility' => 'Facility Requested', 'lead_person' => 'Lead / Focal Person', 'contact_number' => 'Contact Number'] as $field => $label)
-                    <div class="facility-field {{ $field === 'facility' ? 'facility-field-wide' : '' }}">
-                        <label for="{{ $field }}" class="facility-label">{{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                        @if($field === 'facility')
-                            <select id="facility" name="facility" class="facility-input disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500" data-availability-url="{{ route('request-facility.availability') }}" disabled required aria-invalid="{{ $errors->has('facility') ? 'true' : 'false' }}" aria-describedby="facility-availability @error('facility') facility-error @enderror">
-                                <option value="" disabled @selected(!old('facility'))>Select a facility</option>
-                                @foreach(config('facilities.options') as $facility)
-                                    <option value="{{ $facility }}" @selected(old('facility') === $facility)>{{ $loop->iteration }}. {{ $facility }}</option>
-                                @endforeach
-                            </select>
-                            <p id="facility-availability" class="facility-result-count" role="status" aria-live="polite">Select a date and time to check available facilities.</p>
-                        @else
-                        <input id="{{ $field }}" name="{{ $field }}" type="{{ ['requested_date' => 'date', 'requested_time' => 'time', 'contact_number' => 'tel'][$field] ?? 'text' }}" class="facility-input" value="{{ old($field, $field === 'contact_number' ? Auth::user()->phone_number : ($field === 'lead_person' ? Auth::user()->name : '')) }}" required @if($field === 'requested_date') min="{{ now()->toDateString() }}" @elseif($field !== 'requested_time') maxlength="{{ $field === 'contact_number' ? 50 : 255 }}" @endif aria-invalid="{{ $errors->has($field) ? 'true' : 'false' }}" @error($field) aria-describedby="{{ $field }}-error" @enderror>
-                        @endif
-                        @error($field)<p id="{{ $field }}-error" class="facility-error">{{ $message }}</p>@enderror
+                @if($errors->any())
+                    <div class="facility-error mb-6" role="alert">
+                        <p>Please correct the following fields:</p>
+                        <ul class="list-disc pl-5">
+                            @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                        </ul>
                     </div>
-                @endforeach
-                <div class="facility-field facility-field-wide">
-                    <label for="program_image" class="facility-label">Program or Event Planner Image</label>
-                    <p id="program-image-help" class="facility-result-count">Attach a JPG, PNG, or WebP image up to 5 MB. Requests submitted without an image are automatically declined.</p>
-                    <input id="program_image" name="program_image" type="file" accept="image/jpeg,image/png,image/webp" class="facility-input" aria-describedby="program-image-help @error('program_image') program-image-error @enderror" aria-invalid="{{ $errors->has('program_image') ? 'true' : 'false' }}">
-                    @error('program_image')<p id="program-image-error" class="facility-error">{{ $message }}</p>@enderror
+                @endif
+                <div class="facility-form-grid">
+                    @foreach(['requested_date' => 'Date of Use', 'requested_time' => 'Time of Use', 'facility' => 'Facility Requested', 'lead_person' => 'Lead / Focal Person', 'contact_number' => 'Contact Number'] as $field => $label)
+                        <div class="facility-field {{ $field === 'facility' ? 'facility-field-wide' : '' }}">
+                            <label for="{{ $field }}" class="facility-label">{{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                            @if($field === 'facility')
+                                <select id="facility" name="facility" class="facility-input disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500" data-availability-url="{{ route('request-facility.availability') }}" disabled required aria-invalid="{{ $errors->has('facility') ? 'true' : 'false' }}" aria-describedby="facility-availability @error('facility') facility-error @enderror">
+                                    <option value="" disabled @selected(!old('facility'))>Select a facility</option>
+                                    @foreach(config('facilities.options') as $facility)
+                                        <option value="{{ $facility }}" @selected(old('facility') === $facility)>{{ $loop->iteration }}. {{ $facility }}</option>
+                                    @endforeach
+                                </select>
+                                <p id="facility-availability" class="facility-result-count" role="status" aria-live="polite">Select a date and time to check available facilities.</p>
+                            @else
+                                <input id="{{ $field }}" name="{{ $field }}" type="{{ ['requested_date' => 'date', 'requested_time' => 'time', 'contact_number' => 'tel'][$field] ?? 'text' }}" class="facility-input" value="{{ old($field, $field === 'contact_number' ? Auth::user()->phone_number : ($field === 'lead_person' ? Auth::user()->name : '')) }}" required @if($field === 'requested_date') min="{{ now()->toDateString() }}" @elseif($field === 'contact_number') inputmode="numeric" minlength="11" maxlength="11" pattern="09[0-9]{9}" placeholder="09XXXXXXXXX" title="Enter exactly 11 digits starting with 09." @elseif($field !== 'requested_time') maxlength="255" @endif aria-invalid="{{ $errors->has($field) ? 'true' : 'false' }}" @error($field) aria-describedby="{{ $field }}-error" @enderror>
+                            @endif
+                            @error($field)<p id="{{ $field }}-error" class="facility-error">{{ $message }}</p>@enderror
+                        </div>
+                    @endforeach
+                    <div class="facility-field facility-field-wide">
+                        <label for="program_image" class="facility-label">Program or Event Planner Image</label>
+                        <p id="program-image-help" class="facility-result-count">Attach a JPG, PNG, or WebP image up to 5 MB. Requests submitted without an image are automatically declined.</p>
+                        <input id="program_image" name="program_image" type="file" accept="image/jpeg,image/png,image/webp" class="facility-input" aria-describedby="program-image-help @error('program_image') program-image-error @enderror" aria-invalid="{{ $errors->has('program_image') ? 'true' : 'false' }}">
+                        @error('program_image')<p id="program-image-error" class="facility-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="facility-field facility-field-wide">
+                        <label for="purpose" class="facility-label">Purpose of Use <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <textarea id="purpose" name="purpose" rows="4" class="facility-input" maxlength="2000" required aria-invalid="{{ $errors->has('purpose') ? 'true' : 'false' }}" @error('purpose') aria-describedby="purpose-error" @enderror>{{ old('purpose') }}</textarea>
+                        @error('purpose')<p id="purpose-error" class="facility-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="facility-field facility-field-wide">
+                        <label for="participants" class="facility-label">List of Participants (Name and Affiliation) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <p id="participants-help" class="facility-result-count">Enter one participant per line, including their name and affiliation.</p>
+                        <textarea id="participants" name="participants" rows="7" class="facility-input" maxlength="10000" required placeholder="Juan Dela Cruz — College of Information Technology" aria-describedby="participants-help @error('participants') participants-error @enderror" aria-invalid="{{ $errors->has('participants') ? 'true' : 'false' }}">{{ old('participants') }}</textarea>
+                        @error('participants')<p id="participants-error" class="facility-error">{{ $message }}</p>@enderror
+                    </div>
                 </div>
-                <div class="facility-field facility-field-wide">
-                    <label for="purpose" class="facility-label">Purpose of Use <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <textarea id="purpose" name="purpose" rows="4" class="facility-input" maxlength="2000" required aria-invalid="{{ $errors->has('purpose') ? 'true' : 'false' }}" @error('purpose') aria-describedby="purpose-error" @enderror>{{ old('purpose') }}</textarea>
-                    @error('purpose')<p id="purpose-error" class="facility-error">{{ $message }}</p>@enderror
+                <div class="grid gap-8 border-t border-slate-200 pt-6 mt-6 sm:grid-cols-2">
+                    <div class="facility-field">
+                        <label for="requested_by" class="facility-label">Requested by <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <input id="requested_by" name="requested_by" class="facility-input disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500" value="{{ Auth::user()->name }}" maxlength="255" disabled>
+                        <p class="facility-result-count">Process owner's printed name</p>
+                        @error('requested_by')<p id="requested_by-error" class="facility-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <p class="facility-label">Approval</p>
+                        <p class="facility-status-note">Requests with a program or event planner image will be sent to the admin for review. Requests without an image are automatically declined.</p>
+                    </div>
                 </div>
-                <div class="facility-field facility-field-wide">
-                    <label for="participants" class="facility-label">List of Participants (Name and Affiliation) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <p id="participants-help" class="facility-result-count">Enter one participant per line, including their name and affiliation.</p>
-                    <textarea id="participants" name="participants" rows="7" class="facility-input" maxlength="10000" required placeholder="Juan Dela Cruz — College of Information Technology" aria-describedby="participants-help @error('participants') participants-error @enderror" aria-invalid="{{ $errors->has('participants') ? 'true' : 'false' }}">{{ old('participants') }}</textarea>
-                    @error('participants')<p id="participants-error" class="facility-error">{{ $message }}</p>@enderror
+                <div class="facility-form-actions">
+                    <a href="{{ route('request-facility.index') }}" class="facility-btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-create">Submit Request</button>
                 </div>
-            </div>
-            <div class="grid gap-8 border-t border-slate-200 pt-6 mt-6 sm:grid-cols-2">
-                <div class="facility-field">
-                    <label for="requested_by" class="facility-label">Requested by <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <input id="requested_by" name="requested_by" class="facility-input" value="{{ old('requested_by', Auth::user()->name) }}" maxlength="255" required aria-invalid="{{ $errors->has('requested_by') ? 'true' : 'false' }}" @error('requested_by') aria-describedby="requested_by-error" @enderror>
-                    <p class="facility-result-count">Requestor's printed name</p>
-                    @error('requested_by')<p id="requested_by-error" class="facility-error">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <p class="facility-label">Approval</p>
-                    <p class="facility-status-note">Requests with a program or event planner image will be sent to the admin for review. Requests without an image are automatically declined.</p>
-                </div>
-            </div>
-            <div class="facility-form-actions">
-                <a href="{{ route('request-facility.index') }}" class="facility-btn-secondary">Cancel</a>
-                <button type="submit" class="btn-create">Submit Request</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')
-<script defer src="{{ asset('js/facility-availability.js').'?v='.substr(hash_file('sha256', public_path('js/facility-availability.js')), 0, 16) }}"></script>
-<script>
+    <script defer src="{{ asset('js/facility-request.js').'?v='.substr(hash_file('sha256', public_path('js/facility-request.js')), 0, 16) }}"></script>
+    <script defer src="{{ asset('js/facility-availability.js').'?v='.substr(hash_file('sha256', public_path('js/facility-availability.js')), 0, 16) }}"></script>
+    <script>
     (() => {
         const currentDate = document.getElementById('facility-current-date');
         const formatter = new Intl.DateTimeFormat('en-US', {

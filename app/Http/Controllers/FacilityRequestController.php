@@ -77,7 +77,11 @@ class FacilityRequestController extends Controller implements HasMiddleware
                     ->orWhere('facility', 'like', '%'.$search.'%');
             });
         }
-        $facilityRequests = $query->paginate(10)->withQueryString();
+        $facilityRequests = $query
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END', ['declined'])
+            ->latest('created_at')
+            ->latest('id')
+            ->paginate(10)->withQueryString();
 
         $outstandingRequest = $user->isUser()
             ? FacilityRequest::where('user_id', $user->id)->where('status', 'approved')->first()

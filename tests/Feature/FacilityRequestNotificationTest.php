@@ -63,7 +63,7 @@ class FacilityRequestNotificationTest extends TestCase
         $this->assertSame('Test Lead', $facilityRequest->lead_person);
         $this->assertSame('09123456789', $facilityRequest->contact_number);
         $this->assertSame('Participant - College', $facilityRequest->participants);
-        $this->assertSame('Test Requestor', $facilityRequest->requested_by);
+        $this->assertSame($requester->name, $facilityRequest->requested_by);
         $this->assertSame('Facility Use', $facilityRequest->category);
         $this->assertSame('pending', $facilityRequest->status);
         $this->assertSame($requester->id, $facilityRequest->user_id);
@@ -219,7 +219,10 @@ class FacilityRequestNotificationTest extends TestCase
             ->assertSee('<th scope="col">Action</th>', false)
             ->assertSee(route('request-facility.show', $approved))
             ->assertSee(route('request-facility.photos', $approved))
-            ->assertDontSee(route('request-facility.show', $pending))
+            ->assertDontSee('href="'.route('request-facility.show', $pending).'"', false)
+            ->assertSee('class="action-btn view-btn"', false)
+            ->assertSee('title="View Request"', false)
+            ->assertSee('title="Complete Photos and Evaluation"', false)
             ->assertDontSee('Approve Request');
         $this->get(route('request-facility.index', ['status' => 'pending']))
             ->assertOk()->assertDontSee('<th scope="col">Action</th>', false);
@@ -235,17 +238,38 @@ class FacilityRequestNotificationTest extends TestCase
     public function test_reference_form_fields_are_required_and_invalid_values_are_rejected(): void
     {
         $owner = User::factory()->create(['role' => 'user']);
-        $this->actingAs($owner)->get(route('request-facility.create'))
+        $response = $this->actingAs($owner)->get(route('request-facility.create'))
             ->assertOk()->assertSee('Facility Use Request Form')->assertSee('List of Participants')
             ->assertSee('Lead / Focal Person')->assertDontSee('Request Category');
+        $this->assertMatchesRegularExpression('/<input[^>]*id="requested_by"[^>]*disabled>/', $response->getContent());
         $this->post(route('request-facility.store'), [
             'facility' => 'Conference Room',
             'requested_date' => now()->subDay()->toDateString(),
             'requested_time' => '25:90',
             'purpose' => 'Meeting.',
             'contact_number' => 'invalid-number',
-        ])->assertSessionHasErrors(['requested_date', 'requested_time', 'contact_number', 'lead_person', 'participants', 'requested_by']);
+        ])->assertSessionHasErrors(['requested_date', 'requested_time', 'contact_number', 'lead_person', 'participants'])
+            ->assertSessionDoesntHaveErrors('requested_by');
         $this->assertDatabaseCount('facility_requests', 0);
+    }
+
+    public function test_contact_number_requires_exactly_eleven_digits_starting_with_09(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $this->actingAs($owner);
+        $data = [
+            'facility' => 'Activity Center', 'requested_date' => now()->addDay()->toDateString(),
+            'requested_time' => '09:30', 'purpose' => 'Meeting', 'lead_person' => 'Test Lead',
+            'participants' => 'Participant - College',
+        ];
+        foreach (['0912345678', '091234567890', '08123456789', '+639123456789', '09abcdefgh1', '09123-56789', '09123 56789'] as $phone) {
+            $this->post(route('request-facility.store'), $data + ['contact_number' => $phone])
+                ->assertSessionHasErrors('contact_number');
+        }
+        $this->assertDatabaseCount('facility_requests', 0);
+        $this->post(route('request-facility.store'), $data + ['contact_number' => '09123456789'])
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('facility_requests', ['user_id' => $owner->id, 'contact_number' => '09123456789']);
     }
 
     public function test_declined_requests_sort_last_for_admins_and_requesters(): void
@@ -256,16 +280,41 @@ class FacilityRequestNotificationTest extends TestCase
         $pending->update(['created_at' => now()->subDay()]);
         $approved = $this->createFacilityRequest($owner, 'FR-APPROVED');
         $approved->update(['status' => 'approved', 'created_at' => now()->subHour()]);
+        $finished = $this->createFacilityRequest($owner, 'FR-FINISHED');
+        $finished->update(['status' => 'finished', 'created_at' => now()->subMinutes(30)]);
         $declined = $this->createFacilityRequest($owner, 'FR-NEW-DECLINED');
         $declined->update(['status' => 'declined']);
 
         foreach ([$admin, $owner] as $viewer) {
             $requests = $this->actingAs($viewer)->get(route('request-facility.index'))
                 ->assertOk()->viewData('facilityRequests');
-            $this->assertSame([$approved->id, $pending->id, $declined->id], $requests->pluck('id')->all());
+            $this->assertSame([$finished->id, $approved->id, $pending->id, $declined->id], $requests->pluck('id')->all());
             $filtered = $this->get(route('request-facility.index', ['status' => 'declined']))
                 ->assertOk()->viewData('facilityRequests');
             $this->assertSame([$declined->id], $filtered->pluck('id')->all());
+        }
+    }
+
+    public function test_declined_requests_remain_last_across_pages_and_search_results(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $activeIds = [];
+        foreach (range(1, 11) as $index) {
+            $active = $this->createFacilityRequest($owner, 'FR-SORT-'.$index);
+            $active->update(['created_at' => now()->subDay()]);
+            $activeIds[] = $active->id;
+        }
+        $declined = $this->createFacilityRequest($owner, 'FR-SORT-DECLINED');
+        $declined->update(['status' => 'declined']);
+
+        foreach ([$admin, $owner] as $viewer) {
+            $firstPage = $this->actingAs($viewer)->get(route('request-facility.index', ['search' => 'FR-SORT']))
+                ->assertOk()->viewData('facilityRequests');
+            $this->assertSame(array_slice(array_reverse($activeIds), 0, 10), $firstPage->pluck('id')->all());
+            $lastPage = $this->get(route('request-facility.index', ['search' => 'FR-SORT', 'page' => 2]))
+                ->assertOk()->viewData('facilityRequests');
+            $this->assertSame([$activeIds[0], $declined->id], $lastPage->pluck('id')->all());
         }
     }
 

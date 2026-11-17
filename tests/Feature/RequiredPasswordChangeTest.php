@@ -58,7 +58,7 @@ class RequiredPasswordChangeTest extends TestCase
             ->assertRedirect(route('password.setup'));
         $this->get(route('dashboard'))->assertRedirect(route('password.setup'));
         $this->post('/work-requests', [])->assertRedirect(route('password.setup'));
-        $this->getJson('/api/dashboard-stats')->assertForbidden();
+        $this->getJson('/api/dashboard/stats')->assertForbidden();
         $this->get(route('password.setup'))->assertOk()->assertSee($user->email);
         $this->assertFalse($user->fresh()->is_verified);
         $this->post(route('logout'))->assertRedirect(route('login'));

@@ -7,6 +7,11 @@ use Illuminate\Validation\Rule;
 
 class StoreFacilityRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['requested_by' => $this->user()?->name]);
+    }
+
     public function authorize(): bool
     {
         return $this->user()->isUser();
@@ -21,9 +26,16 @@ class StoreFacilityRequest extends FormRequest
             'requested_time' => ['required', 'date_format:H:i'],
             'purpose' => ['required', 'string', 'max:2000'],
             'lead_person' => ['required', 'string', 'max:255'],
-            'contact_number' => ['required', 'string', 'max:50', 'regex:/^[0-9+() .-]{7,50}$/'],
+            'contact_number' => ['required', 'string', 'regex:/\A09[0-9]{9}\z/'],
             'participants' => ['required', 'string', 'max:10000'],
             'requested_by' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'contact_number.regex' => 'The contact number must be exactly 11 digits and start with 09.',
         ];
     }
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Facility Evaluation {{ $facilityRequest->request_number }}</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Facility Evaluation {{ $facilityRequest->request_number }}</title>
+        <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1e293b; }
         h1 { color: #003087; font-size: 22px; margin-bottom: 8px; }
         h2 { font-size: 16px; }
@@ -27,23 +27,23 @@
         .usage-photo { page-break-inside: avoid; margin-bottom: 20px; text-align: center; }
         .usage-photo img { max-width: 100%; max-height: 280px; }
     </style>
-    @include('layouts.pdf-typography')
-</head>
-<body>
-    @include('facility-requests.evaluation-pdf')
-    <div class="usage-photos">
-        <h1>Usage Photos</h1>
-        <p>{{ $facilityRequest->request_number }} · {{ $facilityRequest->facility }}</p>
-        @foreach(['before' => 'Before Use', 'after' => 'After Use'] as $stage => $label)
-            <div class="usage-photo">
-                <h2>{{ $label }}</h2>
-                @if(!empty($photos[$stage]))
-                    <img src="{{ $photos[$stage] }}" alt="{{ $label }}">
-                @else
-                    <p>Photo unavailable.</p>
-                @endif
-            </div>
-        @endforeach
-    </div>
-</body>
+        @include('layouts.pdf-typography')
+    </head>
+    <body>
+        @include('facility-requests.evaluation-pdf')
+        <div class="usage-photos">
+            <h1>Usage Photos</h1>
+            <p>{{ $facilityRequest->request_number }} · {{ $facilityRequest->facility }}</p>
+            @foreach(['before' => 'Before Use', 'after' => 'After Use'] as $stage => $label)
+                <div class="usage-photo">
+                    <h2>{{ $label }}</h2>
+                    @if(!empty($photos[$stage]))
+                        <img src="{{ $photos[$stage] }}" alt="{{ $label }}">
+                    @else
+                        <p>Photo unavailable.</p>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </body>
 </html>

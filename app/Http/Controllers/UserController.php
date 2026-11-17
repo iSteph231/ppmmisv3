@@ -25,9 +25,6 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of users
-     */
     public function index(Request $request)
     {
         $query = User::query();
@@ -67,17 +64,11 @@ class UserController extends Controller
         return back()->with('success', 'Role updated for '.$user->name.'.');
     }
 
-    /**
-     * Show the form for creating a new user
-     */
     public function create(): View
     {
         return view('users.create');
     }
 
-    /**
-     * Store a newly created user
-     */
     public function store(StoreUserRequest $request): RedirectResponse
     {
         $user = $this->createPendingAccount($request->validated());
@@ -86,7 +77,6 @@ class UserController extends Controller
         return $this->sendAccountSetupLink($user);
     }
 
-    /** @param array{name: string, email: string, role: string, department?: ?string} $data */
     private function createPendingAccount(array $data): User
     {
         $user = new User([
@@ -146,9 +136,6 @@ class UserController extends Controller
             ->with('success', 'Account created. A password setup link has been emailed to '.$user->email.'.');
     }
 
-    /**
-     * Display the specified user
-     */
     public function show($id)
     {
         $user = User::with('workRequests')->findOrFail($id);
@@ -156,9 +143,6 @@ class UserController extends Controller
         return view('users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified user
-     */
     public function edit($id)
     {
         $user = User::findOrFail($id);
@@ -166,9 +150,6 @@ class UserController extends Controller
         return view('users.edit', compact('user'));
     }
 
-    /**
-     * Update the specified user
-     */
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -199,9 +180,6 @@ class UserController extends Controller
             ->with('success', 'User updated successfully!');
     }
 
-    /**
-     * Remove the specified user
-     */
     public function destroy(User $user): RedirectResponse
     {
         if ($user->is(auth()->user())) {
@@ -246,9 +224,6 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Account removed successfully!');
     }
 
-    /**
-     * Toggle user active status
-     */
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
@@ -270,9 +245,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Reset user password
-     */
     public function resetPassword(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -294,9 +266,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Search users (AJAX)
-     */
     public function search(Request $request)
     {
         $query = User::query();

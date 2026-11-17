@@ -1,207 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PPMMIS - @yield('title', 'Dashboard')</title>
-    
-    {{-- Tailwind CSS CDN --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    {{-- Google Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    {{-- Your Custom CSS (from public folder) --}}
-    <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/ppmmis-dashboard.css')), 0, 16) }}">
-    
-    {{-- Chart.js --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    {{-- Alpine.js --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    @stack('styles')
-    <link rel="stylesheet" href="{{ asset('css/logout-confirmation.css').'?v='.substr(hash_file('sha256', public_path('css/logout-confirmation.css')), 0, 16) }}">
-</head>
-<body x-data="{ sidebarOpen: false, mobileViewport: window.innerWidth < 1024 }" @keydown.escape.window="sidebarOpen = false" @resize.window="mobileViewport = window.innerWidth < 1024; if (!mobileViewport) sidebarOpen = false">
-    <div class="dashboard-container">
-        {{-- ========== SIDEBAR ========== --}}
-        <aside id="main-sidebar" class="sidebar" :class="{'open': sidebarOpen}" :inert="!sidebarOpen && mobileViewport">
-            <div class="sidebar-header">
-                <span class="sidebar-brand">PPMMIS</span>
-            </div>
-            
-            <nav class="sidebar-nav">
-                {{-- Dashboard Link --}}
-                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                    </svg>
-                    <span class="nav-text">Dashboard</span>
-                </a>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>PPMMIS - @yield('title', 'Dashboard')</title>
 
-                {{-- Work Requests Link --}}
-                <a href="{{ route('work-requests.index') }}" class="nav-item {{ request()->routeIs('work-requests.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <span class="nav-text">Work Requests</span>
-                </a>
+        <script src="https://cdn.tailwindcss.com"></script>
 
-                {{-- Inspection Report Link - ADMIN ONLY --}}
-                @auth
-                    @if(Auth::user()->isAdmin())
-                    <a href="{{ route('inspections.index') }}" class="nav-item {{ request()->routeIs('inspections.*') ? 'active' : '' }}">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="{{ asset('css/ppmmis-dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/ppmmis-dashboard.css')), 0, 16) }}">
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        @stack('styles')
+        <link rel="stylesheet" href="{{ asset('css/logout-confirmation.css').'?v='.substr(hash_file('sha256', public_path('css/logout-confirmation.css')), 0, 16) }}">
+    </head>
+    <body x-data="{ sidebarOpen: false, mobileViewport: window.innerWidth < 1024 }" @keydown.escape.window="sidebarOpen = false" @resize.window="mobileViewport = window.innerWidth < 1024; if (!mobileViewport) sidebarOpen = false">
+        <div class="dashboard-container">
+
+            <aside id="main-sidebar" class="sidebar" :class="{'open': sidebarOpen}" :inert="!sidebarOpen && mobileViewport">
+                <div class="sidebar-header">
+                    <span class="sidebar-brand">PPMMIS</span>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            <path d="M16 2v4h4"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                         </svg>
-                        <span class="nav-text">Inspection Report</span>
+                        <span class="nav-text">Dashboard</span>
                     </a>
-                    @endif
-                @endauth
 
-                {{-- Facility Use Request Link --}}
-                @if(Auth::user()->isAdmin() || Auth::user()->isUser())
-                <a href="{{ route('request-facility.index') }}" class="nav-item {{ request()->routeIs('request-facility.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3v18M5 5h14v14H5z"></path>
-                    </svg>
-                    <span class="nav-text">Facility Use Request</span>
-                </a>
-                @endif
-
-                {{-- Maintenance Records Link --}}
-                @auth
-                    @if(Auth::user()->isAdmin() || Auth::user()->isEngineer())
-                    <a href="{{ route('maintenance.index') }}" class="nav-item {{ request()->routeIs('maintenance.*') ? 'active' : '' }}">
+                    <a href="{{ route('work-requests.index') }}" class="nav-item {{ request()->routeIs('work-requests.*') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <span class="nav-text">Maintenance Reports</span>
+                        <span class="nav-text">Work Requests</span>
                     </a>
-                    @endif
-                @endauth
 
-                {{-- Reports Link - Only visible to ADMIN and PERSONNEL --}}
-                @auth
-                    @if(Auth::user()->isAdmin())
-                    <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*', 'inventory.*') ? 'active' : '' }}">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <span class="nav-text">Reports</span>
-                    </a>
-                    @endif
-                @endauth
-
-                @if(Auth::user()->isAdmin())
-                <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H2v-2a4 4 0 017-3.87M16 7a4 4 0 11-8 0 4 4 0 018 0zM6 20v-2a6 6 0 0112 0v2H6z"/>
-                    </svg>
-                    <span class="nav-text">Users</span>
-                </a>
-                @endif
-
-                {{-- Settings Link - Visible to all authenticated users --}}
-                <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <span class="nav-text">Settings</span>
-                </a>
-
-                {{-- Logout Form --}}
-                @auth
-                <form method="POST" action="{{ route('logout') }}" class="mt-4" data-confirm-logout>
-                    @csrf
-                    <button type="submit" class="nav-item nav-logout" style="width: 100%; background: none; text-align: left;">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                        <span class="nav-text">Logout</span>
-                    </button>
-                </form>
-                @endauth
-            </nav>
-        </aside>
-
-        <div class="sidebar-backdrop" x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak aria-hidden="true"></div>
-
-        {{-- ========== MAIN CONTENT ========== --}}
-        <main class="main-content" :class="{ 'sidebar-active': sidebarOpen }">
-            <header class="top-nav">
-                <div class="top-nav-container">
-                    {{-- Mobile Menu Toggle --}}
-                    <button type="button" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn" aria-label="Toggle navigation" aria-controls="main-sidebar" :aria-expanded="sidebarOpen.toString()">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-
-                    {{-- User Profile Dropdown --}}
                     @auth
-                    <div class="user-menu" x-data="{ open: false }">
-                        <button @click="open = !open" class="user-menu-btn">
-                            <div class="user-avatar">
-                                {{ substr(Auth::user()->name ?? 'U', 0, 1) }}
-                            </div>
-                            <span class="user-name">{{ Auth::user()->name ?? 'User' }}</span>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        @if(Auth::user()->isAdmin())
+                            <a href="{{ route('inspections.index') }}" class="nav-item {{ request()->routeIs('inspections.*') ? 'active' : '' }}">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    <path d="M16 2v4h4"/>
+                                </svg>
+                                <span class="nav-text">Inspection Report</span>
+                            </a>
+                        @endif
+                    @endauth
+
+                    @if(Auth::user()->isAdmin() || Auth::user()->isUser())
+                        <a href="{{ route('request-facility.index') }}" class="nav-item {{ request()->routeIs('request-facility.*') ? 'active' : '' }}">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3v18M5 5h14v14H5z"></path>
+                            </svg>
+                            <span class="nav-text">Facility Use Request</span>
+                        </a>
+                    @endif
+
+                    @auth
+                        @if(Auth::user()->isAdmin() || Auth::user()->isEngineer())
+                            <a href="{{ route('maintenance.index') }}" class="nav-item {{ request()->routeIs('maintenance.*') ? 'active' : '' }}">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                <span class="nav-text">Maintenance Reports</span>
+                            </a>
+                        @endif
+                    @endauth
+
+                    @auth
+                        @if(Auth::user()->isAdmin())
+                            <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*', 'inventory.*') ? 'active' : '' }}">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <span class="nav-text">Reports</span>
+                            </a>
+                        @endif
+                    @endauth
+
+                    @if(Auth::user()->isAdmin())
+                        <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H2v-2a4 4 0 017-3.87M16 7a4 4 0 11-8 0 4 4 0 018 0zM6 20v-2a6 6 0 0112 0v2H6z"/>
+                            </svg>
+                            <span class="nav-text">Users</span>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span class="nav-text">Settings</span>
+                    </a>
+
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}" class="mt-4" data-confirm-logout>
+                            @csrf
+                            <button type="submit" class="nav-item nav-logout" style="width: 100%; background: none; text-align: left;">
+                                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                <span class="nav-text">Logout</span>
+                            </button>
+                        </form>
+                    @endauth
+                </nav>
+            </aside>
+
+            <div class="sidebar-backdrop" x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak aria-hidden="true"></div>
+
+            <main class="main-content" :class="{ 'sidebar-active': sidebarOpen }">
+                <header class="top-nav">
+                    <div class="top-nav-container">
+
+                        <button type="button" @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn" aria-label="Toggle navigation" aria-controls="main-sidebar" :aria-expanded="sidebarOpen.toString()">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        
-                        <div x-show="open" @click.away="open = false" class="dropdown-menu" x-cloak>
-                            <a href="{{ route('settings.index') }}" class="dropdown-item">My Profile</a>
-                            <a href="{{ route('settings.index') }}" class="dropdown-item">Account Settings</a>
-                            <hr style="margin: 0.5rem 0;">
-                            <form method="POST" action="{{ route('logout') }}" data-confirm-logout>
-                                @csrf
-                                <button type="submit" class="dropdown-item" style="width:100%; text-align:left;">Sign Out</button>
-                            </form>
-                        </div>
-                    </div>
-                    @else
-                    {{-- Show login link when not authenticated --}}
-                    <div class="user-menu">
-                        <a href="{{ route('login') }}" class="user-menu-btn" style="text-decoration: none;">
-                            <div class="user-avatar">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                                </svg>
+
+                        @auth
+                            <div class="user-menu" x-data="{ open: false }">
+                                <button @click="open = !open" class="user-menu-btn">
+                                    <div class="user-avatar">
+                                        {{ substr(Auth::user()->name ?? 'U', 0, 1) }}
+                                    </div>
+                                    <span class="user-name">{{ Auth::user()->name ?? 'User' }}</span>
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+
+                                <div x-show="open" @click.away="open = false" class="dropdown-menu" x-cloak>
+                                    <a href="{{ route('settings.index') }}" class="dropdown-item">My Profile</a>
+                                    <a href="{{ route('settings.index') }}" class="dropdown-item">Account Settings</a>
+                                    <hr style="margin: 0.5rem 0;">
+                                    <form method="POST" action="{{ route('logout') }}" data-confirm-logout>
+                                        @csrf
+                                        <button type="submit" class="dropdown-item" style="width:100%; text-align:left;">Sign Out</button>
+                                    </form>
+                                </div>
                             </div>
-                            <span class="user-name">Login</span>
-                        </a>
+                        @else
+
+                            <div class="user-menu">
+                                <a href="{{ route('login') }}" class="user-menu-btn" style="text-decoration: none;">
+                                    <div class="user-avatar">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="user-name">Login</span>
+                                </a>
+                            </div>
+                        @endauth
                     </div>
+                </header>
+
+                <div class="dashboard-content">
+                    @auth
+                        @if(Auth::user()->isAdmin())
+                            <div id="browser-notifications" class="mb-4 flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4" data-user-id="{{ Auth::id() }}" data-endpoint="{{ route('notifications.browser') }}" data-worker="{{ asset('js/browser-notifications-sw.js') }}" data-icon="{{ asset('images/logo.png') }}" hidden>
+                                <p data-notification-status role="status" class="text-sm text-slate-700">Enable browser notifications for new work and facility requests.</p>
+                                <button type="button" data-enable-notifications class="btn-create">Enable browser notifications</button>
+                            </div>
+                        @endif
                     @endauth
+                    @yield('content')
                 </div>
-            </header>
+            </main>
+        </div>
 
-            {{-- Page Content --}}
-            <div class="dashboard-content">
-                @yield('content')
-            </div>
-        </main>
-    </div>
-
-    {{-- Your Custom JS (from public folder) --}}
-    <x-logout-confirmation />
-    <script>
+        <x-logout-confirmation />
+        <script>
         window.addEventListener('pageshow', function (event) {
             if (event.persisted) {
                 window.location.reload();
             }
         });
     </script>
-    <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
-    <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
-    @stack('scripts')
-    <script defer src="{{ asset('js/logout-confirmation.js').'?v='.substr(hash_file('sha256', public_path('js/logout-confirmation.js')), 0, 16) }}"></script>
-    <script defer src="{{ asset('js/request-submission.js').'?v='.substr(hash_file('sha256', public_path('js/request-submission.js')), 0, 16) }}"></script>
-    <script defer src="{{ asset('js/new-request-dots.js').'?v='.substr(hash_file('sha256', public_path('js/new-request-dots.js')), 0, 16) }}"></script>
-</body>
+        <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
+        <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
+        @stack('scripts')
+        <script defer src="{{ asset('js/logout-confirmation.js').'?v='.substr(hash_file('sha256', public_path('js/logout-confirmation.js')), 0, 16) }}"></script>
+        <script defer src="{{ asset('js/request-submission.js').'?v='.substr(hash_file('sha256', public_path('js/request-submission.js')), 0, 16) }}"></script>
+        <script defer src="{{ asset('js/new-request-dots.js').'?v='.substr(hash_file('sha256', public_path('js/new-request-dots.js')), 0, 16) }}"></script>
+        @auth
+            @if(Auth::user()->isAdmin())
+                <script defer src="{{ asset('js/browser-notifications.js').'?v='.substr(hash_file('sha256', public_path('js/browser-notifications.js')), 0, 16) }}"></script>
+            @endif
+        @endauth
+    </body>
 </html>

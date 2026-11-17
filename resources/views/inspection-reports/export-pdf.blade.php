@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Inspection Report</title>
-    <style>
+    <head>
+        <meta charset="utf-8">
+        <title>Inspection Report</title>
+        <style>
         @page {
             size: A4 landscape;
             margin: 10mm;
@@ -127,76 +127,76 @@
             width: 64mm;
         }
     </style>
-    @include('layouts.pdf-typography')
-</head>
-<body>
-    @php
+        @include('layouts.pdf-typography')
+    </head>
+    <body>
+        @php
         $reports = isset($inspectionReports) ? $inspectionReports : collect([$inspectionReport]);
         $blankRows = max(0, 9 - $reports->count());
     @endphp
 
-    <div class="page">
-        <div class="document-code">
-            FM-AD-ENG-05<br>
-            Rev. 0<br>
-            03-Oct-2017
-        </div>
+        <div class="page">
+            <div class="document-code">
+                FM-AD-ENG-05<br>
+                Rev. 0<br>
+                03-Oct-2017
+            </div>
 
-        <table class="main">
-        <tr>
-            <td class="header-logo">
-                @if(file_exists(public_path('images/logo.png')))
-                    <img src="file://{{ public_path('images/logo.png') }}" style="width: 20mm;">
-                @endif
-            </td>
-            <td class="header-title" colspan="6">
-                <h1>INSPECTION REPORT</h1>
-                <p>PANGASINAN STATE UNIVERSITY</p>
-                <p>Asingan Campus</p>
-            </td>
-        </tr>
-        <tr class="report-table">
-            <th class="col-date">DATE OF<br>INSPECTION</th>
-            <th class="col-campus">CAMPUS</th>
-            <th class="col-building">BUILDING</th>
-            <th class="col-room">FLOOR / ROOM</th>
-            <th class="col-observations">OBSERVATIONS</th>
-            <th class="col-findings">FINDINGS</th>
-            <th class="col-recommendation">RECOMMENDATION</th>
-        </tr>
-        @foreach($reports as $report)
-            <tr class="report-table">
-                <td>{{ optional($report->actual_inspection_date ?? $report->scheduled_date)->format('m/d/Y') }}</td>
-                <td>Asingan</td>
-                <td>{{ $report->workRequest->building_name ?? '' }}</td>
-                <td>{{ $report->workRequest->office_room ?? '' }}</td>
-                <td>{{ $report->observation ?? '' }}</td>
-                <td>{{ $report->findings ?? '' }}</td>
-                <td>{{ $report->recommendations ?? '' }}</td>
-            </tr>
-        @endforeach
-        @for($row = 0; $row < $blankRows; $row++)
-            <tr class="report-table">
-                <td>&nbsp;</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        @endfor
-        <tr class="signature">
-            <td colspan="4">
-                <div class="signature-title">INSPECTED AND PREPARED BY:</div>
-                <div class="signature-line">Signature over Printed Name / Date</div>
-            </td>
-            <td colspan="3">
-                <div class="signature-title">NOTED BY:</div>
-                <div class="signature-line">Signature over Printed Name / Date</div>
-            </td>
-        </tr>
-        </table>
-    </div>
-</body>
+            <table class="main">
+                <tr>
+                    <td class="header-logo">
+                        @if(file_exists(public_path('images/logo.png')))
+                            <img src="file://{{ public_path('images/logo.png') }}" style="width: 20mm;">
+                        @endif
+                    </td>
+                    <td class="header-title" colspan="6">
+                        <h1>INSPECTION REPORT</h1>
+                        <p>PANGASINAN STATE UNIVERSITY</p>
+                        <p>Asingan Campus</p>
+                    </td>
+                </tr>
+                <tr class="report-table">
+                    <th class="col-date">DATE OF<br>INSPECTION</th>
+                    <th class="col-campus">CAMPUS</th>
+                    <th class="col-building">BUILDING</th>
+                    <th class="col-room">FLOOR / ROOM</th>
+                    <th class="col-observations">OBSERVATIONS</th>
+                    <th class="col-findings">FINDINGS</th>
+                    <th class="col-recommendation">RECOMMENDATION</th>
+                </tr>
+                @foreach($reports as $report)
+                    <tr class="report-table">
+                        <td>{{ optional($report->actual_inspection_date ?? $report->scheduled_date)->format('m/d/Y') }}</td>
+                        <td>Asingan</td>
+                        <td>{{ $report->workRequest->building_name ?? '' }}</td>
+                        <td>{{ $report->workRequest->office_room ?? '' }}</td>
+                        <td>{{ $report->observation ?? '' }}</td>
+                        <td>{{ $report->findings ?? '' }}</td>
+                        <td>{{ $report->recommendations ?? '' }}</td>
+                    </tr>
+                @endforeach
+                @for($row = 0; $row < $blankRows; $row++)
+                    <tr class="report-table">
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endfor
+                <tr class="signature">
+                    <td colspan="4">
+                        <div class="signature-title">INSPECTED AND PREPARED BY:</div>
+                        <div class="signature-line">Signature over Printed Name / Date</div>
+                    </td>
+                    <td colspan="3">
+                        <div class="signature-title">NOTED BY:</div>
+                        <div class="signature-line">Signature over Printed Name / Date</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
 </html>

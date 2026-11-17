@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Inventory of {{ $name }}</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Inventory of {{ $name }}</title>
+        <style>
         @page { margin: 20px; }
         * { box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; margin: 0; color: #000; font-size: 8px; }
@@ -28,57 +28,57 @@
         .data-table thead { display: table-header-group; }
         .page-number { text-align: right; font-size: 7px; margin: 4px 0; }
     </style>
-    @include('layouts.pdf-typography')
-</head>
-<body>
-    @foreach (($entries->isEmpty() ? collect([collect()]) : $entries->chunk($layout['rows'])) as $pageEntries)
-        <div class="sheet">
-            <div class="form-wrapper">
-                <table class="header-table">
-                    <tr>
-                        <td class="logo-cell">
-                            <img src="{{ public_path('images/inventory/'.(is_file(public_path('images/inventory/'.$form.'.png')) ? $form : 'convenience-outlet').'.png') }}" alt="PSU Seal">
-                        </td>
-                        <td class="title-cell">
-                            <h1>INVENTORY OF {{ strtoupper($name) }}</h1>
-                            <p class="campus">PANGASINAN STATE UNIVERSITY</p>
-                            <p class="campus-sub">Asingan Campus</p>
-                        </td>
-                        @if ($layout['code'] !== '')
-                        <td class="code-cell">
-                            <div>{{ $layout['code'] }}</div>
-                            <div>Rev. 0</div>
-                            <div>03-Oct-2017</div>
-                        </td>
-                        @endif
-                    </tr>
-                </table>
-                <table class="data-table">
-                    @include('inventory.pdf.'.$form)
-                    <tbody>
-                        @foreach ($pageEntries as $entry)
-                            <tr>
-                                @foreach ($sections as $fields)
-                                    @foreach ($fields as $key => $field)
-                                        <td>{{ $field['type'] === 'checkbox' ? (array_key_exists($key, $entry->data) ? (!empty($entry->data[$key]) ? 'Yes' : 'No') : '') : ($entry->data[$key] ?? '') }}</td>
+        @include('layouts.pdf-typography')
+    </head>
+    <body>
+        @foreach (($entries->isEmpty() ? collect([collect()]) : $entries->chunk($layout['rows'])) as $pageEntries)
+            <div class="sheet">
+                <div class="form-wrapper">
+                    <table class="header-table">
+                        <tr>
+                            <td class="logo-cell">
+                                <img src="{{ public_path('images/inventory/'.(is_file(public_path('images/inventory/'.$form.'.png')) ? $form : 'convenience-outlet').'.png') }}" alt="PSU Seal">
+                            </td>
+                            <td class="title-cell">
+                                <h1>INVENTORY OF {{ strtoupper($name) }}</h1>
+                                <p class="campus">PANGASINAN STATE UNIVERSITY</p>
+                                <p class="campus-sub">Asingan Campus</p>
+                            </td>
+                            @if ($layout['code'] !== '')
+                                <td class="code-cell">
+                                    <div>{{ $layout['code'] }}</div>
+                                    <div>Rev. 0</div>
+                                    <div>03-Oct-2017</div>
+                                </td>
+                            @endif
+                        </tr>
+                    </table>
+                    <table class="data-table">
+                        @include('inventory.pdf.'.$form)
+                        <tbody>
+                            @foreach ($pageEntries as $entry)
+                                <tr>
+                                    @foreach ($sections as $fields)
+                                        @foreach ($fields as $key => $field)
+                                            <td>{{ $field['type'] === 'checkbox' ? (array_key_exists($key, $entry->data) ? (!empty($entry->data[$key]) ? 'Yes' : 'No') : '') : ($entry->data[$key] ?? '') }}</td>
+                                        @endforeach
                                     @endforeach
-                                @endforeach
-                            </tr>
-                        @endforeach
-                        @for ($row = $pageEntries->count(); $row < $layout['rows']; $row++)
-                            <tr>
-                                @foreach ($sections as $fields)
-                                    @foreach ($fields as $field)
-                                        <td>&nbsp;</td>
+                                </tr>
+                            @endforeach
+                            @for ($row = $pageEntries->count(); $row < $layout['rows']; $row++)
+                                <tr>
+                                    @foreach ($sections as $fields)
+                                        @foreach ($fields as $field)
+                                            <td>&nbsp;</td>
+                                        @endforeach
                                     @endforeach
-                                @endforeach
-                            </tr>
-                        @endfor
-                    </tbody>
-                </table>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
+                <p class="page-number">Page {{ $loop->iteration }} of {{ $loop->count }}</p>
             </div>
-            <p class="page-number">Page {{ $loop->iteration }} of {{ $loop->count }}</p>
-        </div>
-    @endforeach
-</body>
+        @endforeach
+    </body>
 </html>

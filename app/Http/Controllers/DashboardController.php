@@ -10,25 +10,18 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display dashboard based on user role
-     */
     public function index()
     {
         $user = Auth::user();
 
-        // If not logged in, redirect to login
         if (! $user) {
             return redirect()->route('login');
         }
 
-        // Get recent notifications for the user
         $notifications = $this->getUserNotifications($user);
 
-        // Get monthly chart data for ALL users (overall stats)
         $monthlyData = $this->getMonthlyChartData();
 
-        // Check user role and return appropriate dashboard
         if ($user->isAdmin()) {
             return $this->adminDashboard($notifications, $monthlyData);
         } else {
@@ -36,9 +29,6 @@ class DashboardController extends Controller
         }
     }
 
-    /**
-     * Get user notifications from database
-     */
     private function getUserNotifications($user)
     {
         $notifications = Notification::where(function ($query) use ($user) {
@@ -66,9 +56,6 @@ class DashboardController extends Controller
         return $notifications;
     }
 
-    /**
-     * Create default notifications if none exist
-     */
     private function createDefaultNotifications($user)
     {
         $notifications = collect();
@@ -122,9 +109,6 @@ class DashboardController extends Controller
         return $notifications;
     }
 
-    /**
-     * Get monthly chart data from database
-     */
     private function getMonthlyChartData()
     {
         $monthlyRequests = WorkRequest::select(
@@ -146,20 +130,15 @@ class DashboardController extends Controller
         return $chartData;
     }
 
-    /**
-     * Admin Dashboard Data - Sees ALL work requests from all campuses
-     */
     private function adminDashboard($notifications, $monthlyData)
     {
         $userId = Auth::id();
 
-        // Get statistics from database (all requests)
         $totalRequests = WorkRequest::count();
         $pendingRequests = WorkRequest::where('status', 'pending')->count();
         $completedRequests = WorkRequest::where('status', 'completed')->count();
         $activeUsers = User::where('role', 'user')->where('is_active', true)->count();
 
-        // ADMIN sees ALL work requests (no filters)
         $workRequests = WorkRequest::with('user')
             ->latest()
             ->take(10)
@@ -181,14 +160,10 @@ class DashboardController extends Controller
         ));
     }
 
-    /**
-     * User Dashboard Data - Sees ONLY their OWN work requests
-     */
     private function userDashboard($notifications, $monthlyData)
     {
         $userId = Auth::id();
 
-        // User specific statistics (only their own requests)
         $myRequests = WorkRequest::where('user_id', $userId)->count();
         $myPendingRequests = WorkRequest::where('user_id', $userId)
             ->where('status', 'pending')
@@ -197,7 +172,6 @@ class DashboardController extends Controller
             ->where('status', 'completed')
             ->count();
 
-        // User ONLY sees their OWN work requests
         $workRequests = WorkRequest::where('user_id', $userId)
             ->with('user')
             ->latest()
@@ -214,9 +188,6 @@ class DashboardController extends Controller
         ));
     }
 
-    /**
-     * Get dashboard statistics for AJAX refresh
-     */
     public function getStats()
     {
         $user = Auth::user();
@@ -243,9 +214,6 @@ class DashboardController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    /**
-     * Get chart data for AJAX refresh
-     */
     public function getChartData()
     {
         $chartData = $this->getMonthlyChartData();

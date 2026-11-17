@@ -17,184 +17,113 @@ use App\Http\Controllers\WorkRequestController;
 use App\Support\InventoryForms;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+Route::view('/', 'welcome')->name('home');
 
-// Public routes
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
-
-// ==================== AUTHENTICATION ROUTES ====================
-// Login Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/change-password', [ResetPasswordController::class, 'showRequiredResetForm'])
-    ->middleware('auth')->name('password.setup');
-
-// Register Routes (ADD THESE)
 Route::get('/request-account', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/request-account', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 Route::redirect('/register', '/request-account');
 Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
+Route::redirect('/verify-otp', '/request-account');
 
-// ==================== PROTECTED ROUTES ====================
-Route::middleware(['auth'])->group(function () {
-
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
-    Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
-
-    // Inventory
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
-        foreach (array_keys(InventoryForms::names()) as $form) {
-            Route::get('/inventory/'.$form, [InventoryController::class, 'show'])
-                ->defaults('form', $form)->name('inventory.'.$form);
-        }
-        Route::get('/inventory/{form}/export/pdf', [InventoryController::class, 'exportPdf'])
-            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.export-pdf');
-        Route::get('/inventory/{form}/entries/{entry}/export/pdf', [InventoryController::class, 'exportPdf'])
-            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.entries.export-pdf');
-        Route::post('/inventory/{form}/entries', [InventoryController::class, 'store'])
-            ->whereIn('form', array_keys(InventoryForms::names()))->name('inventory.entries.store');
-    });
-    // Facility Requests
-    Route::get('/request-facility', [FacilityRequestController::class, 'index'])->middleware('role:admin,user')->name('request-facility.index');
-    Route::get('/request-facility/create', [FacilityRequestController::class, 'create'])->middleware('role:user')->name('request-facility.create');
-    Route::get('/request-facility/availability', [FacilityRequestController::class, 'availability'])->middleware('role:user')->name('request-facility.availability');
-    Route::post('/request-facility', [FacilityRequestController::class, 'store'])->middleware('role:user')->name('request-facility.store');
-    Route::get('/request-facility/{facilityRequest}', [FacilityRequestController::class, 'show'])->middleware('role:admin,user')->name('request-facility.show');
-    Route::get('/request-facility/{facilityRequest}/program-image', [FacilityRequestController::class, 'programImage'])->middleware('role:admin,user')->name('request-facility.program-image');
-    Route::get('/request-facility/{facilityRequest}/export-pdf', [FacilityRequestController::class, 'exportPdf'])->middleware('role:admin')->name('request-facility.export-pdf');
-    Route::get('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'photos'])->middleware('role:user')->name('request-facility.photos');
-    Route::post('/request-facility/{facilityRequest}/photos', [FacilityRequestController::class, 'uploadPhotos'])->middleware('role:user')->name('request-facility.photos.store');
-    Route::post('/request-facility/{facilityRequest}/evaluation', [FacilityRequestController::class, 'storeEvaluation'])->middleware('role:user')->name('request-facility.evaluation.store');
-    Route::get('/request-facility/{facilityRequest}/photos/{stage}', [FacilityRequestController::class, 'photo'])->middleware('role:admin,user')->name('request-facility.photo');
-    Route::patch('/request-facility/{facilityRequest}/approve', [FacilityRequestController::class, 'approve'])->middleware('role:admin')->name('request-facility.approve');
-
-    // Work Requests
-    Route::middleware(['auth'])->group(function () {
-
-        // ==================== WORK REQUESTS ROUTES ====================
-        // IMPORTANT: Specific routes MUST come BEFORE the resource route
-
-        // Update status route (specific)
-        Route::post('/work-requests/{workRequest}/update-status', [WorkRequestController::class, 'updateStatus'])->name('work-requests.update-status');
-
-        // Resource route (generic - MUST be LAST)
-        Route::resource('work-requests', WorkRequestController::class);
-
-    });
-
-    Route::prefix('maintenance')->name('maintenance.')->middleware('auth')->group(function () {
-        Route::get('/', [MaintenanceController::class, 'index'])->name('index');
-        Route::get('/create', [MaintenanceController::class, 'create'])->name('create');
-        Route::post('/', [MaintenanceController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [MaintenanceController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [MaintenanceController::class, 'update'])->name('update');
-        Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
-        Route::put('/{id}/complete', [MaintenanceController::class, 'complete'])->name('complete');
-        Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');  // ADD THIS LINE
-    });
-
-    // Report Routes - Only accessible by admin role
-    Route::prefix('reports')->name('reports.')->middleware(['auth', 'role:admin'])->group(function () {
-        Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
-        Route::get('/work-requests/export/pdf', [ReportController::class, 'exportWorkRequestsPdf'])->name('work-requests.export-pdf');
-        Route::get('/work-requests/{workRequest}/export/pdf', [ReportController::class, 'exportWorkRequestPdf'])->name('work-requests.export-single-pdf');
-        Route::get('/facility-requests', [ReportController::class, 'facilityRequestsReport'])->name('facility-requests');
-        Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
-    });
-
-    Route::prefix('reports')->name('reports.')->middleware('role:admin,engineer')->group(function () {
-        Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
-        Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
-    });
-
-    // Users (Admin only)
-    Route::middleware(['role:admin'])->group(function () {
-        Route::post('/account-requests/{accountRequest}/approve', [UserController::class, 'approveAccountRequest'])->name('account-requests.approve');
-        Route::delete('/account-requests/{accountRequest}', [UserController::class, 'declineAccountRequest'])->name('account-requests.decline');
-        Route::resource('users', UserController::class)->except(['edit', 'update']);
-        Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role.update');
-        Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-    });
-
-    // Settings
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
-    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
-    Route::post('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications');
-    Route::get('/settings/system', [SettingsController::class, 'systemInfo'])->name('settings.system');
-
-    // Notifications (AJAX)
-    Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-        Route::post('/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
-        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
-    });
-});
-
-// API routes for AJAX calls
-Route::prefix('api')->middleware(['auth'])->group(function () {
-    Route::get('/notifications', [NotificationController::class, 'getNotifications']);
-    Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
-    Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData']);
-    Route::post('/work-requests', [WorkRequestController::class, 'store']);
-    Route::get('/search/users', [UserController::class, 'search']);
-});
-
-Route::middleware(['auth'])->group(function () {
-    // Work Requests Routes
-    Route::get('/work-requests/{workRequest}/photo', [WorkRequestController::class, 'photo'])->name('work-requests.photo');
-    Route::resource('work-requests', WorkRequestController::class);
-});
-
-Route::get('/notifications/fetch', function () {
-    $notifications = Auth::user()->notifications ?? collect([]);
-
-    return response()->json(['success' => true, 'notifications' => $notifications]);
-})->middleware('auth');
-
-Route::post('/notifications/mark-read', function () {
-    // handle mark as read
-})->middleware('auth');
-
-// API routes for notifications
-Route::middleware(['auth'])->group(function () {
-    Route::get('/api/notifications', [DashboardController::class, 'getNotifications']);
-    Route::post('/api/notifications/{id}/mark-read', [DashboardController::class, 'markNotificationRead']);
-    Route::post('/api/notifications/mark-all-read', [DashboardController::class, 'markAllNotificationsRead']);
-    Route::get('/api/dashboard-stats', [DashboardController::class, 'getStats']);
-    Route::get('/api/chart-data', [DashboardController::class, 'getChartData']);
-});
-
-Route::put('/work-requests/{workRequest}/schedule', [WorkRequestController::class, 'schedule'])->name('work-requests.schedule');
-
-// Inspection Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/inspections', [InspectionReportController::class, 'index'])->name('inspections.index');
-    Route::get('/inspections/export/pdf', [InspectionReportController::class, 'exportAllPdf'])->name('inspections.export-all-pdf');
-    Route::get('/inspections/{id}', [InspectionReportController::class, 'show'])->name('inspections.show');
-    Route::get('/inspections/{id}/complete', [InspectionReportController::class, 'completeForm'])->name('inspections.complete-form');
-    Route::post('/inspections/{id}/complete', [InspectionReportController::class, 'complete'])->name('inspections.complete');
-});
-
-// Password Reset Routes
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-// Registration is now handled through admin-approved account requests.
-Route::redirect('/verify-otp', '/request-account');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/change-password', [ResetPasswordController::class, 'showRequiredResetForm'])->name('password.setup');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/api/dashboard/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
+
+    Route::prefix('inventory')->name('inventory.')->middleware('role:admin')->group(function () {
+        Route::get('/', [InventoryController::class, 'index'])->name('index');
+
+        foreach (array_keys(InventoryForms::names()) as $form) {
+            Route::get('/'.$form, [InventoryController::class, 'show'])
+                ->defaults('form', $form)->name($form);
+        }
+
+        Route::get('/{form}/export/pdf', [InventoryController::class, 'exportPdf'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('export-pdf');
+        Route::get('/{form}/entries/{entry}/export/pdf', [InventoryController::class, 'exportPdf'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('entries.export-pdf');
+        Route::post('/{form}/entries', [InventoryController::class, 'store'])
+            ->whereIn('form', array_keys(InventoryForms::names()))->name('entries.store');
+    });
+
+    Route::prefix('request-facility')->name('request-facility.')->group(function () {
+        Route::get('/', [FacilityRequestController::class, 'index'])->middleware('role:admin,user')->name('index');
+        Route::get('/create', [FacilityRequestController::class, 'create'])->middleware('role:user')->name('create');
+        Route::get('/availability', [FacilityRequestController::class, 'availability'])->middleware('role:user')->name('availability');
+        Route::post('/', [FacilityRequestController::class, 'store'])->middleware('role:user')->name('store');
+        Route::get('/{facilityRequest}', [FacilityRequestController::class, 'show'])->middleware('role:admin,user')->name('show');
+        Route::get('/{facilityRequest}/program-image', [FacilityRequestController::class, 'programImage'])->middleware('role:admin,user')->name('program-image');
+        Route::get('/{facilityRequest}/export-pdf', [FacilityRequestController::class, 'exportPdf'])->middleware('role:admin')->name('export-pdf');
+        Route::get('/{facilityRequest}/photos', [FacilityRequestController::class, 'photos'])->middleware('role:user')->name('photos');
+        Route::post('/{facilityRequest}/photos', [FacilityRequestController::class, 'uploadPhotos'])->middleware('role:user')->name('photos.store');
+        Route::post('/{facilityRequest}/evaluation', [FacilityRequestController::class, 'storeEvaluation'])->middleware('role:user')->name('evaluation.store');
+        Route::get('/{facilityRequest}/photos/{stage}', [FacilityRequestController::class, 'photo'])->middleware('role:admin,user')->name('photo');
+        Route::patch('/{facilityRequest}/approve', [FacilityRequestController::class, 'approve'])->middleware('role:admin')->name('approve');
+    });
+
+    Route::get('/work-requests/{workRequest}/photo', [WorkRequestController::class, 'photo'])->name('work-requests.photo');
+    Route::put('/work-requests/{workRequest}/schedule', [WorkRequestController::class, 'schedule'])->name('work-requests.schedule');
+    Route::resource('work-requests', WorkRequestController::class);
+
+    Route::prefix('maintenance')->name('maintenance.')->group(function () {
+        Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+        Route::get('/create', [MaintenanceController::class, 'create'])->name('create');
+        Route::post('/', [MaintenanceController::class, 'store'])->name('store');
+        Route::delete('/{id}', [MaintenanceController::class, 'destroy'])->name('destroy');
+        Route::put('/{id}/complete', [MaintenanceController::class, 'complete'])->name('complete');
+        Route::get('/{id}', [MaintenanceController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('inspections')->name('inspections.')->group(function () {
+        Route::get('/', [InspectionReportController::class, 'index'])->name('index');
+        Route::get('/export/pdf', [InspectionReportController::class, 'exportAllPdf'])->name('export-all-pdf');
+        Route::get('/{id}', [InspectionReportController::class, 'show'])->name('show');
+        Route::get('/{id}/complete', [InspectionReportController::class, 'completeForm'])->name('complete-form');
+        Route::post('/{id}/complete', [InspectionReportController::class, 'complete'])->name('complete');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
+            Route::get('/work-requests/export/pdf', [ReportController::class, 'exportWorkRequestsPdf'])->name('work-requests.export-pdf');
+            Route::get('/work-requests/{workRequest}/export/pdf', [ReportController::class, 'exportWorkRequestPdf'])->name('work-requests.export-single-pdf');
+            Route::get('/facility-requests', [ReportController::class, 'facilityRequestsReport'])->name('facility-requests');
+            Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
+        });
+
+        Route::middleware('role:admin,engineer')->group(function () {
+            Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
+            Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
+        });
+    });
+
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/account-requests/{accountRequest}/approve', [UserController::class, 'approveAccountRequest'])->name('account-requests.approve');
+        Route::delete('/account-requests/{accountRequest}', [UserController::class, 'declineAccountRequest'])->name('account-requests.decline');
+        Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role.update');
+    });
+
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::put('/profile', [SettingsController::class, 'updateProfile'])->name('profile');
+        Route::put('/password', [SettingsController::class, 'updatePassword'])->name('password');
+    });
+
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/browser', [NotificationController::class, 'browser'])->name('browser');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::post('/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+    });
+});

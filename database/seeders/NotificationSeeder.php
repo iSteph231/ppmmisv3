@@ -11,37 +11,35 @@ class NotificationSeeder extends Seeder
     public function run()
     {
         $users = User::all();
-        
-        // Sample notifications
+
         $notifications = [
             [
                 'title' => 'New work request submitted',
                 'message' => 'John Doe submitted a new maintenance request for AC repair',
-                'type' => 'new_request'
+                'type' => 'new_request',
             ],
             [
                 'title' => 'Request completed',
                 'message' => 'Work request #230 has been marked as completed',
-                'type' => 'status_update'
+                'type' => 'status_update',
             ],
             [
                 'title' => 'Maintenance scheduled',
                 'message' => 'Generator maintenance scheduled for Friday at 10 AM',
-                'type' => 'schedule'
+                'type' => 'schedule',
             ],
             [
                 'title' => 'Approval needed',
                 'message' => 'New work request requires your approval',
-                'type' => 'approval'
+                'type' => 'approval',
             ],
             [
                 'title' => 'Work order assigned',
                 'message' => 'Work order #245 has been assigned to your team',
-                'type' => 'assignment'
-            ]
+                'type' => 'assignment',
+            ],
         ];
-        
-        // Create notifications for admin
+
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
             foreach ($notifications as $notif) {
@@ -51,12 +49,11 @@ class NotificationSeeder extends Seeder
                     'message' => $notif['message'],
                     'type' => $notif['type'],
                     'is_read' => rand(0, 1) == 1,
-                    'created_at' => now()->subHours(rand(1, 72))
+                    'created_at' => now()->subHours(rand(1, 72)),
                 ]);
             }
         }
-        
-        // Create notifications for regular users
+
         $regularUsers = User::where('role', 'user')->get();
         foreach ($regularUsers as $user) {
             Notification::create([
@@ -64,10 +61,10 @@ class NotificationSeeder extends Seeder
                 'title' => 'Welcome to PPMMIS',
                 'message' => 'Welcome to the Physical Plant Maintenance System',
                 'type' => 'welcome',
-                'is_read' => false
+                'is_read' => false,
             ]);
         }
-        
+
         $this->command->info('Notifications seeded successfully!');
     }
 }

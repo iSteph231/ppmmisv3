@@ -13,12 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class MaintenanceController extends Controller
 {
-    /**
-     * Display a listing of preventive maintenance schedules.
-     */
     public function index(Request $request)
     {
-        // Check if user is admin
+
         $user = Auth::user();
         if (! $user || (! $user->isAdmin() && ! $user->isEngineer())) {
             abort(403, 'Only Administrators and Engineers can access maintenance schedules.');
@@ -32,10 +29,6 @@ class MaintenanceController extends Controller
         return view('maintenance.index', compact('maintenanceSchedules'));
     }
 
-    /**
-     * Show form to create new schedule.
-     * Only Engineers can create.
-     */
     public function create()
     {
         if (! Auth::user()->isEngineer()) {
@@ -45,10 +38,6 @@ class MaintenanceController extends Controller
         return view('maintenance.create');
     }
 
-    /**
-     * Store a new schedule.
-     * Only Engineers can store.
-     */
     public function store(Request $request): RedirectResponse
     {
         if (! Auth::user()->isEngineer()) {
@@ -69,13 +58,10 @@ class MaintenanceController extends Controller
         return DB::transaction(function () use ($validated): RedirectResponse {
             $maintenanceSchedule = MaintenanceSchedule::create($validated);
 
-            // Get all admin users
             $admins = User::where('role', 'admin')->get();
 
-            // Format the scheduled date
             $formattedDate = Carbon::parse($validated['scheduled_date'])->format('F d, Y');
 
-            // Create notification for each admin
             foreach ($admins as $admin) {
                 Notification::create([
                     'user_id' => $admin->id,
@@ -89,7 +75,6 @@ class MaintenanceController extends Controller
                 ]);
             }
 
-            // Also notify assigned users if specified
             if (! empty($validated['maintenance_in_charge'])) {
                 $assignedUsers = User::where('role', 'user')
                     ->where('name', 'like', '%'.$validated['maintenance_in_charge'].'%')
@@ -114,56 +99,11 @@ class MaintenanceController extends Controller
         }, 5);
     }
 
-    public function edit(int $id): never
+    public function destroy(int $id): never
     {
-        abort(403, 'Submitted maintenance reports cannot be edited.');
+        abort(403, 'Maintenance requests cannot be deleted.');
     }
 
-    public function update(Request $request, int $id): never
-    {
-        abort(403, 'Submitted maintenance reports cannot be edited.');
-    }
-
-    /**
-     * Delete schedule.
-     * Only Admin can delete.
-     */
-    public function destroy($id)
-    {
-        // Only admin can delete
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Only Administrators can delete maintenance schedules.');
-        }
-
-        $schedule = MaintenanceSchedule::findOrFail($id);
-
-        // Get admins to notify about deletion
-        $admins = User::where('role', 'admin')->get();
-        $formattedDate = $schedule->scheduled_date ? Carbon::parse($schedule->scheduled_date)->format('F d, Y') : 'N/A';
-
-        foreach ($admins as $admin) {
-            Notification::create([
-                'user_id' => $admin->id,
-                'title' => 'Maintenance Schedule Removed',
-                'message' => "A preventive maintenance schedule has been removed: {$schedule->activity} on {$formattedDate}.",
-                'detail' => "Date: {$formattedDate}\nActivity: {$schedule->activity}\nReason: Schedule deleted from system",
-                'type' => 'maintenance',
-                'is_read' => false,
-                'related_id' => $schedule->id,
-                'related_type' => MaintenanceSchedule::class,
-            ]);
-        }
-
-        $schedule->delete();
-
-        return redirect()->route('maintenance.index')
-            ->with('success', 'Preventive maintenance schedule deleted successfully.');
-    }
-
-    /**
-     * Mark maintenance as completed.
-     * Only Engineers can mark as completed.
-     */
     public function complete(int $id, Request $request): RedirectResponse
     {
         $user = Auth::user();
@@ -172,7 +112,6 @@ class MaintenanceController extends Controller
             abort(403, 'Only Engineers can complete maintenance reports.');
         }
 
-        // Validate the request
         $validated = $request->validate([
             'completion_notes' => 'nullable|string|max:1000',
         ]);
@@ -181,7 +120,6 @@ class MaintenanceController extends Controller
             $schedule = MaintenanceSchedule::query()->lockForUpdate()->findOrFail($id);
             abort_unless(in_array($schedule->status, ['pending', 'in_progress'], true), 409, 'Only scheduled or in-progress maintenance can be completed.');
 
-            // Update the schedule
             $schedule->update([
                 'status' => 'completed',
                 'completed_at' => now(),
@@ -189,7 +127,6 @@ class MaintenanceController extends Controller
                 'remarks' => $validated['completion_notes'] ?? $schedule->remarks,
             ]);
 
-            // Notify admins about completion
             $admins = User::where('role', 'admin')->get();
             $formattedDate = $schedule->scheduled_date ? Carbon::parse($schedule->scheduled_date)->format('F d, Y') : 'N/A';
 
@@ -206,7 +143,6 @@ class MaintenanceController extends Controller
                 ]);
             }
 
-            // Notify the maintenance in-charge (if different from completer)
             if (! empty($schedule->maintenance_in_charge) && $user->role !== 'user') {
                 $assignedUsers = User::where('role', 'user')
                     ->where('name', 'like', '%'.$schedule->maintenance_in_charge.'%')
@@ -231,9 +167,6 @@ class MaintenanceController extends Controller
         }, 5);
     }
 
-    /**
-     * Display the specified maintenance schedule.
-     */
     public function show($id)
     {
         abort_unless(Auth::user()->isAdmin() || Auth::user()->isEngineer(), 403);
@@ -242,9 +175,6 @@ class MaintenanceController extends Controller
         return view('maintenance.show', compact('schedule'));
     }
 
-    /**
-     * Build the filtered preventive maintenance query.
-     */
     private function filteredMaintenanceSchedules(Request $request)
     {
         $query = MaintenanceSchedule::query();

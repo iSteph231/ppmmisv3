@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// Correct namespace for Authenticatable
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,38 +10,23 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',          // admin, user, engineer
+        'role',
         'is_active',
         'department',
         'phone_number',
-        'is_verified',   // Email verification status
+        'is_verified',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
-        'otp',           // Hide OTP from serialization
+        'otp',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -51,33 +35,21 @@ class User extends Authenticatable
         'must_change_password' => 'boolean',
     ];
 
-    /**
-     * Get work requests for this user
-     */
     public function workRequests()
     {
         return $this->hasMany(WorkRequest::class);
     }
 
-    /**
-     * Get notifications for this user
-     */
     public function notifications()
     {
         return $this->hasMany(Notification::class);
     }
 
-    /**
-     * Check if user is admin
-     */
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Check if user is regular user (requester)
-     */
     public function isUser()
     {
         return $this->role === 'user';
@@ -97,25 +69,16 @@ class User extends Authenticatable
         return $this->is_active && $this->hasVerifiedEmail() && ! $this->must_change_password;
     }
 
-    /**
-     * Check if user has specific role
-     */
     public function hasRole($role)
     {
         return $this->role === $role;
     }
 
-    /**
-     * Check if email is verified
-     */
     public function hasVerifiedEmail()
     {
         return $this->is_verified === true;
     }
 
-    /**
-     * Mark email as verified
-     */
     public function markEmailAsVerified()
     {
         return $this->update([
@@ -126,9 +89,6 @@ class User extends Authenticatable
         ]);
     }
 
-    /**
-     * Generate and set OTP for user
-     */
     public function generateOTP()
     {
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -141,9 +101,6 @@ class User extends Authenticatable
         return $otp;
     }
 
-    /**
-     * Verify OTP
-     */
     public function verifyOTP($otp)
     {
         return $this->otp === $otp &&
@@ -151,9 +108,6 @@ class User extends Authenticatable
                $this->otp_expires_at->isFuture();
     }
 
-    /**
-     * Clear OTP after verification or expiry
-     */
     public function clearOTP()
     {
         return $this->update([
@@ -162,70 +116,45 @@ class User extends Authenticatable
         ]);
     }
 
-    /**
-     * Check if OTP is expired
-     */
     public function isOTPExpired()
     {
         return $this->otp_expires_at && $this->otp_expires_at->isPast();
     }
 
-    /**
-     * Scope for active users
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope for verified users
-     */
     public function scopeVerified($query)
     {
         return $query->where('is_verified', true);
     }
 
-    /**
-     * Scope for unverified users
-     */
     public function scopeUnverified($query)
     {
         return $query->where('is_verified', false);
     }
 
-    /**
-     * Scope for admins
-     */
     public function scopeAdmins($query)
     {
         return $query->where('role', 'admin');
     }
 
-    /**
-     * Scope for regular users (requesters)
-     */
     public function scopeUsers($query)
     {
         return $query->where('role', 'user');
     }
 
-    /**
-     * Get full name with department
-     */
     public function getFullNameWithDepartmentAttribute()
     {
         return $this->department ? "{$this->name} ({$this->department})" : $this->name;
     }
 
-    /**
-     * Boot method for model events
-     */
     protected static function boot()
     {
         parent::boot();
 
-        // Auto-clear expired OTPs when retrieving user
         static::retrieved(function ($user) {
             if ($user->otp && $user->isOTPExpired()) {
                 $user->clearOTP();

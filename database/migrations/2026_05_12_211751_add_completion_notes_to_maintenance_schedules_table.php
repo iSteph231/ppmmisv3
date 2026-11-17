@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('maintenance_schedules', function (Blueprint $table) {
@@ -17,13 +14,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('maintenance_schedules', function (Blueprint $table) {
-            //
-        });
+        Schema::table('maintenance_schedules', function (Blueprint $table) {});
     }
 };

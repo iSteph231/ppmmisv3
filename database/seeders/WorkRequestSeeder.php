@@ -8,12 +8,9 @@ use Illuminate\Database\Seeder;
 
 class WorkRequestSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get all regular users (not admins)
+
         $users = User::where('role', 'user')->get();
 
         if ($users->isEmpty()) {
@@ -64,7 +61,6 @@ class WorkRequestSeeder extends Seeder
             'Cafeteria Area',
         ];
 
-        // Create 50 sample work requests
         for ($i = 1; $i <= 50; $i++) {
             $userId = $users->random()->id;
             $status = $statuses[array_rand($statuses)];
@@ -89,9 +85,6 @@ class WorkRequestSeeder extends Seeder
         $this->command->info('Work requests seeded successfully!');
     }
 
-    /**
-     * Generate unique request number
-     */
     private function generateRequestNumber($counter)
     {
         $prefix = 'WR';

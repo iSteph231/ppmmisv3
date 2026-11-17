@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Preventive Maintenance Schedule</title>
-    <style>
+    <head>
+        <meta charset="utf-8">
+        <title>Preventive Maintenance Schedule</title>
+        <style>
         @page {
             size: A4 landscape;
             margin: 6mm 8mm;
@@ -143,94 +143,94 @@
             line-height: 1.1;
         }
     </style>
-    @include('layouts.pdf-typography')
-</head>
-<body>
-    @php
+        @include('layouts.pdf-typography')
+    </head>
+    <body>
+        @php
         $rowsPerPage = 14;
         $pages = $maintenanceSchedules->isEmpty() ? collect([collect()]) : $maintenanceSchedules->chunk($rowsPerPage);
     @endphp
-    @foreach($pages as $visibleMaintenanceSchedules)
-    @php
+        @foreach($pages as $visibleMaintenanceSchedules)
+            @php
         $blankRows = max(0, $rowsPerPage - $visibleMaintenanceSchedules->count());
     @endphp
 
-    <div class="document-code">
-        FM-AD-ENG-07<br>
-        Rev. 0<br>
-        03-Oct-2017
-    </div>
+            <div class="document-code">
+                FM-AD-ENG-07<br>
+                Rev. 0<br>
+                03-Oct-2017
+            </div>
 
-    <table class="main">
-        <tr>
-            <td class="header-logo">
-                @if(file_exists(public_path('images/logo.png')))
-                    <img src="file://{{ public_path('images/logo.png') }}" style="width: 17mm;">
-                @endif
-            </td>
-            <td class="header-title" colspan="5">
-                <h1>PREVENTIVE MAINTENANCE SCHEDULE</h1>
-                <p>PANGASINAN STATE UNIVERSITY</p>
-                <p>Asingan Campus</p>
-            </td>
-        </tr>
-        <tr class="month-row">
-            <td colspan="6">
-                For the month of <span class="line">{{ $monthName }}</span>, 20<span class="line" style="min-width: 8mm;">{{ $yearSuffix }}</span>
-            </td>
-        </tr>
-        <tr class="schedule-table">
-            <th class="col-date">DATE / SCHEDULE</th>
-            <th class="col-campus">CAMPUS</th>
-            <th class="col-activity">PREVENTIVE MAINTENANCE<br>ACTIVITY</th>
-            <th class="col-maintenance">MAINTENANCE IN-CHARGE</th>
-            <th class="col-engineer">ENGINEER-IN CHARGE</th>
-            <th class="col-remarks">REMARKS</th>
-        </tr>
-        @foreach($visibleMaintenanceSchedules as $schedule)
-            <tr class="schedule-table">
-                <td>{{ $schedule->scheduled_date ? $schedule->scheduled_date->format('m/d/Y') : '' }}</td>
-                <td>Asingan</td>
-                <td>{{ $schedule->activity ?? '' }}</td>
-                <td>{{ $schedule->maintenance_in_charge ?? '' }}</td>
-                <td>{{ $schedule->engineer_in_charge ?? '' }}</td>
-                <td>{{ $schedule->remarks ?? '' }}</td>
-            </tr>
+            <table class="main">
+                <tr>
+                    <td class="header-logo">
+                        @if(file_exists(public_path('images/logo.png')))
+                            <img src="file://{{ public_path('images/logo.png') }}" style="width: 17mm;">
+                        @endif
+                    </td>
+                    <td class="header-title" colspan="5">
+                        <h1>PREVENTIVE MAINTENANCE SCHEDULE</h1>
+                        <p>PANGASINAN STATE UNIVERSITY</p>
+                        <p>Asingan Campus</p>
+                    </td>
+                </tr>
+                <tr class="month-row">
+                    <td colspan="6">
+                        For the month of <span class="line">{{ $monthName }}</span>, 20<span class="line" style="min-width: 8mm;">{{ $yearSuffix }}</span>
+                    </td>
+                </tr>
+                <tr class="schedule-table">
+                    <th class="col-date">DATE / SCHEDULE</th>
+                    <th class="col-campus">CAMPUS</th>
+                    <th class="col-activity">PREVENTIVE MAINTENANCE<br>ACTIVITY</th>
+                    <th class="col-maintenance">MAINTENANCE IN-CHARGE</th>
+                    <th class="col-engineer">ENGINEER-IN CHARGE</th>
+                    <th class="col-remarks">REMARKS</th>
+                </tr>
+                @foreach($visibleMaintenanceSchedules as $schedule)
+                    <tr class="schedule-table">
+                        <td>{{ $schedule->scheduled_date ? $schedule->scheduled_date->format('m/d/Y') : '' }}</td>
+                        <td>Asingan</td>
+                        <td>{{ $schedule->activity ?? '' }}</td>
+                        <td>{{ $schedule->maintenance_in_charge ?? '' }}</td>
+                        <td>{{ $schedule->engineer_in_charge ?? '' }}</td>
+                        <td>{{ $schedule->remarks ?? '' }}</td>
+                    </tr>
+                @endforeach
+                @for($row = 0; $row < $blankRows; $row++)
+                    <tr class="schedule-table">
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endfor
+                <tr class="signature">
+                    <td colspan="2">
+                        <div class="signature-title">PREPARED BY :</div>
+                        <div class="signature-line">
+                            <div class="signature-role">Deputy Director,<br>Physical Plant and Facilities</div>
+                        </div>
+                    </td>
+                    <td colspan="2">
+                        <div class="signature-title">SUBMITTED TO :</div>
+                        <div class="signature-line">
+                            <div class="signature-role">University Engineer /<br>Director, Physical Plant and Facilities</div>
+                        </div>
+                    </td>
+                    <td colspan="2">
+                        <div class="signature-title">NOTED BY :</div>
+                        <div class="signature-line">
+                            <div class="signature-role">Vice President for<br>Administration</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            @unless($loop->last)
+                <div style="page-break-after: always;"></div>
+            @endunless
         @endforeach
-        @for($row = 0; $row < $blankRows; $row++)
-            <tr class="schedule-table">
-                <td>&nbsp;</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        @endfor
-        <tr class="signature">
-            <td colspan="2">
-                <div class="signature-title">PREPARED BY :</div>
-                <div class="signature-line">
-                    <div class="signature-role">Deputy Director,<br>Physical Plant and Facilities</div>
-                </div>
-            </td>
-            <td colspan="2">
-                <div class="signature-title">SUBMITTED TO :</div>
-                <div class="signature-line">
-                    <div class="signature-role">University Engineer /<br>Director, Physical Plant and Facilities</div>
-                </div>
-            </td>
-            <td colspan="2">
-                <div class="signature-title">NOTED BY :</div>
-                <div class="signature-line">
-                    <div class="signature-role">Vice President for<br>Administration</div>
-                </div>
-            </td>
-        </tr>
-    </table>
-    @unless($loop->last)
-        <div style="page-break-after: always;"></div>
-    @endunless
-    @endforeach
-</body>
+    </body>
 </html>

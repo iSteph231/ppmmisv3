@@ -19,12 +19,12 @@ return new class extends Migration
             $table->unsignedBigInteger('related_id')->nullable();
             $table->string('related_type')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'is_read']);
             $table->index('created_at');
         });
     }
-    
+
     public function down()
     {
         Schema::dropIfExists('notifications');

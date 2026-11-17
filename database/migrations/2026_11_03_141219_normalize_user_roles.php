@@ -10,8 +10,5 @@ return new class extends Migration
         DB::table('users')->whereNotIn('role', ['admin', 'user'])->update(['role' => 'user']);
     }
 
-    /**
-     * Converted roles cannot be restored without a record of their previous values.
-     */
     public function down(): void {}
 };

@@ -28,17 +28,11 @@ class MaintenanceSchedule extends Model
         'completed_at' => 'datetime',
     ];
 
-    /**
-     * Get notifications for this maintenance schedule
-     */
     public function notifications()
     {
         return $this->morphMany(Notification::class, 'notifiable');
     }
 
-    /**
-     * Get formatted scheduled date
-     */
     public function getFormattedScheduledDateAttribute()
     {
         return $this->scheduled_date ? $this->scheduled_date->format('F d, Y') : 'N/A';

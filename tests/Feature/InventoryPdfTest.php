@@ -138,7 +138,10 @@ class InventoryPdfTest extends TestCase
                 $source = file_get_contents(base_path('newHTML/'.$form.'-inventory.blade.php'));
             }
             preg_match('/<thead>.*?<\/thead>/s', $source, $header);
-            $this->assertStringContainsString($header[0], $html);
+            $this->assertStringContainsString(
+                preg_replace('/>\s+</', '><', $header[0]),
+                preg_replace('/>\s+</', '><', $html),
+            );
             preg_match('/<tbody>(.*?)<\/tbody>/s', $html, $body);
             preg_match_all('/<tr>(.*?)<\/tr>/s', $body[1], $rows);
             $this->assertCount($layout['rows'], $rows[1]);

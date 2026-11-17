@@ -18,9 +18,9 @@ class WorkRequest extends Model
         'title',
         'description',
         'photo_path',
-        'department',      // Department is now available
-        'building_name',   // Building name is now available
-        'office_room',     // Office/room is now available
+        'department',
+        'building_name',
+        'office_room',
         'work_type',
         'ocular_details',
         'installation_details',
@@ -30,9 +30,9 @@ class WorkRequest extends Model
         'status',
         'admin_notes',
         'completed_at',
-        'scheduled_date',    // Date when inspection is scheduled
-        'inspection_notes',  // Internal notes for inspection (admin only)
-        'priority', // Keep for backward compatibility, but not used in form
+        'scheduled_date',
+        'inspection_notes',
+        'priority',
     ];
 
     protected $casts = [
@@ -43,16 +43,12 @@ class WorkRequest extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Status constants
     const STATUS_PENDING = 'pending';
 
     const STATUS_APPROVED = 'approved';
 
     const STATUS_COMPLETED = 'completed';
 
-    /**
-     * Get the user that owns the work request
-     */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -63,17 +59,11 @@ class WorkRequest extends Model
         return $this->user?->name ?? $this->requester_snapshot['name'] ?? $this->requester_name ?? 'N/A';
     }
 
-    /**
-     * Get the requester (alias for user)
-     */
     public function requester()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Get formatted work type with details
-     */
     public function getFormattedWorkTypeAttribute()
     {
         $typeLabels = [
@@ -100,9 +90,6 @@ class WorkRequest extends Model
         return $label.': '.$details;
     }
 
-    /**
-     * Get full location string (without campus)
-     */
     public function getFullLocationAttribute()
     {
         $parts = array_filter([
@@ -114,9 +101,6 @@ class WorkRequest extends Model
         return empty($parts) ? 'Not specified' : implode(' • ', $parts);
     }
 
-    /**
-     * Get status badge class
-     */
     public function getStatusBadgeClassAttribute()
     {
         return match ($this->status) {
@@ -127,17 +111,11 @@ class WorkRequest extends Model
         };
     }
 
-    /**
-     * Check if inspection is scheduled
-     */
     public function isInspectionScheduled()
     {
         return ! is_null($this->scheduled_date);
     }
 
-    /**
-     * Get formatted scheduled date
-     */
     public function getFormattedScheduledDateAttribute()
     {
         if ($this->scheduled_date) {
@@ -147,49 +125,31 @@ class WorkRequest extends Model
         return null;
     }
 
-    /**
-     * Scope for pending requests
-     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope for approved requests
-     */
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');
     }
 
-    /**
-     * Scope for completed requests
-     */
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
     }
 
-    /**
-     * Scope by work type
-     */
     public function scopeByWorkType($query, $type)
     {
         return $query->where('work_type', $type);
     }
 
-    /**
-     * Scope for requests with scheduled inspections
-     */
     public function scopeScheduled($query)
     {
         return $query->whereNotNull('scheduled_date');
     }
 
-    /**
-     * Scope for upcoming inspections
-     */
     public function scopeUpcomingInspections($query)
     {
         return $query->where('scheduled_date', '>', now());
@@ -200,9 +160,6 @@ class WorkRequest extends Model
         return $this->hasOne(InspectionReport::class);
     }
 
-    /**
-     * Check if inspection report exists and is pending
-     */
     public function hasPendingInspectionReport()
     {
         return $this->inspectionReport && $this->inspectionReport->status === 'pending';

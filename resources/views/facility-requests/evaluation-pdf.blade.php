@@ -23,10 +23,10 @@
         <tr><td colspan="3">NAME: {{ $evaluation['name'] ?? $facilityRequest->user->name }}</td></tr>
         <tr><td>AGE: {{ $evaluation['age'] ?? '—' }}</td><td colspan="2">GENDER: {{ $evaluation['gender'] ?? '—' }}</td></tr>
         <tr><td>CLIENT CATEGORY:</td><td colspan="2">
-            @foreach(['Students', 'Faculty', 'Non-Teaching', 'Supplier', 'Alumni', 'Regulatory Body', 'Industry', 'Community', 'Others'] as $category)
-                <span style="display: inline-block; margin-right: 10px; line-height: 1.8;">{{ ($evaluation['client_category'] ?? null) === $category ? '[X]' : '[ ]' }} {{ $category }}</span>
-            @endforeach
-            @if(!empty($evaluation['other_category']))<div>Others, specify: {{ $evaluation['other_category'] }}</div>@endif
+                @foreach(['Students', 'Faculty', 'Non-Teaching', 'Supplier', 'Alumni', 'Regulatory Body', 'Industry', 'Community', 'Others'] as $category)
+                    <span style="display: inline-block; margin-right: 10px; line-height: 1.8;">{{ ($evaluation['client_category'] ?? null) === $category ? '[X]' : '[ ]' }} {{ $category }}</span>
+                @endforeach
+                @if(!empty($evaluation['other_category']))<div>Others, specify: {{ $evaluation['other_category'] }}</div>@endif
         </td></tr>
         <tr><td colspan="3">FACILITY: {{ $facilityRequest->facility }}</td></tr>
         <tr><th colspan="3">B. DEGREE OF SATISFACTION ON THE SERVICE PROVIDED</th></tr>

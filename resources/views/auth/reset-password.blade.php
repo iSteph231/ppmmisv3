@@ -1,14 +1,13 @@
-{{-- resources/views/auth/reset-password.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PPMMIS - Reset Password</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>PPMMIS - Reset Password</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
         * {
             margin: 0;
             padding: 0;
@@ -198,67 +197,67 @@
             border: 1px solid #fecaca;
         }
     </style>
-</head>
-<body>
-    <div class="reset-card">
-        <div class="card-header">
-            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
-            <h2>Create New Password</h2>
-            <p>Please enter your new password below</p>
-        </div>
-        <div class="card-body">
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
-
-            <div class="email-display">
-                <i class="fas fa-envelope"></i>
-                <span>{{ $email }}</span>
+    </head>
+    <body>
+        <div class="reset-card">
+            <div class="card-header">
+                <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo" class="brand-logo">
+                <h2>Create New Password</h2>
+                <p>Please enter your new password below</p>
             </div>
+            <div class="card-body">
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
 
-            <form method="POST" action="{{ route('password.update') }}">
-                @csrf
-                
-                <input type="hidden" name="token" value="{{ $token }}">
-                <input type="hidden" name="email" value="{{ $email }}">
+                <div class="email-display">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ $email }}</span>
+                </div>
 
-                <div class="form-group">
-                    <label for="password">
-                        <i class="fas fa-lock"></i>
-                        New Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                           id="password" name="password" required minlength="8" autocomplete="new-password">
-                    <small class="text-muted">Minimum 8 characters</small>
-                    <small id="strengthText" style="display: block;" aria-live="polite"></small>
-                    <div style="height: 4px; background: #eee; margin-top: 6px; border-radius: 4px; overflow: hidden;">
-                        <div id="strengthFill" style="height: 100%; width: 0;"></div>
+                <form method="POST" action="{{ route('password.update') }}">
+                    @csrf
+
+                    <input type="hidden" name="token" value="{{ $token }}">
+                    <input type="hidden" name="email" value="{{ $email }}">
+
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>
+                            New Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                        id="password" name="password" required minlength="8" autocomplete="new-password">
+                        <small class="text-muted">Minimum 8 characters</small>
+                        <small id="strengthText" style="display: block;" aria-live="polite"></small>
+                        <div style="height: 4px; background: #eee; margin-top: 6px; border-radius: 4px; overflow: hidden;">
+                            <div id="strengthFill" style="height: 100%; width: 0;"></div>
+                        </div>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
 
-                <div class="form-group">
-                    <label for="password_confirmation">
-                        <i class="fas fa-check-circle"></i>
-                        Confirm Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
-                    <input type="password" class="form-control" 
-                           id="password_confirmation" name="password_confirmation" 
-                           required autocomplete="new-password">
-                    <small id="matchText" style="display: block;" aria-live="polite"></small>
-                </div>
+                    <div class="form-group">
+                        <label for="password_confirmation">
+                            <i class="fas fa-check-circle"></i>
+                            Confirm Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
+                        <input type="password" class="form-control"
+                        id="password_confirmation" name="password_confirmation"
+                        required autocomplete="new-password">
+                        <small id="matchText" style="display: block;" aria-live="polite"></small>
+                    </div>
 
-                <button type="submit" class="btn-reset">
-                    <i class="fas fa-sync-alt"></i> Reset Password
-                </button>
+                    <button type="submit" class="btn-reset">
+                        <i class="fas fa-sync-alt"></i> Reset Password
+                    </button>
 
-                <div class="info-text">
-                    <i class="fas fa-info-circle"></i>
-                    After resetting your password, you'll be redirected to the login page.
-                </div>
-            </form>
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        After resetting your password, you'll be redirected to the login page.
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-@include('auth.password-feedback')
-</body>
+        @include('auth.password-feedback')
+    </body>
 </html>

@@ -11,11 +11,9 @@
     box-shadow: 0 24px 64px rgb(15 23 42 / 25%);
     overflow-y: auto;
 }
-
 .logout-confirmation-modal::backdrop {
     background: rgb(15 23 42 / 55%);
 }
-
 .logout-confirmation-icon {
     display: grid;
     place-items: center;
@@ -26,27 +24,23 @@
     background: #fef3c7;
     color: #92400e;
 }
-
 .logout-confirmation-modal h2 {
     margin: 0 0 0.75rem;
     font-size: 1.25rem;
     font-weight: 700;
     line-height: 1.4;
 }
-
 .logout-confirmation-modal p {
     margin: 0 0 1.5rem;
     color: #64748b;
     line-height: 1.6;
 }
-
 .logout-confirmation-actions {
     display: flex;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 0.75rem;
 }
-
 .logout-confirmation-actions button {
     padding: 0.75rem 1.25rem;
     border: 0;
@@ -55,17 +49,14 @@
     font-weight: 600;
     cursor: pointer;
 }
-
 .logout-confirmation-cancel {
     background: #f1f5f9;
     color: #334155;
 }
-
 .logout-confirmation-submit {
     background: #b91c1c;
     color: #fff;
 }
-
 .logout-confirmation-actions button:focus-visible {
     outline: 3px solid #2563eb;
     outline-offset: 3px;

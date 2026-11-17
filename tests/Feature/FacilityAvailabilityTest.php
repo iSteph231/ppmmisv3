@@ -143,13 +143,11 @@ class FacilityAvailabilityTest extends TestCase
             ->assertOk()->assertExactJson(['unavailable' => ['Room 1']]);
     }
 
-    /** @return array<string, string> */
     private function slot(): array
     {
         return ['requested_date' => now()->addDay()->toDateString(), 'requested_time' => '09:30'];
     }
 
-    /** @param array<string, string> $changes */
     private function booking(User $owner, array $changes = []): FacilityRequest
     {
         return FacilityRequest::create(array_replace($this->slot(), [
@@ -163,7 +161,6 @@ class FacilityAvailabilityTest extends TestCase
         ], $changes));
     }
 
-    /** @return array<string, mixed> */
     private function submission(): array
     {
         return $this->slot() + [

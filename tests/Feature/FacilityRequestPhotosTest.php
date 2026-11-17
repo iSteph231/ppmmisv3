@@ -62,6 +62,50 @@ class FacilityRequestPhotosTest extends TestCase
         ];
     }
 
+    public function test_evaluation_name_is_read_only_and_saved_from_the_authenticated_owner(): void
+    {
+        $facility = $this->approvedRequest();
+        $owner = auth()->user();
+        $facility->update(['before_photo_path' => 'before.jpg', 'after_photo_path' => 'after.jpg']);
+
+        $html = $this->get(route('request-facility.photos', $facility))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<input[^>]*id="evaluation-name"[^>]*readonly/', $html);
+        $this->assertMatchesRegularExpression('/<input[^>]*id="evaluation-name"[^>]*disabled/', $html);
+        $this->assertStringContainsString('<select id="evaluation-semester"', $html);
+        foreach (['First', 'Second', 'Summer'] as $semester) {
+            $this->assertStringContainsString('value="'.$semester.'"', $html);
+        }
+
+        $this->post(route('request-facility.evaluation.store', $facility), $this->evaluationAnswers())
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame($owner->name, $facility->fresh()->evaluation['name']);
+    }
+
+    public function test_evaluation_rejects_semesters_outside_the_dropdown_choices(): void
+    {
+        $facility = $this->approvedRequest();
+        $facility->update(['before_photo_path' => 'before.jpg', 'after_photo_path' => 'after.jpg']);
+        foreach (['Third', 'First Semester', ''] as $semester) {
+            $this->post(route('request-facility.evaluation.store', $facility), array_replace($this->evaluationAnswers(), ['semester' => $semester]))
+                ->assertSessionHasErrors('semester');
+        }
+        $this->assertNull($facility->fresh()->evaluation);
+    }
+
+    public function test_evaluation_age_rejects_letters_special_characters_and_more_than_two_digits(): void
+    {
+        $facility = $this->approvedRequest();
+        $facility->update(['before_photo_path' => 'before.jpg', 'after_photo_path' => 'after.jpg']);
+        foreach (['abc', '2a', '1.5', '-1', '+2', '1e1', '100', '0', '２１'] as $age) {
+            $this->post(route('request-facility.evaluation.store', $facility), array_replace($this->evaluationAnswers(), ['age' => $age]))
+                ->assertSessionHasErrors('age');
+        }
+        $this->assertNull($facility->fresh()->evaluation);
+        $this->post(route('request-facility.evaluation.store', $facility), array_replace($this->evaluationAnswers(), ['age' => '99']))
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('99', $facility->fresh()->evaluation['age']);
+    }
+
     public function test_evaluation_requires_photos_owner_and_valid_complete_ratings(): void
     {
         $facility = $this->approvedRequest();

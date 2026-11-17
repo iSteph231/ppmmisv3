@@ -4,7 +4,6 @@ namespace App\Support;
 
 class InventoryForms
 {
-    /** @return array<string, string> */
     public static function names(): array
     {
         $names = [
@@ -38,7 +37,6 @@ class InventoryForms
         return $names;
     }
 
-    /** @return array{code: string, rows: int} */
     public static function pdfLayout(string $form): array
     {
         abort_unless(array_key_exists($form, self::names()), 404);
@@ -54,7 +52,6 @@ class InventoryForms
         };
     }
 
-    /** @return array<string, array<string, array{label: string, type: string, required: bool}>> */
     public static function sections(string $form): array
     {
         abort_unless(array_key_exists($form, self::names()), 404);
@@ -124,7 +121,6 @@ class InventoryForms
         return $sections;
     }
 
-    /** @return array{label: string, type: string, required: bool} */
     private static function field(string $label, string $type = 'text', bool $required = false): array
     {
         return compact('label', 'type', 'required');

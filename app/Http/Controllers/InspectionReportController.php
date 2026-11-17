@@ -4,46 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\InspectionReport;
 use App\Models\Notification;
-use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class InspectionReportController extends Controller
 {
-    /**
-     * Display a listing of inspection reports.
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
 
-        // Base query for inspection reports with work request and user
         $query = InspectionReport::with(['workRequest', 'workRequest.user']);
 
-        // If not admin, only show inspections for their own work requests
         if (! $user->isAdmin()) {
             $query->whereHas('workRequest', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
         }
 
-        // Apply status filter
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        // Apply date from filter
         if ($request->filled('date_from')) {
             $query->whereDate('scheduled_date', '>=', $request->date_from);
         }
 
-        // Apply date to filter
         if ($request->filled('date_to')) {
             $query->whereDate('scheduled_date', '<=', $request->date_to);
         }
 
-        // Apply search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -58,9 +49,8 @@ class InspectionReportController extends Controller
             });
         }
 
-        // FIXED: Order by status (pending first) then by scheduled_date ascending
         $inspections = $query->orderByRaw("
-            CASE 
+            CASE
                 WHEN status = 'pending' THEN 1
                 WHEN status = 'in_progress' THEN 2
                 WHEN status = 'approved' THEN 3
@@ -71,7 +61,6 @@ class InspectionReportController extends Controller
             ->orderBy('scheduled_date', 'asc')
             ->paginate(10);
 
-        // Calculate statistics
         $totalInspections = InspectionReport::when(! $user->isAdmin(), function ($q) use ($user) {
             return $q->whereHas('workRequest', function ($wr) use ($user) {
                 $wr->where('user_id', $user->id);
@@ -103,9 +92,6 @@ class InspectionReportController extends Controller
         ));
     }
 
-    /**
-     * Display the specified inspection report.
-     */
     public function show($id)
     {
         $inspectionReport = InspectionReport::with(['workRequest', 'workRequest.user', 'inspector'])
@@ -113,7 +99,6 @@ class InspectionReportController extends Controller
 
         $user = Auth::user();
 
-        // Check authorization
         if (! $user->isAdmin() && $inspectionReport->workRequest->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
@@ -121,11 +106,13 @@ class InspectionReportController extends Controller
         return view('inspection-reports.show', compact('inspectionReport'));
     }
 
-    /**
-     * Export all visible inspection reports as one PDF.
-     */
-    public function exportAllPdf()
+    public function exportAllPdf(Request $request): Response
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', ...($request->filled('date_from') ? ['after_or_equal:date_from'] : [])],
+        ]);
         $user = Auth::user();
 
         $query = InspectionReport::with(['workRequest', 'workRequest.user', 'inspector']);
@@ -133,6 +120,26 @@ class InspectionReportController extends Controller
         if (! $user->isAdmin()) {
             $query->whereHas('workRequest', function ($workRequestQuery) use ($user) {
                 $workRequestQuery->where('user_id', $user->id);
+            });
+        }
+
+        if (! empty($filters['date_from'])) {
+            $query->whereDate('scheduled_date', '>=', $filters['date_from']);
+        }
+        if (! empty($filters['date_to'])) {
+            $query->whereDate('scheduled_date', '<=', $filters['date_to']);
+        }
+        if (! empty($filters['search'])) {
+            $search = '%'.$filters['search'].'%';
+            $query->where(function ($query) use ($search): void {
+                $query->where('report_number', 'like', $search)
+                    ->orWhereHas('workRequest', function ($workRequest) use ($search): void {
+                        $workRequest->where('title', 'like', $search)
+                            ->orWhere('request_number', 'like', $search);
+                    })
+                    ->orWhereHas('workRequest.user', function ($user) use ($search): void {
+                        $user->where('name', 'like', $search);
+                    });
             });
         }
 
@@ -147,14 +154,10 @@ class InspectionReportController extends Controller
         return $pdf->download('inspection-reports-'.now()->format('Y-m-d-His').'.pdf');
     }
 
-    /**
-     * Show form to approve inspection report.
-     */
     public function completeForm($id)
     {
         $inspectionReport = InspectionReport::with('workRequest')->findOrFail($id);
 
-        // Only admin can approve inspection reports
         if (! Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
@@ -167,14 +170,10 @@ class InspectionReportController extends Controller
         return view('inspection-reports.complete', compact('inspectionReport'));
     }
 
-    /**
-     * Approve the inspection report and approve the work request.
-     */
     public function complete(Request $request, $id)
     {
         $inspectionReport = InspectionReport::with('workRequest')->findOrFail($id);
 
-        // Only admin can approve inspection reports
         if (! Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
@@ -187,7 +186,7 @@ class InspectionReportController extends Controller
         ]);
 
         try {
-            // Update the inspection report to 'approved'
+
             $inspectionReport->update([
                 'findings' => $validated['findings'],
                 'observation' => $validated['observation'],

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPMMIS</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PPMMIS</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -303,39 +303,39 @@ h1 {
     }
 }
 </style>
-</head>
-<body>
-<div class="page">
-    <header class="topbar">
-        <div class="brand">
-            <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo">
-            <span>PPMMIS</span>
-        </div>
-        <nav class="nav-actions" aria-label="Primary">
-            <a href="{{ route('login') }}" class="nav-link">Log in</a>
-            <a href="{{ route('register') }}" class="nav-link">Request an Account</a>
-        </nav>
-    </header>
-
-    <main class="hero">
-        <section class="hero-panel">
-            <div class="hero-content">
-                <p class="eyebrow">Pangasinan State University</p>
-                <h1>PPMMIS</h1>
-                <p class="subtitle">Physical Plant Maintenance and Management Information System</p>
-                <p class="description">A simple system for tracking work requests, inspections, and maintenance activities.</p>
-                <div class="actions">
-                    <a href="{{ route('login') }}" class="btn btn-primary">Log in</a>
-                    <a href="{{ route('register') }}" class="btn btn-secondary">Request an Account</a>
+    </head>
+    <body>
+        <div class="page">
+            <header class="topbar">
+                <div class="brand">
+                    <img src="{{ asset('images/logo.png') }}" alt="Pangasinan State University Logo">
+                    <span>PPMMIS</span>
                 </div>
-            </div>
-            <div class="hero-visual" aria-hidden="true">
-                <img src="{{ asset('images/logo.png') }}" alt="" class="seal">
-            </div>
-        </section>
-    </main>
+                <nav class="nav-actions" aria-label="Primary">
+                    <a href="{{ route('login') }}" class="nav-link">Log in</a>
+                    <a href="{{ route('register') }}" class="nav-link">Request an Account</a>
+                </nav>
+            </header>
 
-    <footer class="footer">&copy; {{ date('Y') }} PPMMIS. Pangasinan State University.</footer>
-</div>
-</body>
+            <main class="hero">
+                <section class="hero-panel">
+                    <div class="hero-content">
+                        <p class="eyebrow">Pangasinan State University</p>
+                        <h1>PPMMIS</h1>
+                        <p class="subtitle">Physical Plant Maintenance and Management Information System</p>
+                        <p class="description">A simple system for tracking work requests, inspections, and maintenance activities.</p>
+                        <div class="actions">
+                            <a href="{{ route('login') }}" class="btn btn-primary">Log in</a>
+                            <a href="{{ route('register') }}" class="btn btn-secondary">Request an Account</a>
+                        </div>
+                    </div>
+                    <div class="hero-visual" aria-hidden="true">
+                        <img src="{{ asset('images/logo.png') }}" alt="" class="seal">
+                    </div>
+                </section>
+            </main>
+
+            <footer class="footer">&copy; {{ date('Y') }} PPMMIS. Pangasinan State University.</footer>
+        </div>
+    </body>
 </html>

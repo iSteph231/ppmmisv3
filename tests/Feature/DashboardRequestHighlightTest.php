@@ -21,6 +21,11 @@ class DashboardRequestHighlightTest extends TestCase
                 $scheduledRequest->scheduled_date = now()->addDay();
                 $requests->push($scheduledRequest);
                 $html = view($view, ['workRequests' => $requests])->render();
+                if ($role === 'admin') {
+                    $this->assertStringContainsString('Designation: Facilities Office', $html);
+                } else {
+                    $this->assertStringNotContainsString('Designation:', $html);
+                }
                 $this->assertSame($role === 'admin' ? 1 : 0, substr_count($html, 'class="new-request-dot"'));
                 $this->assertSame($role === 'admin' ? 1 : 0, substr_count($html, 'class="new-request-label"'));
                 $this->assertStringNotContainsString('new-work-request', $html);
@@ -61,7 +66,7 @@ class DashboardRequestHighlightTest extends TestCase
 
     private function workRequest(int $id, string $status, \DateTimeInterface $createdAt): WorkRequest
     {
-        $workRequest = new WorkRequest(['title' => 'Repair a chair', 'request_number' => 'WR-'.$id, 'status' => $status]);
+        $workRequest = new WorkRequest(['title' => 'Repair a chair', 'request_number' => 'WR-'.$id, 'status' => $status, 'department' => 'Facilities Office']);
         $workRequest->id = $id;
         $workRequest->created_at = $createdAt;
         $workRequest->setRelation('user', User::factory()->make());
