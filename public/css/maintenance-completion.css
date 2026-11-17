@@ -1,0 +1,100 @@
+.maintenance-completion-modal {
+    box-sizing: border-box;
+    width: min(34rem, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 1.75rem;
+    border: 0;
+    border-radius: 1rem;
+    color: #1e293b;
+    background: #fff;
+    box-shadow: 0 24px 64px rgb(15 23 42 / 25%);
+    overflow-y: auto;
+}
+
+.maintenance-completion-modal::backdrop {
+    background: rgb(15 23 42 / 55%);
+}
+
+.maintenance-completion-modal h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1.4;
+}
+
+.maintenance-completion-modal p {
+    margin: 0 0 1.25rem;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.maintenance-completion-modal label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.maintenance-completion-modal label span {
+    color: #64748b;
+    font-weight: 400;
+}
+
+.maintenance-completion-modal textarea {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 8rem;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    resize: vertical;
+}
+
+.maintenance-completion-modal :is(textarea, button):focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+}
+
+.maintenance-completion-modal .maintenance-completion-hint {
+    margin: 0.5rem 0 1.5rem;
+    font-size: 0.8125rem;
+}
+
+.maintenance-completion-modal .maintenance-completion-error {
+    margin: 0.5rem 0;
+    color: #b91c1c;
+}
+
+.maintenance-completion-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.maintenance-completion-actions button {
+    padding: 0.75rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.maintenance-completion-cancel {
+    color: #334155;
+    background: #f1f5f9;
+}
+
+.maintenance-completion-confirm {
+    color: #fff;
+    background: #047857;
+}
+
+.maintenance-completion-actions button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}

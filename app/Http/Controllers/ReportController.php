@@ -219,12 +219,15 @@ class ReportController extends Controller
     {
         $maintenanceSchedules = $this->filteredMaintenanceSchedules($request, false)
             ->where('status', 'completed')
-            ->orderBy('scheduled_date', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
 
-        $month = $request->filled('date_from')
+        $month = $request->filled('month')
+            ? Carbon::createFromFormat('!Y-m', $request->input('month'))
+            : ($request->filled('date_from')
             ? Carbon::parse($request->date_from)
-            : optional($maintenanceSchedules->first())->scheduled_date ?? now();
+            : optional($maintenanceSchedules->first())->scheduled_date ?? now());
 
         $pdf = Pdf::loadView('maintenance.export-pdf', [
             'maintenanceSchedules' => $maintenanceSchedules,
@@ -240,10 +243,29 @@ class ReportController extends Controller
      */
     private function filteredMaintenanceSchedules(Request $request, bool $includeStatus = true)
     {
+        $rules = [
+            'month' => ['nullable', 'date_format:Y-m'],
+            'status' => ['nullable', 'in:all,pending,in_progress,completed,cancelled'],
+        ];
+        if (! $request->filled('month')) {
+            $rules['date_from'] = ['nullable', 'date_format:Y-m-d'];
+            $rules['date_to'] = ['nullable', 'date_format:Y-m-d'];
+            if ($request->filled('date_from')) {
+                $rules['date_to'][] = 'after_or_equal:date_from';
+            }
+        }
+        $request->validate($rules);
         $query = MaintenanceSchedule::query();
 
         if ($includeStatus && $request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('month')) {
+            $month = Carbon::createFromFormat('!Y-m', $request->input('month'));
+
+            return $query->where('scheduled_date', '>=', $month->toDateString())
+                ->where('scheduled_date', '<', $month->copy()->addMonth()->toDateString());
         }
 
         if ($request->filled('date_from')) {

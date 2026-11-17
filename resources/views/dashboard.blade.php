@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Dashboard - Maintenance System</title>
+    <link rel="stylesheet" href="{{ asset('css/logout-confirmation.css').'?v='.substr(hash_file('sha256', public_path('css/logout-confirmation.css')), 0, 16) }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('css/dashboard.css').'?v='.substr(hash_file('sha256', public_path('css/dashboard.css')), 0, 16) }}">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -160,7 +161,7 @@
         @if(auth()->check() && auth()->user()->role === 'admin')
         <a href="/admin-dashboard">Admin Dashboard</a>
         @endif
-        <form method="POST" action="/logout">
+        <form method="POST" action="{{ route('logout') }}" data-confirm-logout>
             @csrf
             <button class="logout-btn">Logout</button>
         </form>
@@ -645,5 +646,7 @@
     setInterval(refreshChartData, 120000);
 </script>
 
+<x-logout-confirmation />
+<script defer src="{{ asset('js/logout-confirmation.js').'?v='.substr(hash_file('sha256', public_path('js/logout-confirmation.js')), 0, 16) }}"></script>
 </body>
 </html>

@@ -22,6 +22,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/logout-confirmation.css').'?v='.substr(hash_file('sha256', public_path('css/logout-confirmation.css')), 0, 16) }}">
 </head>
 <body x-data="{ sidebarOpen: false, mobileViewport: window.innerWidth < 1024 }" @keydown.escape.window="sidebarOpen = false" @resize.window="mobileViewport = window.innerWidth < 1024; if (!mobileViewport) sidebarOpen = false">
     <div class="dashboard-container">
@@ -71,9 +72,9 @@
                 </a>
                 @endif
 
-                {{-- Maintenance Records Link - Only visible to ADMIN and PERSONNEL --}}
+                {{-- Maintenance Records Link --}}
                 @auth
-                    @if(Auth::user()->isAdmin())
+                    @if(Auth::user()->isAdmin() || Auth::user()->isEngineer())
                     <a href="{{ route('maintenance.index') }}" class="nav-item {{ request()->routeIs('maintenance.*') ? 'active' : '' }}">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -115,7 +116,7 @@
 
                 {{-- Logout Form --}}
                 @auth
-                <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                <form method="POST" action="{{ route('logout') }}" class="mt-4" data-confirm-logout>
                     @csrf
                     <button type="submit" class="nav-item nav-logout" style="width: 100%; background: none; text-align: left;">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +159,7 @@
                             <a href="{{ route('settings.index') }}" class="dropdown-item">My Profile</a>
                             <a href="{{ route('settings.index') }}" class="dropdown-item">Account Settings</a>
                             <hr style="margin: 0.5rem 0;">
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" data-confirm-logout>
                                 @csrf
                                 <button type="submit" class="dropdown-item" style="width:100%; text-align:left;">Sign Out</button>
                             </form>
@@ -188,6 +189,7 @@
     </div>
 
     {{-- Your Custom JS (from public folder) --}}
+    <x-logout-confirmation />
     <script>
         window.addEventListener('pageshow', function (event) {
             if (event.persisted) {
@@ -198,6 +200,7 @@
     <script src="{{ asset('js/dashboard.js').'?v='.substr(hash_file('sha256', public_path('js/dashboard.js')), 0, 16) }}"></script>
     <script defer src="{{ asset('js/request-updates.js').'?v='.substr(hash_file('sha256', public_path('js/request-updates.js')), 0, 16) }}"></script>
     @stack('scripts')
+    <script defer src="{{ asset('js/logout-confirmation.js').'?v='.substr(hash_file('sha256', public_path('js/logout-confirmation.js')), 0, 16) }}"></script>
     <script defer src="{{ asset('js/request-submission.js').'?v='.substr(hash_file('sha256', public_path('js/request-submission.js')), 0, 16) }}"></script>
     <script defer src="{{ asset('js/new-request-dots.js').'?v='.substr(hash_file('sha256', public_path('js/new-request-dots.js')), 0, 16) }}"></script>
 </body>

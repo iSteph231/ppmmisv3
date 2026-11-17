@@ -148,7 +148,10 @@
 <body>
     @php
         $rowsPerPage = 14;
-        $visibleMaintenanceSchedules = $maintenanceSchedules->take($rowsPerPage);
+        $pages = $maintenanceSchedules->isEmpty() ? collect([collect()]) : $maintenanceSchedules->chunk($rowsPerPage);
+    @endphp
+    @foreach($pages as $visibleMaintenanceSchedules)
+    @php
         $blankRows = max(0, $rowsPerPage - $visibleMaintenanceSchedules->count());
     @endphp
 
@@ -225,5 +228,9 @@
             </td>
         </tr>
     </table>
+    @unless($loop->last)
+        <div style="page-break-after: always;"></div>
+    @endunless
+    @endforeach
 </body>
 </html>

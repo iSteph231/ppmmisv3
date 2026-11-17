@@ -8,7 +8,7 @@
         align-items: end;
         display: grid;
         gap: 1rem;
-        grid-template-columns: repeat(3, minmax(min(100%, 200px), 1fr)) auto;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .maintenance-report-filter-actions {
@@ -17,6 +17,8 @@
         flex-wrap: nowrap;
         gap: 0.5rem;
         justify-content: flex-end;
+        grid-column: 1 / -1;
+        flex-wrap: wrap;
     }
 
     .maintenance-report-filter-button {
@@ -78,7 +80,7 @@
                     <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Status</label>
                     <select name="status" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
                         <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Scheduled</option>
                         <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     </select>
@@ -94,10 +96,15 @@
                     <input type="date" name="date_to" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" value="{{ request('date_to') }}">
                 </div>
 
+                <div>
+                    <label for="report-month" style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Whole month (optional)</label>
+                    <input type="month" id="report-month" name="month" value="{{ request('month') }}" class="form-control" aria-describedby="report-month-help" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                    <small id="report-month-help">Selecting a month overrides Date From and Date To. PDF exports include completed records only.</small>
+                </div>
                 <div class="maintenance-report-filter-actions">
                     <button type="submit" class="maintenance-report-filter-button" style="background: #3b82f6;">Apply Filters</button>
                     <a href="{{ route('reports.maintenance') }}" class="maintenance-report-filter-button secondary" style="background: #6b7280;">Clear</a>
-                    <a href="{{ route('reports.maintenance.export-pdf', request()->query()) }}" class="maintenance-report-filter-button" style="background: #dc2626;">Export PDF</a>
+                    <button type="submit" formaction="{{ route('reports.maintenance.export-pdf') }}" class="maintenance-report-filter-button" style="background: #dc2626;">Export PDF</button>
                 </div>
             </form>
         </div>
@@ -110,7 +117,7 @@
             <p style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ $totalSchedules ?? 0 }}</p>
         </div>
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Pending</h3>
+            <h3 style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Scheduled</h3>
             <p style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ $pendingSchedules ?? 0 }}</p>
         </div>
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -146,7 +153,7 @@
                         <td style="padding: 1rem;">{{ $schedule->engineer_in_charge ?? 'N/A' }}</td>
                         <td style="padding: 1rem;">
                             @if($schedule->status == 'pending')
-                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Pending</span>
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Scheduled</span>
                             @elseif($schedule->status == 'in_progress')
                                 <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">In Progress</span>
                             @elseif($schedule->status == 'completed')

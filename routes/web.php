@@ -110,10 +110,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/work-requests', [ReportController::class, 'workRequestsReport'])->name('work-requests');
         Route::get('/work-requests/export/pdf', [ReportController::class, 'exportWorkRequestsPdf'])->name('work-requests.export-pdf');
         Route::get('/work-requests/{workRequest}/export/pdf', [ReportController::class, 'exportWorkRequestPdf'])->name('work-requests.export-single-pdf');
-        Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
-        Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
         Route::get('/facility-requests', [ReportController::class, 'facilityRequestsReport'])->name('facility-requests');
         Route::get('/performance', [ReportController::class, 'performanceReport'])->name('performance');
+    });
+
+    Route::prefix('reports')->name('reports.')->middleware('role:admin,engineer')->group(function () {
+        Route::get('/maintenance', [ReportController::class, 'maintenanceReport'])->name('maintenance');
+        Route::get('/maintenance/export/pdf', [ReportController::class, 'exportMaintenancePdf'])->name('maintenance.export-pdf');
     });
 
     // Users (Admin only)
