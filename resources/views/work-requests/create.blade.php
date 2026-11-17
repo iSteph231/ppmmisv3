@@ -47,18 +47,100 @@
                 <label for="building_name" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                     Building Name <span style="color: #ef4444;">*</span>
                 </label>
-                <input type="text" name="building_name" id="building_name" class="search-input" style="width: 100%;" placeholder="e.g., Admin Building, Science Hall" value="{{ old('building_name') }}" required>
+                <select name="building_name" id="building_name" class="search-input" style="width: 100%;" required>
+                    <option value="">Select a building</option>
+                    @foreach (['BIT', 'BSBA', 'Central Admin Building/FVR', 'Agri-Business', 'Convention Hall/Court', 'Canteen', 'Student Service', 'Dorm', 'ROTC Bldg'] as $building)
+                        <option value="{{ $building }}" @selected(old('building_name') === $building)>{{ $building === 'Central Admin Building/FVR' ? $building : ($building === 'ROTC Bldg' ? 'ROTC Building' : $building.' Building') }}</option>
+                    @endforeach
+                </select>
                 @error('building_name')
                     <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p>
                 @enderror
             </div>
 
             {{-- Name of Office / Room (REQUIRED) --}}
+            @php
+                $roomsByBuilding = [
+                    'BIT' => ['Room 19 (Automotive)', 'Room 20 (Mechanical)', 'Room 21 (Electronics)', 'Room 22 (Electronics)', 'Room 23 (Electrical)', 'Room 24 (Electrical)', 'Comfort Room 1', 'Comfort Room 2', 'Comfort Room 3 (infront of Main Gate)'],
+                    'BSBA' => ['Room 18A', 'Room 18B', 'Comfort Room 1', 'Comfort room 2'],
+                    'Canteen' => ['Canteen'],
+                    'Convention Hall/Court' => [
+                        'Covered Court 1 (Parking Lot)',
+                        'Covered Court 2 (Front of Dormitory)',
+                        'Covered Court 3 (Back of the Campus)',
+                    ],
+                    'ROTC Bldg' => ['ROTC Headquarters'],
+                    'Dorm' => [
+                        'Dorm Manager Room',
+                        'Dorm Room 1',
+                        'Dorm Room 2',
+                        'Dorm Room 3',
+                        'Dorm Room 4',
+                        'Dorm Room 5',
+                        'Dorm Kitchen',
+                    ],
+                    'Student Service' => [
+                        'Student Services Office',
+                        'Sports / Culture',
+                        'Practice Teaching',
+                        'Students and Alumni Services',
+                    ],
+                    'Central Admin Building/FVR' => [
+                        'Room 1',
+                        'Room 2',
+                        'Room 3',
+                        'Room 4',
+                        'Room 5',
+                        'Room 6 (Speech Lab)',
+                        'MIS',
+                        'Room 8',
+                        'Room 9',
+                        'CED Office',
+                        "Dean's Office",
+                        "Administrative Officer's Office",
+                        "Cashier's Office",
+                        'Accounting Office',
+                        'Supply Office',
+                        'Planning',
+                        'Stock Room',
+                        'Guidance Office',
+                        'Faculty Room',
+                        'Campus Clinic',
+                        'Campus Public Information Office',
+                        'Activity Center',
+                        'Accre',
+                        'ETEEAP',
+                    ],
+                    'Agri-Business' => [
+                        'Room 10 (TLE Garments)',
+                        'Room 11 (Science Lab)',
+                        'Room 12 (Food)',
+                        'Room 13 (Food)',
+                        'Room 14',
+                        'Room 15',
+                        'Room 16 A (Computer Lab)',
+                        'Room 16 B (Computer Lab)',
+                        'Room 17',
+                        'Research Office',
+                        'Extension / GAD Office',
+                        'Campus Library',
+                        "Registrar's Office",
+                        'Food Tech new (BTLED)',
+                        'Comfort Room',
+                    ],
+                ];
+                $hasRoomChoices = isset($roomsByBuilding[old('building_name', '')]);
+            @endphp
             <div style="margin-bottom: 1.5rem;">
-                <label for="office_room" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                <label for="office_room_select" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                     Name of Office / Room <span style="color: #ef4444;">*</span>
                 </label>
-                <input type="text" name="office_room" id="office_room" class="search-input" style="width: 100%;" placeholder="Room #, Office name" value="{{ old('office_room') }}" required>
+                <select name="office_room" id="office_room_select" class="search-input" style="width: 100%;" required @disabled(! $hasRoomChoices)>
+                    <option value="">{{ $hasRoomChoices ? 'Select an office / room' : 'Select a building first' }}</option>
+                    @foreach ($roomsByBuilding[old('building_name', '')] ?? [] as $room)
+                        <option value="{{ $room }}" @selected(old('office_room') === $room)>{{ $room }}</option>
+                    @endforeach
+                </select>
                 @error('office_room')
                     <p style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</p>
                 @enderror
@@ -157,6 +239,19 @@
 @push('scripts')
 <script src="{{ asset('js/work-request-photo.js') }}" defer></script>
 <script>
+    const buildingSelect = document.getElementById('building_name');
+    const officeRoomSelect = document.getElementById('office_room_select');
+    const roomsByBuilding = @json($roomsByBuilding);
+
+    buildingSelect.addEventListener('change', function () {
+        const rooms = roomsByBuilding[buildingSelect.value] || [];
+        const hasRoomChoices = rooms.length > 0;
+
+        officeRoomSelect.replaceChildren(new Option(hasRoomChoices ? 'Select an office / room' : 'Select a building first', ''));
+        rooms.forEach(room => officeRoomSelect.add(new Option(room, room)));
+        officeRoomSelect.disabled = !hasRoomChoices;
+    });
+
     const titleInput = document.getElementById('title');
     const radios = document.querySelectorAll('.request-radio');
     const detailFields = document.querySelectorAll('.detail-field');
