@@ -40,7 +40,7 @@ class FacilityRequestController extends Controller implements HasMiddleware
         $validated = $request->validated();
 
         return response()->json([
-            'unavailable' => FacilityRequest::reservedAt($validated['requested_date'], $validated['requested_time'])
+            'unavailable' => FacilityRequest::reservedOn($validated['requested_date'])
                 ->whereIn('facility', config('facilities.options'))
                 ->distinct()->orderBy('facility')->pluck('facility'),
         ])->header('Cache-Control', 'private, no-store');
@@ -77,11 +77,7 @@ class FacilityRequestController extends Controller implements HasMiddleware
                     ->orWhere('facility', 'like', '%'.$search.'%');
             });
         }
-        $facilityRequests = $query
-            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END', ['declined'])
-            ->latest()
-            ->latest('id')
-            ->paginate(10)->withQueryString();
+        $facilityRequests = $query->paginate(10)->withQueryString();
 
         $outstandingRequest = $user->isUser()
             ? FacilityRequest::where('user_id', $user->id)->where('status', 'approved')->first()
@@ -93,6 +89,12 @@ class FacilityRequestController extends Controller implements HasMiddleware
     public function show(FacilityRequest $facilityRequest): View
     {
         abort_unless(Auth::user()->isAdmin() || $facilityRequest->user_id === Auth::id(), 403);
+
+        if (Auth::user()->isAdmin()) {
+            Notification::where('user_id', Auth::id())->unread()
+                ->where('related_type', FacilityRequest::class)->where('related_id', $facilityRequest->id)
+                ->where('title', 'New Facility Request')->update(['is_read' => true]);
+        }
 
         $facilityRequest->load('user');
 
@@ -124,10 +126,12 @@ class FacilityRequestController extends Controller implements HasMiddleware
 
     public function approve(FacilityRequest $facilityRequest): RedirectResponse
     {
-        DB::transaction(function () use ($facilityRequest): void {
+        $wasApproved = DB::transaction(function () use ($facilityRequest): bool {
             User::whereKey($facilityRequest->user_id)->lockForUpdate()->firstOrFail();
             $facilityRequest = FacilityRequest::whereKey($facilityRequest->id)->lockForUpdate()->firstOrFail();
-            abort_unless($facilityRequest->status === 'pending', 409, 'This request has already been reviewed.');
+            if ($facilityRequest->status !== 'pending') {
+                return false;
+            }
 
             $facilityRequest->update(['status' => 'approved']);
             Notification::create([
@@ -139,10 +143,14 @@ class FacilityRequestController extends Controller implements HasMiddleware
                 'related_id' => $facilityRequest->id,
                 'related_type' => FacilityRequest::class,
             ]);
+
+            return true;
         });
 
         return redirect()->route('request-facility.show', $facilityRequest)
-            ->with('success', 'Facility request approved successfully.');
+            ->with($wasApproved ? 'success' : 'error', $wasApproved
+                ? 'Facility request approved successfully.'
+                : 'This request has already been reviewed.');
     }
 
     public function create(): View|RedirectResponse
@@ -261,10 +269,10 @@ class FacilityRequestController extends Controller implements HasMiddleware
                     throw ValidationException::withMessages(['facility' => 'Upload both photos and complete the facility evaluation before submitting another request.']);
                 }
 
-                if (FacilityRequest::reservedAt($validated['requested_date'], $validated['requested_time'])
+                if (FacilityRequest::reservedOn($validated['requested_date'])
                     ->where('facility', $validated['facility'])->exists()) {
                     throw ValidationException::withMessages([
-                        'facility' => 'This facility is already requested for the selected date and time. Please select another available facility.',
+                        'facility' => 'This facility is reserved for the entire selected day. Please choose another date or facility.',
                     ]);
                 }
 

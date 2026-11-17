@@ -16,13 +16,13 @@
         <div class="facility-form-grid">
             @foreach(['name' => 'Name', 'age' => 'Age', 'semester' => 'Semester', 'academic_year' => 'Academic Year'] as $field => $label)
                 <div class="facility-field">
-                    <label for="evaluation-{{ $field }}" class="facility-label">{{ $label }}</label>
+                    <label for="evaluation-{{ $field }}" class="facility-label">{{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <input id="evaluation-{{ $field }}" name="{{ $field }}" type="{{ $field === 'age' ? 'number' : 'text' }}" value="{{ old($field, $field === 'name' ? Auth::user()->name : '') }}" class="facility-input" required @if($field === 'age') min="1" max="120" @else maxlength="{{ in_array($field, ['semester', 'academic_year']) ? 50 : 255 }}" @endif>
                 </div>
             @endforeach
             @foreach(['gender' => ['Male', 'Female', 'Other', 'Prefer not to say'], 'client_category' => ['Students', 'Faculty', 'Non-Teaching', 'Supplier', 'Alumni', 'Regulatory Body', 'Industry', 'Community', 'Others']] as $field => $options)
                 <div class="facility-field">
-                    <label for="evaluation-{{ $field }}" class="facility-label">{{ $field === 'gender' ? 'Gender' : 'Client Category' }}</label>
+                    <label for="evaluation-{{ $field }}" class="facility-label">{{ $field === 'gender' ? 'Gender' : 'Client Category' }} <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <select id="evaluation-{{ $field }}" name="{{ $field }}" class="facility-input" required>
                         <option value="">Select an option</option>
                         @foreach($options as $option)
@@ -32,7 +32,7 @@
                 </div>
             @endforeach
             <div class="facility-field">
-                <label for="evaluation-other" class="facility-label">Others, specify (required when Others is selected)</label>
+                <label for="evaluation-other" class="facility-label">Others, specify (required when Others is selected) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                 <input id="evaluation-other" name="other_category" value="{{ old('other_category') }}" class="facility-input" maxlength="255">
             </div>
         </div>
@@ -41,7 +41,7 @@
         <div class="space-y-4 mt-4">
             @foreach(\App\Models\FacilityRequest::EVALUATION_INDICATORS as $key => $label)
                 <fieldset class="rounded-lg border border-slate-200 p-4">
-                    <legend class="facility-label px-2">{{ $loop->iteration }}. {{ $label }}</legend>
+                    <legend class="facility-label px-2">{{ $loop->iteration }}. {{ $label }} <span style="color: #dc2626;" aria-hidden="true">*</span></legend>
                     <div class="flex flex-wrap gap-6">
                         @foreach([1, 2, 3, 4, 5] as $rating)
                             <label class="flex items-center gap-2">

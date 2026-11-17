@@ -41,6 +41,22 @@ class UserSeeder extends Seeder
                 'department' => 'IT Department',
                 'phone_number' => '123-456-7891',
             ]
+
+        );
+
+        User::updateOrCreate(
+            ['email' => 'user2@psu.edu.ph'],
+            [
+                'name' => 'Second Regular User',
+                'password' => Hash::make('User@123'),
+                'role' => 'user',
+                'is_active' => true,
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+                'department' => 'IT Department',
+                'phone_number' => '123-456-7893',
+            ]
         );
 
         User::updateOrCreate(
@@ -58,6 +74,6 @@ class UserSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Admin, user, and engineer accounts seeded successfully!');
+        $this->command->info('Admin, two users, and engineer accounts seeded successfully!');
     }
 }

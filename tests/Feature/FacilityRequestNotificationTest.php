@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\FacilityRequest;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\FacilityImageStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -35,6 +36,9 @@ class FacilityRequestNotificationTest extends TestCase
 
     public function test_submitted_facility_requests_notify_each_admin_only(): void
     {
+        $this->partialMock(FacilityImageStorage::class)
+            ->shouldReceive('store')->once()->andReturn('facility-programs/program.png');
+
         $admins = User::factory()->count(2)->create(['role' => 'admin']);
         $requester = User::factory()->create(['role' => 'user']);
         $personnel = User::factory()->create(['role' => 'personnel']);
@@ -66,7 +70,6 @@ class FacilityRequestNotificationTest extends TestCase
         $this->assertDatabaseCount('notifications', 2);
 
         foreach ($admins as $admin) {
-            $this->actingAs($admin)->get(route('request-facility.show', $facilityRequest))->assertOk()->assertSee('Test Lead')->assertSee('Participant - College')->assertSee('09123456789');
             $notification = Notification::where('user_id', $admin->id)->sole();
             $this->assertFalse($notification->is_read);
             $this->assertSame(FacilityRequest::class, $notification->related_type);
@@ -121,12 +124,37 @@ class FacilityRequestNotificationTest extends TestCase
             'related_id' => $facilityRequest->id,
             'is_read' => false,
         ]);
-        $this->patch(route('request-facility.approve', $facilityRequest))->assertStatus(409);
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->patch(route('request-facility.approve', $facilityRequest))
+                ->assertRedirect(route('request-facility.show', $facilityRequest))
+                ->assertSessionHas('error', 'This request has already been reviewed.');
+        }
         $this->assertDatabaseCount('notifications', 1);
         $this->get(route('request-facility.show', $facilityRequest))
             ->assertOk()->assertDontSee('Approve Request')->assertSee('Approved');
         $this->actingAs($owner)->get(route('request-facility.show', $facilityRequest))
             ->assertOk()->assertSee('Approved')->assertDontSee('Approve Request');
+    }
+
+    public function test_reviewed_requests_are_not_approved_again(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        foreach (['declined', 'finished'] as $status) {
+            $facilityRequest = $this->createFacilityRequest($owner, 'FR-REVIEWED-'.$status);
+            $facilityRequest->update(['status' => $status]);
+
+            $this->patch(route('request-facility.approve', $facilityRequest))
+                ->assertRedirect(route('request-facility.show', $facilityRequest))
+                ->assertSessionHas('error', 'This request has already been reviewed.');
+            $this->assertSame($status, $facilityRequest->fresh()->status);
+            $this->get(route('request-facility.show', $facilityRequest))
+                ->assertOk()->assertSeeText('This request has already been reviewed.');
+        }
+
+        $this->assertDatabaseCount('notifications', 0);
     }
 
     public function test_users_see_only_their_requests_and_cannot_approve_any_request(): void

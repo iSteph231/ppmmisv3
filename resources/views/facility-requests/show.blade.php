@@ -23,6 +23,9 @@
     @if(session('success'))
         <div class="facility-alert" role="status">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="facility-alert" role="status">{{ session('error') }}</div>
+    @endif
     <div class="table-container">
         <div class="table-header">
             <h2 class="table-title">{{ $facilityRequest->facility }}</h2>
@@ -71,7 +74,7 @@
             @endif
             @include('facility-requests.evaluation-results')
             @if(Auth::user()->isAdmin() && $facilityRequest->status === 'pending')
-                <form method="POST" action="{{ route('request-facility.approve', $facilityRequest) }}" class="facility-form-actions">
+                <form method="POST" action="{{ route('request-facility.approve', $facilityRequest) }}" class="facility-form-actions" data-prevent-duplicate-submit>
                     @csrf
                     @method('PATCH')
                     <button type="submit" class="btn-create">Approve Request</button>

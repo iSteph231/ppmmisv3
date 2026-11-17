@@ -209,8 +209,7 @@
                 <div class="form-group">
                     <label for="email">
                         <i class="fas fa-envelope"></i>
-                        Email Address (must be @psu.edu.ph)
-                    </label>
+                        Email Address (must be @psu.edu.ph) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
                     <input type="email" class="form-control @error('email') is-invalid @enderror" 
                            id="email" name="email" value="{{ old('email') }}" required autofocus>
                     @error('email')

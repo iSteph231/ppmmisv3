@@ -78,13 +78,13 @@
 <!-- EMAIL -->
 <div class="input-group">
     <input type="email" name="email" id="email" required placeholder=" " value="{{ old('email') }}">
-    <label for="email">Email (@psu.edu.ph)</label>
+    <label for="email">Email (@psu.edu.ph) <span style="color: #dc2626;" aria-hidden="true">*</span></label>
 </div>
 
 <!-- PASSWORD -->
 <div class="input-group password-wrapper">
     <input type="password" name="password" id="password" required placeholder=" ">
-    <label for="password">Password</label>
+    <label for="password">Password <span style="color: #dc2626;" aria-hidden="true">*</span></label>
     <i class="fa-solid fa-eye toggle" id="togglePassword"></i>
 </div>
 

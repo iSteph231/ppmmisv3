@@ -165,6 +165,10 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        $newRequestIds = Notification::where('user_id', $userId)->unread()
+            ->where('related_type', WorkRequest::class)->where('title', 'New Work Request')
+            ->whereIn('related_id', $workRequests->modelKeys())->pluck('related_id')->all();
+
         return view('dashboard.index', compact(
             'totalRequests',
             'pendingRequests',
@@ -172,6 +176,7 @@ class DashboardController extends Controller
             'activeUsers',
             'monthlyData',
             'workRequests',
+            'newRequestIds',
             'notifications'
         ));
     }

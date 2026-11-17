@@ -61,10 +61,9 @@ class FacilityRequest extends Model
         return 'facility-requests/'.$requester.' - '.$facility.' - '.$this->request_number;
     }
 
-    public function scopeReservedAt(Builder $query, string $date, string $time): Builder
+    public function scopeReservedOn(Builder $query, string $date): Builder
     {
         return $query->whereDate('requested_date', $date)
-            ->whereTime('requested_time', $time.':00')
-            ->whereIn('status', ['pending', 'approved']);
+            ->whereIn('status', ['pending', 'approved', 'finished']);
     }
 }

@@ -13,10 +13,10 @@ class WorkRequestFactory extends Factory
     {
         $workTypes = ['ocular', 'installation', 'repair', 'replacement', 'others'];
         $workType = $this->faker->randomElement($workTypes);
-        
-        $detailsField = $workType . '_details';
+
+        $detailsField = $workType.'_details';
         $details = [
-            'ocular' => 'Building ' . $this->faker->numberBetween(1, 10) . ', ' . $this->faker->word,
+            'ocular' => 'Building '.$this->faker->numberBetween(1, 10).', '.$this->faker->word,
             'installation' => $this->faker->randomElement(['Aircon unit', 'Lighting fixtures', 'Network cables', 'Security camera']),
             'repair' => $this->faker->randomElement(['Leaking pipe', 'Broken window', 'Faulty wiring', 'Broken door lock']),
             'replacement' => $this->faker->randomElement(['Light bulbs', 'Batteries', 'Filters', 'Fuses']),
@@ -34,7 +34,7 @@ class WorkRequestFactory extends Factory
             $detailsField => $details[$workType],
             'status' => $this->faker->randomElement(['pending', 'in_progress', 'completed', 'cancelled']),
             'requester_name' => $this->faker->name(),
-            'request_number' => WorkRequest::generateRequestNumber(),
+            'request_number' => $this->faker->unique()->numerify('WR-######-####'),
             'created_at' => $this->faker->dateTimeBetween('-3 months', 'now'),
             'updated_at' => now(),
         ];

@@ -97,7 +97,7 @@
                     <tr data-request-url="{{ route('work-requests.show', $request->id) }}" style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 0.875rem 1rem;">#{{ $request->id }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem; font-family: monospace;">
-                            <x-new-request-dot :created-at="$request->created_at">{{ $request->request_number ?? 'N/A' }}</x-new-request-dot>
+                            <x-new-request-dot :created-at="$request->created_at" :eligible="$request->status === 'pending' && $request->scheduled_date === null">{{ $request->request_number ?? 'N/A' }}</x-new-request-dot>
                         </td>
                         <td style="padding: 0.875rem 1rem;">{{ $request->title }}</td>
                         <td class="mobile-summary-field" style="padding: 0.875rem 1rem;">{{ $request->requester_display_name }}</td>

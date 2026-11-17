@@ -17,9 +17,12 @@ class DashboardRequestHighlightTest extends TestCase
                 foreach (['pending', 'approved', 'completed'] as $index => $status) {
                     $requests->push($this->workRequest($index + 1, $status, now()->subHour()));
                 }
+                $scheduledRequest = $this->workRequest(4, 'pending', now()->subHour());
+                $scheduledRequest->scheduled_date = now()->addDay();
+                $requests->push($scheduledRequest);
                 $html = view($view, ['workRequests' => $requests])->render();
-                $this->assertSame($role === 'admin' ? 3 : 0, substr_count($html, 'class="new-request-dot"'));
-                $this->assertSame($role === 'admin' ? 3 : 0, substr_count($html, 'class="new-request-label"'));
+                $this->assertSame($role === 'admin' ? 1 : 0, substr_count($html, 'class="new-request-dot"'));
+                $this->assertSame($role === 'admin' ? 1 : 0, substr_count($html, 'class="new-request-label"'));
                 $this->assertStringNotContainsString('new-work-request', $html);
                 $this->assertStringNotContainsString('new-request-badge', $html);
                 $this->assertStringNotContainsString('background-color: #fffbeb', $html);
