@@ -8,11 +8,13 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\WorkRequest;
 use App\Services\FacilityImageStorage;
+use App\Services\WorkRequestNumberAllocator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -108,22 +110,8 @@ class WorkRequestController extends Controller implements HasMiddleware
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        // Generate request number
-        $yearMonth = now()->format('Ym');
-        $lastRequest = WorkRequest::where('request_number', 'like', "WR-{$yearMonth}-%")
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastRequest) {
-            $lastNumber = intval(substr($lastRequest->request_number, -4));
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
-
         // Prepare data for insertion
         $data = [
-            'request_number' => "WR-{$yearMonth}-{$newNumber}",
             'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => null,
@@ -161,43 +149,52 @@ class WorkRequestController extends Controller implements HasMiddleware
                 $data['photo_path'] = $photoPath;
             }
 
-            $workRequest = WorkRequest::create($data);
-            Log::info('Work request created successfully with ID: '.$workRequest->id);
+            $month = now()->format('Ym');
+            DB::transaction(function () use ($data, $month): void {
+                $data['request_number'] = app(WorkRequestNumberAllocator::class)->allocate($month);
+                $workRequest = WorkRequest::create($data);
+                Log::info('Work request created successfully with ID: '.$workRequest->id);
 
-            // ==============================================
-            // CREATE NOTIFICATIONS
-            // ==============================================
+                // ==============================================
+                // CREATE NOTIFICATIONS
+                // ==============================================
 
-            // 1. Create notification for the user who created the request
-            Notification::create([
-                'user_id' => Auth::id(),
-                'title' => 'Work Request Created',
-                'message' => "Your work request #{$workRequest->id}: '{$workRequest->title}' has been submitted successfully.",
-                'type' => 'info',
-                'is_read' => false,
-            ]);
-
-            // 2. Create notification for all admin users
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
+                // 1. Create notification for the user who created the request
                 Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'New Work Request',
-                    'message' => "New work request #{$workRequest->id}: '{$workRequest->title}' from ".Auth::user()->name,
+                    'user_id' => Auth::id(),
+                    'title' => 'Work Request Created',
+                    'message' => "Your work request #{$workRequest->id}: '{$workRequest->title}' has been submitted successfully.",
                     'type' => 'info',
                     'is_read' => false,
                 ]);
-            }
+
+                // 2. Create notification for all admin users
+                $admins = User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'title' => 'New Work Request',
+                        'message' => "New work request #{$workRequest->id}: '{$workRequest->title}' from ".Auth::user()->name,
+                        'type' => 'info',
+                        'is_read' => false,
+                    ]);
+                }
+
+            }, 5);
 
             return redirect()->route('work-requests.index')
                 ->with('success', 'Work request created successfully.');
-        } catch (\Exception $e) {
-            if ($photoPath && ! isset($workRequest)) {
-                $this->images->delete($photoPath);
+        } catch (\Throwable $e) {
+            if ($photoPath) {
+                try {
+                    $this->images->delete($photoPath);
+                } catch (\Throwable $cleanupException) {
+                    report($cleanupException);
+                }
             }
             Log::error('Error creating work request: '.$e->getMessage());
 
-            return back()->with('error', 'Failed to create work request: '.$e->getMessage())->withInput();
+            return back()->with('error', 'Unable to submit your work request right now. Please try again.')->withInput();
         }
     }
 

@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\WorkRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -26,6 +29,7 @@ class WorkRequestPhotoTest extends TestCase
             '2026_04_28_080517_add_user_id_to_work_requests_table.php',
             '2026_05_24_210550_make_work_requests_description_nullable.php',
             '2026_11_16_142622_add_photo_path_to_work_requests_table.php',
+            '2026_11_17_155548_create_work_request_counters_table.php',
         ] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
@@ -37,6 +41,50 @@ class WorkRequestPhotoTest extends TestCase
     private function requestData(): array
     {
         return ['title' => 'Repair a chair', 'request_type' => 'repair', 'repair_item' => 'Broken chair'];
+    }
+
+    public function test_notification_failure_rolls_back_request_and_number_and_cleans_photo_allowing_token_retry(): void
+    {
+        $token = (string) Str::uuid();
+        Event::listen('eloquent.creating: '.Notification::class, function (): void {
+            throw new \RuntimeException('SQLSTATE secret database password');
+        });
+        $this->from(route('work-requests.create'))->post(route('work-requests.store'), $this->requestData() + [
+            'submission_token' => $token, 'photo' => UploadedFile::fake()->image('issue.jpg'),
+        ])->assertSessionHas('error', 'Unable to submit your work request right now. Please try again.');
+        $this->assertSame(0, WorkRequest::count());
+        $this->assertSame(0, DB::table('notifications')->count());
+        $this->assertSame(0, DB::table('work_request_counters')->count());
+        $this->assertSame([], Storage::disk('local')->allFiles());
+
+        Event::forget('eloquent.creating: '.Notification::class);
+        $this->post(route('work-requests.store'), $this->requestData() + [
+            'submission_token' => $token, 'photo' => UploadedFile::fake()->image('issue.jpg'),
+        ])->assertSessionHas('success');
+        $this->assertSame('WR-'.now()->format('Ym').'-0001', WorkRequest::firstOrFail()->request_number);
+    }
+
+    public function test_deadlock_retry_reuses_the_photo_and_commits_only_one_request(): void
+    {
+        $attempts = 0;
+        Event::listen('eloquent.creating: '.Notification::class, function () use (&$attempts): void {
+            if (++$attempts === 1) {
+                throw new \PDOException('Deadlock found when trying to get lock', 40001);
+            }
+        });
+        try {
+            $this->post(route('work-requests.store'), $this->requestData() + [
+                'photo' => UploadedFile::fake()->image('issue.jpg'),
+            ])->assertSessionHas('success');
+            $this->assertSame(2, $attempts);
+            $this->assertSame(1, WorkRequest::count());
+            $this->assertSame(1, DB::table('notifications')->count());
+            $this->assertSame(1, DB::table('work_request_counters')->value('last_number'));
+            $this->assertCount(1, Storage::disk('local')->allFiles());
+            Storage::disk('local')->assertExists(WorkRequest::firstOrFail()->photo_path);
+        } finally {
+            Event::forget('eloquent.creating: '.Notification::class);
+        }
     }
 
     public function test_repeated_submissions_with_the_same_token_create_only_one_request(): void
