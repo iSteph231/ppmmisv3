@@ -1225,6 +1225,18 @@ body {
 .dashboard-content .users-page table {
     table-layout: auto;
 }
+.users-page .data-table {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+}
+.users-page .data-table table {
+    min-width: 56rem;
+}
+.users-page .table-container > .mt-4,
+.users-page > .mt-4 {
+    padding: 0 0.25rem 0.5rem;
+}
 .users-page .users-role-column {
     width: 15rem;
     min-width: 14rem;
@@ -1285,6 +1297,15 @@ body {
     min-width: 8rem;
 }
 @media (max-width: 640px) {
+    .users-page .data-table table {
+        min-width: 52rem;
+    }
+    .users-page .table-header {
+        align-items: stretch;
+    }
+    .users-page .table-header > a {
+        text-align: center;
+    }
     .users-page .request-review-approve {
         flex-direction: column;
         align-items: stretch;
