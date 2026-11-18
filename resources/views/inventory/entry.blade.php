@@ -7,6 +7,22 @@
 @endpush
 
 @section('content')
+    @php
+        $buildings = ['BIT', 'BSBA', 'Central Admin Building/FVR', 'Agri-Business', 'Convention Hall/Court', 'Canteen', 'Student Service', 'Dorm', 'ROTC Bldg'];
+        $roomsByBuilding = [
+            'BIT' => ['Room 19 (Automotive)', 'Room 20 (Mechanical)', 'Room 21 (Electronics)', 'Room 22 (Electronics)', 'Room 23 (Electrical)', 'Room 24 (Electrical)', 'Comfort Room 1', 'Comfort Room 2', 'Comfort Room 3 (infront of Main Gate)'],
+            'BSBA' => ['Room 18A', 'Room 18B', 'Comfort Room 1', 'Comfort room 2'],
+            'Canteen' => ['Canteen'],
+            'Convention Hall/Court' => ['Covered Court 1 (Parking Lot)', 'Covered Court 2 (Front of Dormitory)', 'Covered Court 3 (Back of the Campus)'],
+            'ROTC Bldg' => ['ROTC Headquarters'],
+            'Dorm' => ['Dorm Manager Room', 'Dorm Room 1', 'Dorm Room 2', 'Dorm Room 3', 'Dorm Room 4', 'Dorm Room 5', 'Dorm Kitchen'],
+            'Student Service' => ['Student Services Office', 'Sports / Culture', 'Practice Teaching', 'Students and Alumni Services'],
+            'Central Admin Building/FVR' => ['Room 1', 'Room 2', 'Room 3', 'Room 4', 'Room 5', 'Room 6 (Speech Lab)', 'MIS', 'Room 8', 'Room 9', 'CED Office', "Dean's Office", "Administrative Officer's Office", "Cashier's Office", 'Accounting Office', 'Supply Office', 'Planning', 'Stock Room', 'Guidance Office', 'Faculty Room', 'Campus Clinic', 'Campus Public Information Office', 'Activity Center', 'Accre', 'ETEEAP'],
+            'Agri-Business' => ['Room 10 (TLE Garments)', 'Room 11 (Science Lab)', 'Room 12 (Food)', 'Room 13 (Food)', 'Room 14', 'Room 15', 'Room 16 A (Computer Lab)', 'Room 16 B (Computer Lab)', 'Room 17', 'Research Office', 'Extension / GAD Office', 'Campus Library', "Registrar's Office", 'Food Tech new (BTLED)', 'Comfort Room'],
+        ];
+        $selectedBuilding = old('data.building_name', '');
+        $roomChoices = $roomsByBuilding[$selectedBuilding] ?? [];
+    @endphp
     <div class="content-wrapper inventory-page"><div class="mx-auto w-full max-w-6xl">
             <div class="greeting-section">
                 <h1 class="greeting-title">{{ $name }}</h1>
@@ -48,12 +64,32 @@
                                             <label for="{{ $key }}" class="block text-sm font-medium text-slate-700">
                                                 {{ $field['label'] }}@if ($field['required']) <span class="text-blue-600">*</span>@endif
                                             </label>
-                                            <input id="{{ $key }}" name="data[{{ $key }}]" type="{{ $field['type'] }}"
-                                            value="{{ old('data.'.$key) }}" @required($field['required'])
+                                            @if ($key === 'building_name')
+                                                <select id="building_name" name="data[building_name]" @required($field['required'])
+                                                @error('data.building_name') aria-invalid="true" aria-describedby="building_name-error" @enderror
+                                                class="block h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 @error('data.building_name') border-red-400 @enderror">
+                                                    <option value="">Select a building</option>
+                                                    @foreach ($buildings as $building)
+                                                        <option value="{{ $building }}" @selected($selectedBuilding === $building)>{{ $building === 'Central Admin Building/FVR' ? $building : ($building === 'ROTC Bldg' ? 'ROTC Building' : $building.' Building') }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @elseif ($key === 'room')
+                                                <select id="room" name="data[room]" @required($field['required']) @disabled(count($roomChoices) === 0)
+                                                @error('data.room') aria-invalid="true" aria-describedby="room-error" @enderror
+                                                class="block h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 @error('data.room') border-red-400 @enderror">
+                                                    <option value="">{{ count($roomChoices) > 0 ? 'Select an office / room' : 'Select a building first' }}</option>
+                                                    @foreach ($roomChoices as $room)
+                                                        <option value="{{ $room }}" @selected(old('data.room') === $room)>{{ $room }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @else
+                                                <input id="{{ $key }}" name="data[{{ $key }}]" type="{{ $field['type'] }}"
+                                                value="{{ old('data.'.$key) }}" @required($field['required'])
                                             @if ($field['type'] === 'number') min="0.01" max="10000" step="0.01" @endif
                                             @if ($field['type'] === 'text') maxlength="255" placeholder="Enter {{ strtolower($field['label']) }}" @endif
                                             @error('data.'.$key) aria-invalid="true" aria-describedby="{{ $key }}-error" @enderror
                                             class="block h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 @error('data.'.$key) border-red-400 @enderror">
+                                            @endif
                                             @error('data.'.$key)
                                                 <p id="{{ $key }}-error" class="text-xs text-red-600">{{ $message }}</p>
                                             @enderror
@@ -137,3 +173,20 @@
             </div>
     </div></div>
 @endsection
+
+@pushOnce('scripts')
+    <script>
+        const inventoryBuildingSelect = document.getElementById('building_name');
+        const inventoryRoomSelect = document.getElementById('room');
+        const inventoryRoomsByBuilding = @json($roomsByBuilding);
+
+        inventoryBuildingSelect.addEventListener('change', function () {
+            const rooms = inventoryRoomsByBuilding[inventoryBuildingSelect.value] || [];
+            const hasRoomChoices = rooms.length > 0;
+
+            inventoryRoomSelect.replaceChildren(new Option(hasRoomChoices ? 'Select an office / room' : 'Select a building first', ''));
+            rooms.forEach(room => inventoryRoomSelect.add(new Option(room, room)));
+            inventoryRoomSelect.disabled = !hasRoomChoices;
+        });
+    </script>
+@endPushOnce
