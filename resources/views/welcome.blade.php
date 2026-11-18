@@ -243,8 +243,7 @@ h1 {
     }
 
     .nav-actions {
-        justify-content: center;
-        gap: 8px;
+        display: none;
     }
 
     .nav-link {

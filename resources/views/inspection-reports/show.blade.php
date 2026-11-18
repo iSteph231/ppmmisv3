@@ -2,6 +2,46 @@
 
 @section('title', 'Inspection Report')
 
+@push('styles')
+    <style>
+        .inspection-report-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .inspection-report-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        @media (max-width: 768px) {
+            .inspection-report-status {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .inspection-report-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .inspection-report-actions a {
+                display: flex;
+                justify-content: center;
+                min-width: 0;
+                text-align: center;
+                width: 100%;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="content-wrapper">
         <div class="greeting-section">
@@ -12,7 +52,7 @@
         <div style="background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
             <div style="padding: 1.5rem;">
                 <div style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 0.5rem; {{ $inspectionReport->status === 'approved' ? 'background: #d1fae5;' : ($inspectionReport->status === 'pending' ? 'background: #fef3c7;' : 'background: #fee2e2;') }}">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="inspection-report-status">
                         <div>
                             <strong>Report Status:</strong>
                             <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; {{ $inspectionReport->status === 'approved' ? 'background: #059669; color: white;' : ($inspectionReport->status === 'pending' ? 'background: #d97706; color: white;' : 'background: #dc2626; color: white;') }}">
@@ -114,7 +154,7 @@
                     </div>
                 @endif
 
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                <div class="inspection-report-actions">
                     <a href="{{ route('inspections.index') }}" class="btn-cancel" style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
                         ← Back to Inspections
                     </a>
